@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Results and data (generated, not tracked)
+results/
+data/reference/
+data/shifted/
+data/calibration/
+
+# Hypothesis database
+.hypothesis/
+
+# Kiro specs (local development)
+.kiro/
+
+# Environment
+.env
+.envrc

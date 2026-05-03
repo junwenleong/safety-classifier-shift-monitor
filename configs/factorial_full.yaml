@@ -1,0 +1,74 @@
+# Shift Detection Monitor — Full Factorial Evaluation
+#
+# 4 classifiers × 5 shifts × 3 regimes × 3 window sizes × 20 seeds
+# = 3,600 total runs + 160 control runs
+#
+# This is the pre-registered evaluation configuration.
+
+stream:
+  reference_datasets:
+    - wildguardmix
+    - toxicchat
+    - llamaguard_eval
+  shift_condition: null
+  shift_onset_step: 500
+  mixing_proportion: 0.5
+  seed: 42
+
+detector:
+  alpha: 0.05
+  window_mode: sliding
+  window_size: 200
+  min_warmup_steps: null
+  correction_method: bonferroni
+  combined_advisory_window: 50
+  tail_bound: bounded
+
+mmd:
+  dim_reduction_threshold: 256
+  n_bootstrap: 1000
+
+conformal:
+  target_error_rate: 0.1
+  conformal_mode: weighted-on-alarm
+  min_calibration_size: 50
+  density_ratio_method: logistic
+
+reference_window:
+  size: 500
+  min_size: 100
+
+factorial:
+  classifiers:
+    - llama-guard-3-8b
+    - shieldgemma-9b
+    - gpt-oss-safeguard
+    - deberta-v3-large
+  shift_conditions:
+    - paraphrase
+    - code-switch
+    - adversarial-suffix
+    - compositional-long-context
+    - temporal
+  ground_truth_regimes:
+    - regime_a
+    - regime_b
+    - regime_c
+  window_sizes:
+    - 100
+    - 200
+    - 500
+  seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+  max_latency_positive_control: 200
+  min_negative_control_runs: 20
+
+controls:
+  n_negative_runs: 20
+  n_positive_runs: 20
+  trivial_shift_mixing: 0.9
+  max_latency: 200
+
+variance:
+  min_observations_per_cell: 10
+
+output_dir: results/factorial_full

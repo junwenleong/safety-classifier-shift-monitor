@@ -1,0 +1,62 @@
+# Shift Detection Monitor — Quick Test Configuration
+#
+# Reduced factorial for development and CI:
+# 1 classifier × 1 shift × 1 regime × 1 window size × 2 seeds
+# = 2 runs + 10 control runs
+#
+# Use this for fast iteration and smoke testing.
+
+stream:
+  reference_datasets:
+    - wildguardmix
+  shift_condition: null
+  shift_onset_step: 100
+  mixing_proportion: 0.5
+  seed: 42
+
+detector:
+  alpha: 0.05
+  window_mode: sliding
+  window_size: 50
+  min_warmup_steps: null
+  correction_method: bonferroni
+  combined_advisory_window: 20
+  tail_bound: bounded
+
+mmd:
+  dim_reduction_threshold: 64
+  n_bootstrap: 100
+
+conformal:
+  target_error_rate: 0.1
+  conformal_mode: unweighted
+  min_calibration_size: 10
+  density_ratio_method: logistic
+
+reference_window:
+  size: 50
+  min_size: 50
+
+factorial:
+  classifiers:
+    - deberta-v3-large
+  shift_conditions:
+    - paraphrase
+  ground_truth_regimes:
+    - regime_a
+  window_sizes:
+    - 50
+  seeds: [0, 1]
+  max_latency_positive_control: 100
+  min_negative_control_runs: 20
+
+controls:
+  n_negative_runs: 20
+  n_positive_runs: 5
+  trivial_shift_mixing: 0.9
+  max_latency: 100
+
+variance:
+  min_observations_per_cell: 2
+
+output_dir: results/quick_test
