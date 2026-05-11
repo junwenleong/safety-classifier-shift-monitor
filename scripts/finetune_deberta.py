@@ -96,20 +96,20 @@ def main(device_override: str | None = None, max_steps: int = -1):
     train_split.set_format("torch")
     eval_split.set_format("torch")
 
-    # Model
+    # Model — initialize on CPU (MPS can produce NaN with random classifier head init)
     model = AutoModelForSequenceClassification.from_pretrained(
         model_name, num_labels=2
     )
-    model.to(device)
 
-    # Sanity check: one forward pass before training
-    print("Running sanity check forward pass...")
+    # Sanity check: one forward pass on CPU before training
+    print("Running sanity check forward pass (CPU)...")
     sample = train_split[0]
+    model.eval()
     with torch.no_grad():
         inputs = {
-            "input_ids": sample["input_ids"].unsqueeze(0).to(device),
-            "attention_mask": sample["attention_mask"].unsqueeze(0).to(device),
-            "labels": sample["label"].unsqueeze(0).to(device),
+            "input_ids": sample["input_ids"].unsqueeze(0),
+            "attention_mask": sample["attention_mask"].unsqueeze(0),
+            "labels": sample["label"].unsqueeze(0),
         }
         outputs = model(**inputs)
         sanity_loss = outputs.loss.item()
@@ -119,7 +119,7 @@ def main(device_override: str | None = None, max_steps: int = -1):
             f"Sanity check failed: loss={sanity_loss}. "
             "Check label mapping and model configuration."
         )
-    model.to("cpu")  # Trainer will move it back
+    model.train()
 
     # Training arguments — MPS-safe settings
     training_args = TrainingArguments(
