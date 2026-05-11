@@ -112,7 +112,7 @@ def main(device_override: str | None = None, max_steps: int = -1):
 
     # Model — initialize on CPU in fp32 (checkpoint may be fp16 which causes NaN)
     model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, num_labels=2, torch_dtype=torch.float32
+        model_name, num_labels=2, dtype=torch.float32
     )
 
     # Sanity check: one forward pass on CPU before training
@@ -166,7 +166,6 @@ def main(device_override: str | None = None, max_steps: int = -1):
         fp16=False,
         bf16=False,
         dataloader_pin_memory=False,
-        use_mps_device=(device == "mps"),
         report_to="none",
         save_total_limit=2,
     )
