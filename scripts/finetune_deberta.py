@@ -56,32 +56,12 @@ def main(device_override: str | None = None, max_steps: int = -1):
     ds = load_dataset("allenai/wildguardmix", "wildguardtrain")
     train_ds = ds["train"]
 
-    # Inspect dataset structure
-    print(f"\nDataset features: {train_ds.features}")
-    print(f"First 3 raw rows:")
-    for i, row in enumerate(train_ds.select(range(3))):
-        print(f"  [{i}] {row}")
-    print()
-
-    # Find the safety label field and its unique values
-    candidate_fields = [k for k in train_ds.features if "safe" in k.lower() or "harm" in k.lower() or "label" in k.lower()]
-    print(f"Candidate label fields: {candidate_fields}")
-    for field in candidate_fields:
-        vals = set(train_ds[:200][field])
-        print(f"  '{field}' unique values (first 200): {vals}")
-    print()
-
-    # Map labels — adapt to actual field values
+    # Map labels: prompt_harm_label 'harmful' → 1, 'unharmful' → 0
+    # Text field: 'prompt'
     def map_labels(example):
-        # Try safety_label first, then harmful, then label
-        raw = example.get("safety_label", example.get("harmful", example.get("label", "")))
-        if isinstance(raw, str):
-            example["label"] = int(0 if raw.lower().strip() in ("safe", "no", "false", "0") else 1)
-        elif isinstance(raw, (int, float, bool)):
-            example["label"] = int(bool(raw))
-        else:
-            example["label"] = 1
-        example["text"] = example.get("prompt", example.get("text", ""))
+        raw = example["prompt_harm_label"]
+        example["label"] = int(1 if raw == "harmful" else 0)
+        example["text"] = example["prompt"]
         return example
 
     train_ds = train_ds.map(map_labels)
