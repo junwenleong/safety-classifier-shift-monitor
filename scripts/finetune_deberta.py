@@ -110,9 +110,9 @@ def main(device_override: str | None = None, max_steps: int = -1):
     train_split.set_format("torch")
     eval_split.set_format("torch")
 
-    # Model — initialize on CPU (MPS can produce NaN with random classifier head init)
+    # Model — initialize on CPU in fp32 (checkpoint may be fp16 which causes NaN)
     model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, num_labels=2
+        model_name, num_labels=2, torch_dtype=torch.float32
     )
 
     # Sanity check: one forward pass on CPU before training
