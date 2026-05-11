@@ -151,6 +151,8 @@ def run_detection(
         alarms = alarm_controller.check_alarms()
         if alarms and alarm_step is None:
             alarm_step = alarms[0].time_step
+            for a in alarms:
+                print(f"    [ALARM] step={a.time_step} detector={a.detector} stat={a.statistic_value:.6f} ref={a.reference_value:.6f} CS=[{a.cs_lower:.6f},{a.cs_upper:.6f}]")
 
     latency = (alarm_step - shift_onset) if alarm_step and shifted_examples else None
     return {
