@@ -151,8 +151,8 @@ def main(device_override: str | None = None, max_steps: int = -1):
         output_dir=output_dir,
         num_train_epochs=3 if max_steps <= 0 else 100,
         max_steps=max_steps,
-        per_device_train_batch_size=16,
-        per_device_eval_batch_size=16,
+        per_device_train_batch_size=32,
+        per_device_eval_batch_size=32,
         learning_rate=1e-5,
         warmup_ratio=0.1,
         weight_decay=0.01,
@@ -199,8 +199,8 @@ if __name__ == "__main__":
         description="Fine-tune DeBERTa-v3-large on WildGuardMix (MPS-safe).",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--device", choices=["mps", "cpu"], default=None,
-                        help="Force device (default: auto-detect MPS/CPU)")
+    parser.add_argument("--device", choices=["mps", "cpu"], default="cpu",
+                        help="Device for training (cpu is faster than MPS for DeBERTa on M3 Ultra)")
     parser.add_argument("--max-steps", type=int, default=-1,
                         help="Max training steps (-1 = full 3 epochs). Use e.g. 50 for validation runs.")
     args = parser.parse_args()
