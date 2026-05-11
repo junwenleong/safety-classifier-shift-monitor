@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import argparse
 import time
 
 import numpy as np
@@ -152,31 +153,36 @@ def run_detection(
     }
 
 
-def main():
+def main(
+    seed: int = 42,
+    window_size: int = 200,
+    shift_onset: int = 500,
+    n_reference: int = 500,
+    n_shifted: int = 300,
+    dim: int = 1024,
+):
     wall_start = time.time()
-    rng = np.random.default_rng(42)
-    window_size = 200
-    shift_onset = 500
+    rng = np.random.default_rng(seed)
 
-    classifier = CanaryClassifier(dim=1024)
+    classifier = CanaryClassifier(dim=dim)
 
     print("=" * 60)
     print("CANARY RUN: DeBERTa + Paraphrase Shift + Regime A")
     print("=" * 60)
 
     # Generate corpus
-    reference = make_examples(500, "reference", rng)
-    shifted = make_examples(300, "shifted altered", rng)
+    reference = make_examples(n_reference, "reference", rng)
+    shifted = make_examples(n_shifted, "shifted altered", rng)
 
     # --- Positive run ---
-    print("\n--- Positive Control (shift at step 500) ---")
+    print("\n--- Positive Control (shift at step %d) ---" % shift_onset)
     pos = run_detection(
         classifier=classifier,
         reference_examples=reference,
         shifted_examples=shifted,
         shift_onset=shift_onset,
         window_size=window_size,
-        seed=42,
+        seed=seed,
     )
 
     if pos["alarm_step"]:
@@ -187,15 +193,15 @@ def main():
         print("  No alarm fired (detection missed)")
 
     # --- Negative control ---
-    print("\n--- Negative Control (800 reference, no shift) ---")
-    neg_reference = make_examples(800, "reference", np.random.default_rng(99))
+    print("\n--- Negative Control (no shift) ---")
+    neg_reference = make_examples(n_reference + n_shifted, "reference", np.random.default_rng(99))
     neg = run_detection(
         classifier=classifier,
         reference_examples=neg_reference,
         shifted_examples=None,
         shift_onset=0,
         window_size=window_size,
-        seed=43,
+        seed=seed + 1,
     )
 
     neg_clean = neg["alarm_step"] is None
@@ -219,4 +225,22 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Canary run: single-classifier shift detection pipeline test.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument("--seed", type=int, default=42, help="Random seed")
+    parser.add_argument("--window-size", type=int, default=200, help="Reference window / detector window size")
+    parser.add_argument("--shift-onset", type=int, default=500, help="Time step where shift begins")
+    parser.add_argument("--n-reference", type=int, default=500, help="Number of reference examples")
+    parser.add_argument("--n-shifted", type=int, default=300, help="Number of shifted examples")
+    parser.add_argument("--dim", type=int, default=1024, help="Embedding dimensionality for mock classifier")
+    args = parser.parse_args()
+    main(
+        seed=args.seed,
+        window_size=args.window_size,
+        shift_onset=args.shift_onset,
+        n_reference=args.n_reference,
+        n_shifted=args.n_shifted,
+        dim=args.dim,
+    )

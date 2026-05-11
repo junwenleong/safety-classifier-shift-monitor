@@ -8,8 +8,6 @@ Output: checkpoints/deberta-wildguardmix/
 
 from __future__ import annotations
 
-import os
-
 import numpy as np
 import torch
 from datasets import load_dataset
@@ -54,11 +52,10 @@ def main():
     ds = load_dataset("allenai/wildguardmix", "wildguardtrain")
     train_ds = ds["train"]
 
-    # Map labels: "safe" -> 0, anything else -> 1
+    # Map labels: "safe" -> 0, anything else -> 1 (as int)
     def map_labels(example):
-        # WildGuardMix has 'safety_label' field
         label_field = example.get("safety_label", example.get("label", ""))
-        example["label"] = 0 if label_field.lower().strip() == "safe" else 1
+        example["label"] = int(0 if label_field.lower().strip() == "safe" else 1)
         example["text"] = example.get("prompt", example.get("text", ""))
         return example
 
@@ -69,6 +66,13 @@ def main():
     train_split = split["train"]
     eval_split = split["test"]
     print(f"Train: {len(train_split)}, Eval: {len(eval_split)}")
+
+    # Verify labels are correct integers
+    sample_labels = train_split[:8]["label"]
+    print(f"Sample labels (first 8): {sample_labels}")
+    assert all(isinstance(l, int) and l in (0, 1) for l in sample_labels), (
+        f"Labels must be integers 0 or 1, got: {sample_labels}"
+    )
 
     # Tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -92,23 +96,46 @@ def main():
     model = AutoModelForSequenceClassification.from_pretrained(
         model_name, num_labels=2
     )
+    model.to(device)
 
-    # Training arguments
+    # Sanity check: one forward pass before training
+    print("Running sanity check forward pass...")
+    sample = train_split[0]
+    with torch.no_grad():
+        inputs = {
+            "input_ids": sample["input_ids"].unsqueeze(0).to(device),
+            "attention_mask": sample["attention_mask"].unsqueeze(0).to(device),
+            "labels": sample["label"].unsqueeze(0).to(device),
+        }
+        outputs = model(**inputs)
+        sanity_loss = outputs.loss.item()
+    print(f"  Sanity check loss: {sanity_loss:.4f}")
+    if sanity_loss == 0.0 or np.isnan(sanity_loss):
+        raise RuntimeError(
+            f"Sanity check failed: loss={sanity_loss}. "
+            "Check label mapping and model configuration."
+        )
+    model.to("cpu")  # Trainer will move it back
+
+    # Training arguments — MPS-safe settings
     training_args = TrainingArguments(
         output_dir=output_dir,
         num_train_epochs=3,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=16,
-        learning_rate=2e-5,
+        learning_rate=1e-5,
         warmup_ratio=0.1,
         weight_decay=0.01,
+        max_grad_norm=1.0,
         eval_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=True,
         metric_for_best_model="f1",
         greater_is_better=True,
         logging_steps=50,
-        fp16=False,  # MPS doesn't support fp16 training
+        fp16=False,
+        bf16=False,
+        dataloader_pin_memory=False,
         use_mps_device=(device == "mps"),
         report_to="none",
         save_total_limit=2,
