@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import os
 import time
+from pathlib import Path
 
 import numpy as np
 
@@ -202,20 +203,31 @@ def main(
     # Reference: first n_reference prompts
     reference = [{"text": prompts[i], "source_dataset": "wildguardmix"} for i in range(n_reference)]
 
-    # Shifted: next n_shifted prompts with minor perturbation (placeholder until Bedrock corpus)
-    # Prepend "Rephrase: " to simulate paraphrase shift — clearly a placeholder
-    shifted = [
-        {"text": "Rephrase: " + prompts[n_reference + i], "source_dataset": "wildguardmix-placeholder-shift"}
-        for i in range(n_shifted)
-    ]
+    # Shifted: load from paraphrase corpus if available, else placeholder
+    paraphrase_path = Path("data/shifted/paraphrase/output.jsonl")
+    if paraphrase_path.exists():
+        import json
+        with open(paraphrase_path) as f:
+            shifted = [json.loads(line) for line in f if line.strip()]
+        if len(shifted) < n_shifted:
+            n_shifted = len(shifted)
+        else:
+            shifted = shifted[:n_shifted]
+        print(f"  Loaded {n_shifted} paraphrased examples from {paraphrase_path}")
+    else:
+        shifted = [
+            {"text": "Rephrase: " + prompts[n_reference + i], "source_dataset": "placeholder"}
+            for i in range(n_shifted)
+        ]
+        print(f"  No paraphrase corpus found — using placeholder ({n_shifted} examples)")
 
-    print(f"  Reference examples: {n_reference}, Shifted examples: {n_shifted}")
+    print(f"  Reference: {n_reference}, Shifted: {n_shifted}")
     print(f"  First 3 reference texts:")
-    for i in range(3):
+    for i in range(min(3, len(reference))):
         print(f"    [{i}] {reference[i]['text'][:80]}...")
     print(f"  First 3 shifted texts:")
-    for i in range(3):
-        print(f"    [{i}] {shifted[i]['text'][:80]}...")
+    for i in range(min(3, len(shifted))):
+        print(f"    [{i}] {shifted[i].get('shifted', shifted[i].get('text', ''))[:80]}...")
 
     # --- Positive run ---
     print("\n--- Positive Control (shift at step %d) ---" % shift_onset)
