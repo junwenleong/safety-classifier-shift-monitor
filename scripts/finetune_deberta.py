@@ -44,7 +44,7 @@ def compute_metrics(eval_pred):
 
 
 def main(device_override: str | None = None, max_steps: int = -1):
-    model_name = "microsoft/deberta-v3-large"
+    model_name = "microsoft/deberta-v3-base"
     output_dir = "checkpoints/deberta-wildguardmix"
     device = device_override or get_device()
     print(f"Device: {device}")
@@ -97,7 +97,7 @@ def main(device_override: str | None = None, max_steps: int = -1):
 
     def tokenize(examples):
         return tokenizer(
-            examples["text"], truncation=True, max_length=512, padding="max_length"
+            examples["text"], truncation=True, max_length=128, padding="max_length"
         )
 
     train_split = train_split.map(tokenize, batched=True, remove_columns=[
