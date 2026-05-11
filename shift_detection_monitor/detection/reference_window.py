@@ -201,9 +201,11 @@ class ReferenceWindow:
 
             # 6. mmd_reference_value = mean of null distribution
             # If near zero, use 75th percentile for a stable non-degenerate reference
+            # Clamp to non-negative: MMD² under the null is zero-centered
             mmd_reference_value = float(np.mean(null_mmd_values))
             if abs(mmd_reference_value) < 1e-4:
                 mmd_reference_value = float(np.percentile(null_mmd_values, 75))
+            mmd_reference_value = max(mmd_reference_value, 0.0)
         else:
             # No embeddings available — use defaults
             embeddings = np.empty((0, 0), dtype=np.float64)
