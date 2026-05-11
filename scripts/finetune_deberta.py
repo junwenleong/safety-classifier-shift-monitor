@@ -120,12 +120,23 @@ def main(device_override: str | None = None, max_steps: int = -1):
     sample = train_split[0]
     model.eval()
     with torch.no_grad():
-        inputs = {
-            "input_ids": sample["input_ids"].unsqueeze(0),
-            "attention_mask": sample["attention_mask"].unsqueeze(0),
-            "labels": sample["label"].unsqueeze(0),
-        }
-        outputs = model(**inputs)
+        input_ids = sample["input_ids"].unsqueeze(0)
+        attention_mask = sample["attention_mask"].unsqueeze(0)
+        labels = sample["label"].unsqueeze(0).long()
+
+        # Debug: inspect inputs
+        vocab_size = model.config.vocab_size
+        print(f"  input_ids.shape: {input_ids.shape}, dtype: {input_ids.dtype}")
+        print(f"  attention_mask.shape: {attention_mask.shape}")
+        print(f"  labels: {labels}, dtype: {labels.dtype}")
+        print(f"  input_ids range: [{input_ids.min()}, {input_ids.max()}], vocab_size: {vocab_size}")
+        if input_ids.max() >= vocab_size:
+            print(f"  WARNING: input_ids has values >= vocab_size!")
+        print(f"  num_labels: {model.config.num_labels}")
+
+        outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+        print(f"  logits: {outputs.logits}")
+        print(f"  logits has NaN: {torch.isnan(outputs.logits).any()}")
         sanity_loss = outputs.loss.item()
     print(f"  Sanity check loss: {sanity_loss:.4f}")
     if sanity_loss == 0.0 or np.isnan(sanity_loss):
