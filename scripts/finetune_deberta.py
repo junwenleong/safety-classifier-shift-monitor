@@ -78,6 +78,16 @@ def main(device_override: str | None = None, max_steps: int = -1):
         f"Labels must be integers 0 or 1, got: {sample_labels}"
     )
 
+    # Class balance check
+    first_100 = train_split[:100]["label"]
+    n_safe = first_100.count(0)
+    n_unsafe = first_100.count(1)
+    print(f"Class balance (first 100): safe={n_safe}, unsafe={n_unsafe}")
+    if n_safe == 0 or n_unsafe == 0:
+        raise RuntimeError(
+            f"Training set has only one class in first 100 examples (safe={n_safe}, unsafe={n_unsafe}). "
+            "Label mapping from WildGuardMix is likely wrong — check the 'safety_label' field values."
+        )
     # Tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
