@@ -56,14 +56,38 @@ def main(device_override: str | None = None, max_steps: int = -1):
     ds = load_dataset("allenai/wildguardmix", "wildguardtrain")
     train_ds = ds["train"]
 
-    # Map labels: "safe" -> 0, anything else -> 1 (as int)
+    # Inspect dataset structure
+    print(f"\nDataset features: {train_ds.features}")
+    print(f"First 3 raw rows:")
+    for i, row in enumerate(train_ds.select(range(3))):
+        print(f"  [{i}] {row}")
+    print()
+
+    # Find the safety label field and its unique values
+    candidate_fields = [k for k in train_ds.features if "safe" in k.lower() or "harm" in k.lower() or "label" in k.lower()]
+    print(f"Candidate label fields: {candidate_fields}")
+    for field in candidate_fields:
+        vals = set(train_ds[:200][field])
+        print(f"  '{field}' unique values (first 200): {vals}")
+    print()
+
+    # Map labels — adapt to actual field values
     def map_labels(example):
-        label_field = example.get("safety_label", example.get("label", ""))
-        example["label"] = int(0 if label_field.lower().strip() == "safe" else 1)
+        # Try safety_label first, then harmful, then label
+        raw = example.get("safety_label", example.get("harmful", example.get("label", "")))
+        if isinstance(raw, str):
+            example["label"] = int(0 if raw.lower().strip() in ("safe", "no", "false", "0") else 1)
+        elif isinstance(raw, (int, float, bool)):
+            example["label"] = int(bool(raw))
+        else:
+            example["label"] = 1
         example["text"] = example.get("prompt", example.get("text", ""))
         return example
 
     train_ds = train_ds.map(map_labels)
+
+    # Shuffle before split for representative sampling
+    train_ds = train_ds.shuffle(seed=42)
 
     # Train/eval split
     split = train_ds.train_test_split(test_size=0.1, seed=42)
