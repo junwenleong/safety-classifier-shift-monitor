@@ -83,6 +83,7 @@ def run_detection(
 
     # Collect all records in one pass
     ref_window = ReferenceWindow(min_size=window_size, n_bootstrap=200)
+    ref_records = []
     alarm_step = None
     cs_bounds = []
     step = 0
@@ -91,13 +92,23 @@ def run_detection(
     stream_iter = iter(simulator)
     for record in stream_iter:
         ref_window.add(record)
+        ref_records.append(record)
         step += 1
         if step >= window_size:
             break
 
     frozen_stats = ref_window.freeze()
 
-    # Phase 2: Set up detectors
+    # Phase 2: Compute KS null reference value by running KS detector over reference window
+    # The KS statistic is always > 0 under the null; using 0.0 causes immediate alarming
+    ks_ref_detector = KSDetector(frozen_stats=frozen_stats, window_size=window_size)
+    ks_null_values = []
+    for record in ref_records:
+        ks_val = ks_ref_detector.update(record)
+        ks_null_values.append(ks_val)
+    ks_reference_value = float(np.mean(ks_null_values))
+
+    # Phase 3: Set up detectors
     mmd_detector = MMDDetector(frozen_stats=frozen_stats, window_size=window_size)
     ks_detector = KSDetector(frozen_stats=frozen_stats, window_size=window_size)
 
@@ -114,7 +125,7 @@ def run_detection(
     )
 
     mmd_engine = alarm_controller.register_detector("mmd", frozen_stats.mmd_reference_value)
-    ks_engine = alarm_controller.register_detector("ks", 0.0)
+    ks_engine = alarm_controller.register_detector("ks", ks_reference_value)
 
     # Phase 3: Continue streaming through detectors
     for record in stream_iter:
@@ -150,6 +161,8 @@ def run_detection(
         "fired_within_200": latency is not None and latency <= 200,
         "cs_bounds": cs_bounds,
         "total_steps": step,
+        "ks_reference_value": ks_reference_value,
+        "mmd_reference_value": frozen_stats.mmd_reference_value,
     }
 
 
@@ -191,6 +204,8 @@ def main(
         print(f"  Fired within 200 steps of onset: {pos['fired_within_200']}")
     else:
         print("  No alarm fired (detection missed)")
+    print(f"  KS reference value: {pos['ks_reference_value']:.6f}")
+    print(f"  MMD reference value: {pos['mmd_reference_value']:.6f}")
 
     # --- Negative control ---
     print("\n--- Negative Control (no shift) ---")
