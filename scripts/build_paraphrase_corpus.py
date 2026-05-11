@@ -33,6 +33,7 @@ def main():
                         help="Output path for shifted corpus")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--n", type=int, default=None, help="Limit to first N examples (default: all)")
+    parser.add_argument("--resume", action="store_true", help="Skip already-processed examples")
     args = parser.parse_args()
 
     if not args.source.exists():
@@ -41,27 +42,41 @@ def main():
         print("  python scripts/export_wildguardmix_source.py")
         sys.exit(1)
 
-    # If --n is set, create a truncated source
-    if args.n:
-        lines = args.source.read_text().strip().split("\n")[:args.n]
-        tmp_source = args.source.with_suffix(".tmp.jsonl")
-        tmp_source.write_text("\n".join(lines) + "\n")
-        source = tmp_source
-    else:
-        source = args.source
+    # Determine how many to skip if resuming
+    skip = 0
+    if args.resume and args.output.exists():
+        skip = sum(1 for line in open(args.output) if line.strip())
+        print(f"Resuming: {skip} examples already done")
 
-    print(f"Building paraphrase corpus from {source} ({sum(1 for _ in open(source))} examples)")
+    # If --n is set, create a truncated source (accounting for skip)
+    all_lines = args.source.read_text().strip().split("\n")
+    target_n = args.n or len(all_lines)
+    remaining_lines = all_lines[skip:target_n]
+
+    if not remaining_lines:
+        print(f"Nothing to do — {skip} examples already processed.")
+        sys.exit(0)
+
+    tmp_source = args.source.with_suffix(".tmp.jsonl")
+    tmp_source.write_text("\n".join(remaining_lines) + "\n")
+
+    print(f"Building paraphrase corpus: {len(remaining_lines)} examples (skipped {skip})")
     print(f"Output: {args.output}")
 
     builder = ShiftDatasetBuilder(use_bedrock=True, bedrock_profile="icpo-assistant")
-    manifest = builder.build("paraphrase", source, args.output, seed=args.seed)
+    tmp_output = args.output.with_suffix(".new.jsonl")
+    manifest = builder.build("paraphrase", tmp_source, tmp_output, seed=args.seed + skip)
 
-    print(f"\nDone! {manifest.n_examples} examples written.")
-    print(f"Manifest: {args.output.with_suffix('.manifest.json')}")
+    # Append to existing output
+    with open(args.output, "a") as out:
+        out.write(tmp_output.read_text())
+    tmp_output.unlink()
+    tmp_output.with_suffix(".manifest.json").unlink(missing_ok=True)
+    tmp_source.unlink()
 
-    # Clean up temp file
-    if args.n:
-        tmp_source.unlink()
+    total = sum(1 for line in open(args.output) if line.strip())
+    print(f"\nDone! {manifest.n_examples} new + {skip} existing = {total} total.")
+    print(f"Output: {args.output}")
 
 
 if __name__ == "__main__":
