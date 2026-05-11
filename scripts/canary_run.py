@@ -119,7 +119,7 @@ def run_detection(
         combined_window=50,
         window_mode="sliding",
         window_size=window_size,
-        min_warmup_steps=window_size,
+        min_warmup_steps=2 * window_size,
         tail_bound="bounded",
         lower_bound=0.0,
         upper_bound=1.0,
@@ -144,8 +144,8 @@ def run_detection(
 
         # Debug: print CS state at pre-shift steps
         if step in debug_steps and shifted_examples:
-            print(f"    [debug] step={step} KS=[{ks_update.lower:.4f},{ks_update.upper:.4f}] stat={ks_update.statistic:.4f} alarm={ks_update.alarm}"
-                  f" | MMD stat={mmd_update.statistic:.6f} alarm={mmd_update.alarm}" if mmd_val is not None else "")
+            mmd_info = f" | MMD=[{mmd_update.lower:.6f},{mmd_update.upper:.6f}] stat={mmd_update.statistic:.6f} alarm={mmd_update.alarm}" if mmd_val is not None else ""
+            print(f"    [debug] step={step} KS=[{ks_update.lower:.4f},{ks_update.upper:.4f}] stat={ks_update.statistic:.4f} alarm={ks_update.alarm}{mmd_info}")
 
         # Track CS bounds post-shift
         if shifted_examples and step > shift_onset and len(cs_bounds) < 100:
