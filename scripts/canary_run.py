@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import time
 
 import numpy as np
@@ -128,6 +129,7 @@ def run_detection(
     ks_engine = alarm_controller.register_detector("ks", ks_reference_value)
 
     # Phase 3: Continue streaming through detectors
+    debug_steps = {300, 350, 400, 450}
     for record in stream_iter:
         step += 1
 
@@ -139,6 +141,11 @@ def run_detection(
         ks_val = ks_detector.update(record)
         ks_update = ks_engine.update(ks_val)
         alarm_controller.report_update("ks", ks_update)
+
+        # Debug: print CS state at pre-shift steps
+        if step in debug_steps and shifted_examples:
+            print(f"    [debug] step={step} KS=[{ks_update.lower:.4f},{ks_update.upper:.4f}] stat={ks_update.statistic:.4f} alarm={ks_update.alarm}"
+                  f" | MMD stat={mmd_update.statistic:.6f} alarm={mmd_update.alarm}" if mmd_val is not None else "")
 
         # Track CS bounds post-shift
         if shifted_examples and step > shift_onset and len(cs_bounds) < 100:
@@ -177,7 +184,15 @@ def main(
     wall_start = time.time()
     rng = np.random.default_rng(seed)
 
-    classifier = CanaryClassifier(dim=dim)
+    # Use real DeBERTaAdapter if checkpoint is available, else mock
+    checkpoint = os.environ.get("DEBERTA_CHECKPOINT_PATH")
+    if checkpoint:
+        from shift_detection_monitor.classifiers.deberta import DeBERTaAdapter
+        print(f"Using DeBERTaAdapter with checkpoint: {checkpoint}")
+        classifier = DeBERTaAdapter()
+    else:
+        print("DEBERTA_CHECKPOINT_PATH not set — using mock classifier")
+        classifier = CanaryClassifier(dim=dim)
 
     print("=" * 60)
     print("CANARY RUN: DeBERTa + Paraphrase Shift + Regime A")
