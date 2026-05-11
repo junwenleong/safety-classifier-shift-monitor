@@ -34,3 +34,6 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "gpu: marks tests requiring GPU",
 ]
+
+[tool.setuptools]
+packages = ["shift_detection_monitor"]
