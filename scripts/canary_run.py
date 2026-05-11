@@ -50,14 +50,6 @@ class CanaryClassifier:
         return ClassifierOutput(score=score, representation=representation, metadata={})
 
 
-def make_examples(n: int, prefix: str, rng: np.random.Generator) -> list[dict]:
-    """Generate synthetic examples with a given prefix."""
-    return [
-        {"text": f"{prefix} example {i}: {rng.random():.6f}", "source_dataset": prefix}
-        for i in range(n)
-    ]
-
-
 def run_detection(
     classifier,
     reference_examples: list[dict],
@@ -198,9 +190,30 @@ def main(
     print("CANARY RUN: DeBERTa + Paraphrase Shift + Regime A")
     print("=" * 60)
 
-    # Generate corpus
-    reference = make_examples(n_reference, "reference", rng)
-    shifted = make_examples(n_shifted, "shifted altered", rng)
+    # Load real data from WildGuardMix
+    print("\nLoading WildGuardMix prompts...")
+    from datasets import load_dataset
+    ds = load_dataset("allenai/wildguardmix", "wildguardtrain", split="train")
+    ds = ds.shuffle(seed=seed)
+    prompts = ds["prompt"]
+
+    # Reference: first n_reference prompts
+    reference = [{"text": prompts[i], "source_dataset": "wildguardmix"} for i in range(n_reference)]
+
+    # Shifted: next n_shifted prompts with minor perturbation (placeholder until Bedrock corpus)
+    # Prepend "Rephrase: " to simulate paraphrase shift — clearly a placeholder
+    shifted = [
+        {"text": "Rephrase: " + prompts[n_reference + i], "source_dataset": "wildguardmix-placeholder-shift"}
+        for i in range(n_shifted)
+    ]
+
+    print(f"  Reference examples: {n_reference}, Shifted examples: {n_shifted}")
+    print(f"  First 3 reference texts:")
+    for i in range(3):
+        print(f"    [{i}] {reference[i]['text'][:80]}...")
+    print(f"  First 3 shifted texts:")
+    for i in range(3):
+        print(f"    [{i}] {shifted[i]['text'][:80]}...")
 
     # --- Positive run ---
     print("\n--- Positive Control (shift at step %d) ---" % shift_onset)
@@ -224,7 +237,12 @@ def main(
 
     # --- Negative control ---
     print("\n--- Negative Control (no shift) ---")
-    neg_reference = make_examples(n_reference + n_shifted, "reference", np.random.default_rng(99))
+    # Use a different slice of WildGuardMix as pure reference (no shift)
+    neg_start = n_reference + n_shifted
+    neg_reference = [
+        {"text": prompts[neg_start + i], "source_dataset": "wildguardmix"}
+        for i in range(n_reference + n_shifted)
+    ]
     neg = run_detection(
         classifier=classifier,
         reference_examples=neg_reference,
