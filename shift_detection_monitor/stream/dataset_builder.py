@@ -107,7 +107,11 @@ def _create_bedrock_client(profile_name: str = "icpo-assistant") -> Any:
             f"Then retry. (Error: {e})"
         ) from e
 
-    return session.client("bedrock-runtime", region_name="ap-southeast-1")
+    from botocore.config import Config
+    return session.client(
+        "bedrock-runtime", region_name="ap-southeast-1",
+        config=Config(read_timeout=300, retries={"max_attempts": 3}),
+    )
 
 
 def _bedrock_converse(
@@ -118,13 +122,27 @@ def _bedrock_converse(
     temperature: float = 0.0,
 ) -> str:
     """Call Bedrock converse() API and return the assistant text."""
-    response = client.converse(
-        modelId=model_id,
-        messages=[{"role": "user", "content": [{"text": user_message}]}],
-        system=[{"text": system_prompt}],
-        inferenceConfig={"temperature": temperature},
-    )
-    return response["output"]["message"]["content"][0]["text"]
+    # Truncate very long prompts to avoid timeouts
+    if len(user_message) > 2000:
+        user_message = user_message[:2000]
+
+    for attempt in range(3):
+        try:
+            response = client.converse(
+                modelId=model_id,
+                messages=[{"role": "user", "content": [{"text": user_message}]}],
+                system=[{"text": system_prompt}],
+                inferenceConfig={"temperature": temperature},
+            )
+            content = response["output"]["message"]["content"]
+            if not content:
+                return user_message  # Fallback: return original if empty response
+            return content[0]["text"]
+        except Exception as e:
+            if attempt == 2:
+                raise
+            logger.warning("Bedrock call failed (attempt %d): %s", attempt + 1, e)
+            time.sleep(2 ** attempt)
 
 
 # ---------------------------------------------------------------------------
