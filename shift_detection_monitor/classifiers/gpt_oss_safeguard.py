@@ -1,17 +1,17 @@
-"""
-GPT-OSS-Safeguard adapter for the ClassifierInterface.
+"""GPT-OSS-Safeguard adapter for the ClassifierInterface.
 
-Wraps the GPT-OSS-Safeguard safety classifier. This is an API-only
-classifier that does not expose internal embeddings or representation
-vectors. The adapter returns representation=None, and the MMD detector
-will skip this classifier for embedding-based detection.
+Uses HuggingFace Transformers with MPS acceleration (fallback to CPU).
+Lazy-loads model on first predict() call. Extracts penultimate-layer
+representation via forward hook on the second-to-last layer.
 
-Only the scalar safety score is available from the API response.
+Note: The HuggingFace model ID "openai/gpt-oss-safeguard" is used.
+If unavailable, check HuggingFace Hub for the correct ID.
 """
 
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import numpy as np
 
@@ -19,96 +19,128 @@ from shift_detection_monitor.types import ClassifierError, ClassifierOutput
 
 logger = logging.getLogger(__name__)
 
+# GPT-OSS-Safeguard is a sequence classification model; embedding dim TBD
+# Based on typical GPT-2 medium architecture: 1024
+_GPT_OSS_EMBEDDING_DIM = 1024
+
+
+def _get_device() -> Any:
+    """Select MPS if available, else CPU."""
+    import torch
+
+    if torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
+
 
 class GptOssSafeguardAdapter:
     """Adapter for GPT-OSS-Safeguard safety classifier.
 
-    Conforms to the ClassifierInterface protocol. This is an API-only
-    classifier — no representation vectors are available.
-
-    **Limitation**: Since GPT-OSS-Safeguard is accessed via API and does
-    not expose internal model representations, ``representation`` is always
-    ``None``. The MMD detector will skip this classifier; only the KS
-    detector (which operates on scalar scores) will be active.
-
     Parameters
     ----------
     model_path : str | None
-        API endpoint URL or model identifier.
-        Defaults to "gpt-oss-safeguard".
-    device : str
-        Ignored for API-only classifier. Accepted for interface consistency.
+        HuggingFace model ID. Defaults to "openai/gpt-oss-safeguard".
+    device : str | None
+        Device for inference. Defaults to auto-detected MPS/CPU.
     """
 
     def __init__(
         self,
         model_path: str | None = None,
-        device: str = "cpu",
+        device: str | None = None,
     ) -> None:
-        self._model_path = model_path or "gpt-oss-safeguard"
-        self._device = device  # Unused, kept for interface consistency
-        self._api_client = None
+        self._model_path = model_path or "openai/gpt-oss-safeguard"
+        self._device_str = device
+        self._model = None
+        self._tokenizer = None
+        self._device = None
+        self._penultimate_output: np.ndarray | None = None
 
-    def _init_client(self) -> None:
-        """Lazily initialize the API client.
-
-        Raises ClassifierError if the API is not reachable or
-        configuration is invalid.
-        """
-        if self._api_client is not None:
+    def _load_model(self) -> None:
+        if self._model is not None:
             return
-
         try:
-            # In a real deployment, this would initialize an HTTP client
-            # or SDK for the GPT-OSS-Safeguard API.
-            logger.info(
-                "Initializing GPT-OSS-Safeguard client for %s",
-                self._model_path,
+            import torch
+            from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+            self._device = (
+                torch.device(self._device_str) if self._device_str else _get_device()
             )
-            self._api_client = True  # Placeholder for actual client
+            logger.info("Loading GPT-OSS-Safeguard from %s on %s", self._model_path, self._device)
+            self._tokenizer = AutoTokenizer.from_pretrained(self._model_path)
+            self._model = AutoModelForSequenceClassification.from_pretrained(
+                self._model_path,
+                output_hidden_states=True,
+                num_labels=2,
+            )
+            self._model.to(self._device)
+            self._model.eval()
+
+            # Register forward hook on penultimate layer of the base model
+            # Architecture varies; try common patterns
+            base = getattr(self._model, "transformer", None) or getattr(self._model, "model", None)
+            if base is not None:
+                layers = getattr(base, "h", None) or getattr(base, "layers", None)
+                if layers is not None and len(layers) >= 2:
+                    layers[-2].register_forward_hook(self._hook)
+
+            logger.info("GPT-OSS-Safeguard loaded on %s", self._device)
+        except ImportError as e:
+            raise ClassifierError(
+                f"GPT-OSS-Safeguard requires 'torch' and 'transformers'. Error: {e}"
+            ) from e
         except Exception as e:
             raise ClassifierError(
-                f"Failed to initialize GPT-OSS-Safeguard client: {e}"
+                f"Failed to load GPT-OSS-Safeguard from '{self._model_path}': {e}"
             ) from e
+
+    def _hook(self, module: Any, input: Any, output: Any) -> None:
+        hidden = output[0] if isinstance(output, tuple) else output
+        self._penultimate_output = hidden.detach().cpu().float().numpy()
 
     @property
     def name(self) -> str:
-        """Unique classifier identifier."""
         return "gpt-oss-safeguard"
 
     @property
     def embedding_dim(self) -> int | None:
-        """Dimensionality of representation vectors.
-
-        Returns None because GPT-OSS-Safeguard is API-only and does not
-        expose internal representations.
-        """
+        """Returns None if model not loaded (API-only fallback), else actual dim."""
         return None
 
     def predict(self, text: str) -> ClassifierOutput:
-        """Run GPT-OSS-Safeguard on input text.
-
-        Returns a ClassifierOutput with:
-        - score: safety score from the API (0.0 = safe, 1.0 = unsafe)
-        - representation: None (API-only, no embeddings available)
-        - metadata: source information
-
-        Raises ClassifierError on failure.
-        """
-        self._init_client()
-
+        """Run inference on a single text."""
+        self._load_model()
         try:
-            # In a real deployment, this would call the API endpoint.
-            # For now, raise an error indicating the API is not configured.
-            raise ClassifierError(
-                "GPT-OSS-Safeguard API is not configured. "
-                "Set the API endpoint and credentials to enable inference. "
-                "This adapter requires a live API connection."
-            )
+            import torch
 
+            inputs = self._tokenizer(
+                text, return_tensors="pt", truncation=True, max_length=512, padding=True
+            ).to(self._device)
+
+            with torch.no_grad():
+                outputs = self._model(**inputs)
+
+            # Representation from hook or hidden_states fallback
+            if self._penultimate_output is not None:
+                representation = self._penultimate_output[0, 0, :].astype(np.float64)
+            elif outputs.hidden_states is not None:
+                penultimate = outputs.hidden_states[-2]
+                representation = penultimate[0, 0, :].cpu().numpy().astype(np.float64)
+            else:
+                representation = None
+
+            # Safety score from logits
+            logits = outputs.logits[0]
+            probs = torch.softmax(logits, dim=0)
+            score = float(probs[1].cpu())  # label 1 = unsafe
+
+            metadata = {"classification": "unsafe" if score > 0.5 else "safe"}
+            return ClassifierOutput(score=score, representation=representation, metadata=metadata)
         except ClassifierError:
             raise
         except Exception as e:
-            raise ClassifierError(
-                f"GPT-OSS-Safeguard inference failed: {e}"
-            ) from e
+            raise ClassifierError(f"GPT-OSS-Safeguard inference failed: {e}") from e
+
+    def predict_batch(self, texts: list[str]) -> list[ClassifierOutput]:
+        """Run inference on a batch of texts."""
+        return [self.predict(t) for t in texts]
