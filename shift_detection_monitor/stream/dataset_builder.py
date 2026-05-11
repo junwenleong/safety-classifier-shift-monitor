@@ -81,9 +81,32 @@ def _create_bedrock_client(profile_name: str = "icpo-assistant") -> Any:
 
     Requires: aws sso login --profile icpo-assistant
     """
-    import boto3
+    try:
+        import boto3
+        import botocore.exceptions
+    except ImportError as e:
+        raise RuntimeError(
+            "boto3 is required for Bedrock shift generation.\n"
+            "Install with: pip install boto3"
+        ) from e
 
     session = boto3.Session(profile_name=profile_name)
+
+    # Verify SSO credentials are valid before returning the client
+    try:
+        sts = session.client("sts", region_name="ap-southeast-1")
+        sts.get_caller_identity()
+    except (
+        botocore.exceptions.NoCredentialsError,
+        botocore.exceptions.SSOTokenLoadError,
+        botocore.exceptions.UnauthorizedSSOTokenError,
+    ) as e:
+        raise RuntimeError(
+            f"AWS SSO credentials expired or missing for profile '{profile_name}'.\n"
+            f"Run:  aws sso login --profile {profile_name}\n"
+            f"Then retry. (Error: {e})"
+        ) from e
+
     return session.client("bedrock-runtime", region_name="ap-southeast-1")
 
 
