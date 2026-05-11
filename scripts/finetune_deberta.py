@@ -8,6 +8,8 @@ Output: checkpoints/deberta-wildguardmix/
 
 from __future__ import annotations
 
+import argparse
+
 import numpy as np
 import torch
 from datasets import load_dataset
@@ -41,11 +43,13 @@ def compute_metrics(eval_pred):
     }
 
 
-def main():
+def main(device_override: str | None = None, max_steps: int = -1):
     model_name = "microsoft/deberta-v3-large"
     output_dir = "checkpoints/deberta-wildguardmix"
-    device = get_device()
+    device = device_override or get_device()
     print(f"Device: {device}")
+    if max_steps > 0:
+        print(f"Max steps: {max_steps} (validation run)")
 
     # Load dataset
     print("Loading WildGuardMix...")
@@ -120,7 +124,8 @@ def main():
     # Training arguments — MPS-safe settings
     training_args = TrainingArguments(
         output_dir=output_dir,
-        num_train_epochs=3,
+        num_train_epochs=3 if max_steps <= 0 else 100,
+        max_steps=max_steps,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=16,
         learning_rate=1e-5,
@@ -166,4 +171,13 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Fine-tune DeBERTa-v3-large on WildGuardMix (MPS-safe).",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument("--device", choices=["mps", "cpu"], default=None,
+                        help="Force device (default: auto-detect MPS/CPU)")
+    parser.add_argument("--max-steps", type=int, default=-1,
+                        help="Max training steps (-1 = full 3 epochs). Use e.g. 50 for validation runs.")
+    args = parser.parse_args()
+    main(device_override=args.device, max_steps=args.max_steps)
