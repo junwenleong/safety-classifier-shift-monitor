@@ -107,18 +107,20 @@ def main():
         )
 
         neg_clean = neg["alarm_step"] is None
+        mean_pre = pos.get("mean_score_pre")
+        mean_post = pos.get("mean_score_post")
         results.append({
             "condition": condition,
             "neg_clean": neg_clean,
             "alarm": pos["alarm_step"] is not None,
             "latency": pos["detection_latency"],
-            "mean_pre": pos["mean_score_pre"],
-            "mean_post": pos["mean_score_post"],
+            "mean_pre": mean_pre,
+            "mean_post": mean_post,
         })
         status = f"alarm={pos['alarm_step']}, latency={pos['detection_latency']}, neg_clean={neg_clean}"
         print(f"  {status}")
-        if pos["mean_pre"] is not None:
-            print(f"  scores: pre={pos['mean_pre']:.4f} post={pos['mean_post']:.4f}")
+        if mean_pre is not None:
+            print(f"  scores: pre={mean_pre:.4f} post={mean_post:.4f}")
         print()
 
     # Summary table
@@ -126,10 +128,12 @@ def main():
     print(f"{'Condition':<28} {'Neg Clean':<10} {'Alarm':<7} {'Latency':<10} {'Pre Score':<10} {'Post Score'}")
     print("-" * 80)
     for r in results:
+        pre = f"{r['mean_pre']:.4f}" if r['mean_pre'] is not None else "-"
+        post = f"{r['mean_post']:.4f}" if r['mean_post'] is not None else "-"
         print(f"{r['condition']:<28} {'✓' if r['neg_clean'] else '✗':<10} "
               f"{'✓' if r['alarm'] else '✗':<7} "
               f"{str(r['latency'] or '-'):<10} "
-              f"{r['mean_pre']:.4f}     {r['mean_post']:.4f}" if r['mean_pre'] else "")
+              f"{pre:<10} {post}")
     print("=" * 80)
     print(f"Wall-clock time: {time.time() - wall_start:.1f}s")
 
