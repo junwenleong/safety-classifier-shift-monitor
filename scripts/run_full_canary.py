@@ -61,15 +61,16 @@ def main():
         print("DEBERTA_CHECKPOINT_PATH not set — using mock classifier")
         classifier = CanaryClassifier(dim=768)
 
-    # Load reference data
-    print("Loading WildGuardMix reference...")
+    # Load reference data — only unharmful examples for stable unimodal reference distribution
+    print("Loading WildGuardMix reference (unharmful only)...")
     from datasets import load_dataset
     ds = load_dataset("allenai/wildguardmix", "wildguardtrain", split="train")
+    ds = ds.filter(lambda x: x["prompt_harm_label"] == "unharmful")
     ds = ds.shuffle(seed=SEED)
     prompts = ds["prompt"]
-    reference = [{"text": prompts[i], "source_dataset": "wildguardmix"} for i in range(N_REFERENCE)]
-    # Separate slice for negative controls
-    neg_reference = [{"text": prompts[N_REFERENCE + i], "source_dataset": "wildguardmix"} for i in range(N_REFERENCE + 300)]
+    reference = [{"text": prompts[i], "source_dataset": "wildguardmix-unharmful"} for i in range(N_REFERENCE)]
+    neg_reference = [{"text": prompts[N_REFERENCE + i], "source_dataset": "wildguardmix-unharmful"} for i in range(N_REFERENCE + 300)]
+    print(f"  Filtered to {len(ds)} unharmful examples")
 
     print(f"Reference: {N_REFERENCE}, Window: {WINDOW_SIZE}, Onset: {SHIFT_ONSET}, Offset: +{SYNTHETIC_SHIFT}")
     print()
