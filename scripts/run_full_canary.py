@@ -76,12 +76,14 @@ def main():
 
     # Run each condition
     results = []
-    for condition, corpus_path in SHIFT_CORPORA.items():
+    for ci, (condition, corpus_path) in enumerate(SHIFT_CORPORA.items()):
         print(f"--- {condition} ---")
         shifted = load_shifted(corpus_path)
         if not shifted:
-            # For adversarial-suffix: use reference examples as shifted (offset does the work)
             shifted = [{"text": prompts[N_REFERENCE + i], "source_dataset": "synthetic"} for i in range(300)]
+
+        # Use per-condition seed for independent reference windows
+        cond_seed = SEED + ci * 100
 
         # Positive run
         pos = run_detection(
@@ -90,18 +92,18 @@ def main():
             shifted_examples=shifted,
             shift_onset=SHIFT_ONSET,
             window_size=WINDOW_SIZE,
-            seed=SEED,
+            seed=cond_seed,
             score_offset=SYNTHETIC_SHIFT,
         )
 
-        # Negative control
+        # Negative control (different reference slice, different seed)
         neg = run_detection(
             classifier=classifier,
             reference_examples=neg_reference,
             shifted_examples=None,
             shift_onset=0,
             window_size=WINDOW_SIZE,
-            seed=SEED + 1,
+            seed=cond_seed + 1,
         )
 
         neg_clean = neg["alarm_step"] is None
@@ -115,6 +117,8 @@ def main():
         })
         status = f"alarm={pos['alarm_step']}, latency={pos['detection_latency']}, neg_clean={neg_clean}"
         print(f"  {status}")
+        if pos["mean_pre"] is not None:
+            print(f"  scores: pre={pos['mean_pre']:.4f} post={pos['mean_post']:.4f}")
         print()
 
     # Summary table
