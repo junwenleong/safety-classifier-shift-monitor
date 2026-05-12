@@ -124,6 +124,8 @@ def run_detection(
 
     # Phase 3: Continue streaming through detectors
     debug_steps = {300, 350, 400, 450}
+    pre_shift_scores = []
+    post_shift_scores = []
     for record in stream_iter:
         step += 1
 
@@ -131,6 +133,12 @@ def run_detection(
         if score_offset and step > shift_onset and shifted_examples:
             from dataclasses import replace
             record = replace(record, score=min(record.score + score_offset, 1.0))
+
+        # Track scores for diagnostics
+        if step <= shift_onset:
+            pre_shift_scores.append(record.score)
+        else:
+            post_shift_scores.append(record.score)
 
         mmd_val = mmd_detector.update(record)
         if mmd_val is not None:
@@ -171,6 +179,8 @@ def run_detection(
         "total_steps": step,
         "ks_reference_value": ks_reference_value,
         "mmd_reference_value": frozen_stats.mmd_reference_value,
+        "mean_score_pre": float(np.mean(pre_shift_scores)) if pre_shift_scores else None,
+        "mean_score_post": float(np.mean(post_shift_scores)) if post_shift_scores else None,
     }
 
 
@@ -215,12 +225,13 @@ def main(
     if paraphrase_path.exists():
         import json
         with open(paraphrase_path) as f:
-            shifted = [json.loads(line) for line in f if line.strip()]
-        if len(shifted) < n_shifted:
-            n_shifted = len(shifted)
+            raw_shifted = [json.loads(line) for line in f if line.strip()]
+        # Cycle to fill n_shifted slots if fewer available
+        if len(raw_shifted) >= n_shifted:
+            shifted = raw_shifted[:n_shifted]
         else:
-            shifted = shifted[:n_shifted]
-        print(f"  Loaded {n_shifted} paraphrased examples from {paraphrase_path}")
+            shifted = (raw_shifted * ((n_shifted // len(raw_shifted)) + 1))[:n_shifted]
+        print(f"  Loaded {len(raw_shifted)} paraphrased examples, cycled to {n_shifted}")
     else:
         shifted = [
             {"text": "Rephrase: " + prompts[n_reference + i], "source_dataset": "placeholder"}
@@ -258,6 +269,7 @@ def main(
         print("  No alarm fired (detection missed)")
     print(f"  KS reference value: {pos['ks_reference_value']:.6f}")
     print(f"  MMD reference value: {pos['mmd_reference_value']:.6f}")
+    print(f"  Mean score pre-shift: {pos['mean_score_pre']:.4f}, post-shift: {pos['mean_score_post']:.4f}")
 
     # --- Negative control ---
     print("\n--- Negative Control (no shift) ---")
@@ -302,13 +314,13 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
-    parser.add_argument("--window-size", type=int, default=200, help="Reference window / detector window size")
+    parser.add_argument("--window-size", type=int, default=100, help="Reference window / detector window size")
     parser.add_argument("--shift-onset", type=int, default=500, help="Time step where shift begins")
     parser.add_argument("--n-reference", type=int, default=500, help="Number of reference examples")
     parser.add_argument("--n-shifted", type=int, default=300, help="Number of shifted examples")
     parser.add_argument("--dim", type=int, default=1024, help="Embedding dimensionality for mock classifier")
-    parser.add_argument("--synthetic-shift", type=float, default=0.0,
-                        help="Add fixed score offset post-onset to simulate adversarial shift (e.g. 0.3)")
+    parser.add_argument("--synthetic-shift", type=float, default=0.5,
+                        help="Add fixed score offset post-onset to simulate adversarial shift")
     args = parser.parse_args()
     main(
         seed=args.seed,
