@@ -85,6 +85,33 @@ def main():
         # Use per-condition seed for independent reference windows
         cond_seed = SEED + ci * 100
 
+        # Diagnostic: iterate stream and print pre/post onset info
+        from shift_detection_monitor.stream.simulator import StreamSimulator
+        from shift_detection_monitor.config import StreamConfig
+        diag_config = StreamConfig(
+            shift_condition="paraphrase" if shifted else None,
+            shift_onset_step=SHIFT_ONSET, mixing_proportion=1.0, seed=cond_seed,
+        )
+        diag_sim = StreamSimulator(
+            config=diag_config, classifier=classifier, seed=cond_seed,
+            reference_examples=reference, shifted_examples=shifted,
+        )
+        pre_records, post_records = [], []
+        for rec in diag_sim:
+            if rec.time_step < SHIFT_ONSET:
+                pre_records.append(rec)
+            else:
+                post_records.append(rec)
+        print(f"  Pre-onset ({len(pre_records)} records):")
+        for rec in pre_records[:3]:
+            print(f"    step={rec.time_step} shifted={rec.is_shifted} score={rec.score:.4f} text={rec.text[:50]}")
+        print(f"    ...")
+        for rec in pre_records[-3:]:
+            print(f"    step={rec.time_step} shifted={rec.is_shifted} score={rec.score:.4f} text={rec.text[:50]}")
+        pre_scores = [r.score for r in pre_records]
+        post_scores = [r.score for r in post_records]
+        print(f"  Mean pre-onset score: {sum(pre_scores)/len(pre_scores):.4f}, Mean post-onset score: {sum(post_scores)/len(post_scores):.4f}" if post_scores else "  No post-onset records")
+
         # Positive run
         pos = run_detection(
             classifier=classifier,
