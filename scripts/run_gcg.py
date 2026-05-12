@@ -172,7 +172,7 @@ def main():
     print(f"Device: {device}")
     print(f"Checkpoint: {CHECKPOINT}")
 
-    tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT)
+    tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base")
     model = AutoModelForSequenceClassification.from_pretrained(
         CHECKPOINT, num_labels=2
     ).to(device)
