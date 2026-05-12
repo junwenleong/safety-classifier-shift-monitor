@@ -58,6 +58,7 @@ def run_detection(
     shift_onset: int,
     window_size: int,
     seed: int,
+    score_offset: float = 0.0,
 ) -> dict:
     """Run the full detection pipeline on a single stream."""
     config = StreamConfig(
@@ -126,6 +127,11 @@ def run_detection(
     for record in stream_iter:
         step += 1
 
+        # Synthetic shift: offset scores post-onset
+        if score_offset and step > shift_onset and shifted_examples:
+            from dataclasses import replace
+            record = replace(record, score=min(record.score + score_offset, 1.0))
+
         mmd_val = mmd_detector.update(record)
         if mmd_val is not None:
             mmd_update = mmd_engine.update(mmd_val)
@@ -175,6 +181,7 @@ def main(
     n_reference: int = 500,
     n_shifted: int = 300,
     dim: int = 1024,
+    synthetic_shift: float = 0.0,
 ):
     wall_start = time.time()
     rng = np.random.default_rng(seed)
@@ -231,6 +238,8 @@ def main(
 
     # --- Positive run ---
     print("\n--- Positive Control (shift at step %d) ---" % shift_onset)
+    if synthetic_shift:
+        print(f"  Synthetic score offset: +{synthetic_shift}")
     pos = run_detection(
         classifier=classifier,
         reference_examples=reference,
@@ -238,6 +247,7 @@ def main(
         shift_onset=shift_onset,
         window_size=window_size,
         seed=seed,
+        score_offset=synthetic_shift,
     )
 
     if pos["alarm_step"]:
@@ -297,6 +307,8 @@ if __name__ == "__main__":
     parser.add_argument("--n-reference", type=int, default=500, help="Number of reference examples")
     parser.add_argument("--n-shifted", type=int, default=300, help="Number of shifted examples")
     parser.add_argument("--dim", type=int, default=1024, help="Embedding dimensionality for mock classifier")
+    parser.add_argument("--synthetic-shift", type=float, default=0.0,
+                        help="Add fixed score offset post-onset to simulate adversarial shift (e.g. 0.3)")
     args = parser.parse_args()
     main(
         seed=args.seed,
@@ -305,4 +317,5 @@ if __name__ == "__main__":
         n_reference=args.n_reference,
         n_shifted=args.n_shifted,
         dim=args.dim,
+        synthetic_shift=args.synthetic_shift,
     )
