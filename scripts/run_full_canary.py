@@ -200,6 +200,13 @@ def main():
             classifier, neg_pool[:N_REFERENCE], None, 0, WINDOW_SIZE, cond_seed + 1, threshold
         )
 
+        # Debug negative control failure
+        if neg["alarm_step"] is not None:
+            print(f"  [NEG CTRL DEBUG] alarm at step {neg['alarm_step']}, seed={cond_seed+1}")
+            # Re-run to get max KS
+            max_ks, ks_vals = run_stream_ks(classifier, neg_pool[:N_REFERENCE], WINDOW_SIZE, seed=cond_seed + 1)
+            print(f"  [NEG CTRL DEBUG] max_ks={max_ks:.4f} vs threshold={threshold:.4f}")
+
         neg_clean = neg["alarm_step"] is None
         results.append({
             "condition": condition,
