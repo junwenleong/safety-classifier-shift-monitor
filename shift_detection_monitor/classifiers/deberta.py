@@ -68,7 +68,7 @@ class DeBERTaAdapter:
                 torch.device(self._device_str) if self._device_str else _get_device()
             )
             logger.info("Loading DeBERTa from %s on %s", self._model_path, self._device)
-            self._tokenizer = AutoTokenizer.from_pretrained(self._model_path)
+            self._tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base")
             self._model = AutoModelForSequenceClassification.from_pretrained(
                 self._model_path,
                 output_hidden_states=True,
