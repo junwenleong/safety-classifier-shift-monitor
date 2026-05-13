@@ -61,7 +61,7 @@ class FactorialConfig(BaseModel):
         default_factory=lambda: [
             "llama-guard-3-8b",
             "shieldgemma-9b",
-            "gpt-oss-safeguard",
+            "roberta-hatespeech",
             "deberta-v3-large",
         ]
     )

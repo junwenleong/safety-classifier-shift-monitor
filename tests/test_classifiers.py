@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 
 from shift_detection_monitor.classifiers.deberta import DeBERTaAdapter
-from shift_detection_monitor.classifiers.gpt_oss_safeguard import GptOssSafeguardAdapter
+from shift_detection_monitor.classifiers.gpt_oss_safeguard import RoBERTaHateSpeechAdapter
 from shift_detection_monitor.classifiers.interface import ClassifierInterface
 from shift_detection_monitor.classifiers.llama_guard import LlamaGuard3Adapter
 from shift_detection_monitor.classifiers.shieldgemma import ShieldGemmaAdapter
@@ -97,7 +97,7 @@ class TestAdapterInstantiation:
         assert adapter is not None
 
     def test_gpt_oss_safeguard_instantiates(self) -> None:
-        adapter = GptOssSafeguardAdapter()
+        adapter = RoBERTaHateSpeechAdapter()
         assert adapter is not None
 
     def test_deberta_instantiates(self) -> None:
@@ -114,7 +114,7 @@ class TestProtocolConformance:
 
     @pytest.mark.parametrize(
         "adapter_cls",
-        [LlamaGuard3Adapter, ShieldGemmaAdapter, GptOssSafeguardAdapter, DeBERTaAdapter],
+        [LlamaGuard3Adapter, ShieldGemmaAdapter, RoBERTaHateSpeechAdapter, DeBERTaAdapter],
     )
     def test_has_name_property(self, adapter_cls: type) -> None:
         adapter = adapter_cls()
@@ -123,7 +123,7 @@ class TestProtocolConformance:
 
     @pytest.mark.parametrize(
         "adapter_cls",
-        [LlamaGuard3Adapter, ShieldGemmaAdapter, GptOssSafeguardAdapter, DeBERTaAdapter],
+        [LlamaGuard3Adapter, ShieldGemmaAdapter, RoBERTaHateSpeechAdapter, DeBERTaAdapter],
     )
     def test_has_embedding_dim_property(self, adapter_cls: type) -> None:
         adapter = adapter_cls()
@@ -132,7 +132,7 @@ class TestProtocolConformance:
 
     @pytest.mark.parametrize(
         "adapter_cls",
-        [LlamaGuard3Adapter, ShieldGemmaAdapter, GptOssSafeguardAdapter, DeBERTaAdapter],
+        [LlamaGuard3Adapter, ShieldGemmaAdapter, RoBERTaHateSpeechAdapter, DeBERTaAdapter],
     )
     def test_has_predict_method(self, adapter_cls: type) -> None:
         adapter = adapter_cls()
@@ -151,7 +151,7 @@ class TestProtocolConformance:
         [
             (LlamaGuard3Adapter, "llama-guard-3-8b"),
             (ShieldGemmaAdapter, "shieldgemma-9b"),
-            (GptOssSafeguardAdapter, "gpt-oss-safeguard"),
+            (RoBERTaHateSpeechAdapter, "roberta-hatespeech"),
             (DeBERTaAdapter, "deberta-v3-large"),
         ],
     )
@@ -164,7 +164,7 @@ class TestProtocolConformance:
         [
             (LlamaGuard3Adapter, 4096),
             (ShieldGemmaAdapter, 3584),
-            (GptOssSafeguardAdapter, None),
+            (RoBERTaHateSpeechAdapter, 768),
             (DeBERTaAdapter, 1024),
         ],
     )
@@ -259,8 +259,8 @@ class TestMockClassifierRepresentations:
 
     @pytest.mark.parametrize("text", _SAMPLE_INPUTS)
     def test_api_only_returns_none_representation(self, text: str) -> None:
-        """API-only classifier (gpt-oss-safeguard) returns representation=None."""
-        mock = MockClassifier(classifier_name="gpt-oss-safeguard", dim=None)
+        """Classifier with dim=None returns representation=None."""
+        mock = MockClassifier(classifier_name="no-embedding-classifier", dim=None)
         output = mock.predict(text)
 
         assert output.representation is None
