@@ -45,21 +45,46 @@ def load_harmful_prompts(n: int) -> list[str]:
     return [harmful[i] for i in indices]
 
 
-def classify(model, tokenizer, prompt: str, device: torch.device) -> tuple[str, float, float]:
-    """Classify a prompt and return (label, safe_prob, unsafe_prob)."""
+def classify(model, tokenizer, prompt: str, device: torch.device, debug: bool = False) -> tuple[str, float, float]:
+    """Classify a prompt and return (label, safe_prob, unsafe_prob).
+
+    Llama Guard 3 generates 'safe' or 'unsafe' as the first output token.
+    We score by looking at the logits at the last input position (next-token prediction).
+    """
     messages = [{"role": "user", "content": prompt}]
     input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to(device)
+
+    # Generate to get the label
     with torch.no_grad():
         output = model.generate(input_ids=input_ids, max_new_tokens=5, pad_token_id=0)
     generated = tokenizer.decode(output[0][input_ids.shape[-1]:], skip_special_tokens=True).strip()
+    label = "unsafe" if "unsafe" in generated.lower() else "safe"
+
+    # Get logits at the position where the model starts generating
     with torch.no_grad():
         logits = model(input_ids).logits[0, -1, :]
+
+    if debug:
+        # Print top-5 tokens by probability
+        top5 = torch.topk(logits, 5)
+        print("  [DEBUG] Top-5 next-token predictions:")
+        for idx, (val, tok_id) in enumerate(zip(top5.values, top5.indices)):
+            tok = tokenizer.decode([tok_id.item()])
+            print(f"    {idx+1}. '{tok}' (id={tok_id.item()}) logit={val.item():.4f}")
+        print(f"  [DEBUG] Generated text: '{generated}'")
+
+    # Score: probability of 'unsafe' vs 'safe' token
     safe_token_id = tokenizer.encode("safe", add_special_tokens=False)[0]
     unsafe_token_id = tokenizer.encode("unsafe", add_special_tokens=False)[0]
+
+    if debug:
+        print(f"  [DEBUG] safe_token_id={safe_token_id} ('{tokenizer.decode([safe_token_id])}')")
+        print(f"  [DEBUG] unsafe_token_id={unsafe_token_id} ('{tokenizer.decode([unsafe_token_id])}')")
+        print(f"  [DEBUG] logit[safe]={logits[safe_token_id].item():.4f}, logit[unsafe]={logits[unsafe_token_id].item():.4f}")
+
     probs = torch.softmax(logits[[safe_token_id, unsafe_token_id]], dim=0)
     safe_prob = probs[0].item()
     unsafe_prob = probs[1].item()
-    label = "safe" if generated.startswith("safe") else "unsafe"
     return label, safe_prob, unsafe_prob
 
 
@@ -128,7 +153,7 @@ def main():
     # Filter: only keep prompts where Llama Guard gives safe_prob < 0.3
     prompts = []
     for i, p in enumerate(candidates):
-        _, safe_prob, _ = classify(model, tokenizer, p, device)
+        _, safe_prob, _ = classify(model, tokenizer, p, device, debug=(i == 0))
         if safe_prob < 0.3:
             prompts.append(p)
             if len(prompts) >= n_prompts:
