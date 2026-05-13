@@ -30,9 +30,9 @@ def get_classifier(name: str):
     elif name == "llama-guard":
         from shift_detection_monitor.classifiers.llama_guard import LlamaGuard3Adapter
         return LlamaGuard3Adapter()
-    elif name == "gpt-oss-safeguard":
-        from shift_detection_monitor.classifiers.gpt_oss_safeguard import GptOssSafeguardAdapter
-        return GptOssSafeguardAdapter()
+    elif name == "gpt-oss-safeguard" or name == "roberta-hatespeech":
+        from shift_detection_monitor.classifiers.gpt_oss_safeguard import RoBERTaHateSpeechAdapter
+        return RoBERTaHateSpeechAdapter()
     else:
         print(f"Unknown classifier: {name}")
         sys.exit(1)
@@ -41,7 +41,7 @@ def get_classifier(name: str):
 def main():
     parser = argparse.ArgumentParser(description="Validate classifier adapter")
     parser.add_argument("--classifier", required=True,
-                        choices=["deberta", "shieldgemma", "llama-guard", "gpt-oss-safeguard"])
+                        choices=["deberta", "shieldgemma", "llama-guard", "roberta-hatespeech"])
     args = parser.parse_args()
 
     print(f"Classifier: {args.classifier}")
