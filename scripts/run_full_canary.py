@@ -138,6 +138,13 @@ def run_detection_with_threshold(classifier, reference, shifted, shift_onset, wi
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Full canary with empirical FAR calibration")
+    parser.add_argument("--no-synthetic-shift", action="store_true",
+                        help="Run without synthetic offset (real shift detection only)")
+    args = parser.parse_args()
+    score_offset = 0.0 if args.no_synthetic_shift else SYNTHETIC_SHIFT
+
     wall_start = time.time()
 
     checkpoint = os.environ.get("DEBERTA_CHECKPOINT_PATH")
@@ -192,7 +199,7 @@ def main():
 
         # Positive run with synthetic offset
         pos = run_detection_with_threshold(
-            classifier, reference, shifted, SHIFT_ONSET, WINDOW_SIZE, cond_seed, threshold, SYNTHETIC_SHIFT
+            classifier, reference, shifted, SHIFT_ONSET, WINDOW_SIZE, cond_seed, threshold, score_offset
         )
 
         # Negative control
