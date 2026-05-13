@@ -30,7 +30,7 @@ SHIFT_CORPORA = {
     "code-switch": Path("data/shifted/code-switch/output.jsonl"),
     "compositional-long-context": Path("data/shifted/compositional/output.jsonl"),
     "temporal": Path("data/shifted/temporal/output.jsonl"),
-    "adversarial-suffix": None,
+    "adversarial-suffix": Path("data/shifted/adversarial_suffix/deberta_suffixes.jsonl"),
 }
 
 WINDOW_SIZE = 100
@@ -48,6 +48,12 @@ def load_shifted(path: Path | None, n: int = 300) -> list[dict]:
         raw = [json.loads(line) for line in f if line.strip()]
     if not raw:
         return []
+    # Adversarial suffix corpus uses 'combined' (original + suffix) as the shifted text
+    for r in raw:
+        if "combined" in r and "text" not in r:
+            r["text"] = r["combined"]
+        elif "shifted" in r and "text" not in r:
+            r["text"] = r["shifted"]
     if len(raw) >= n:
         return raw[:n]
     return (raw * ((n // len(raw)) + 1))[:n]
