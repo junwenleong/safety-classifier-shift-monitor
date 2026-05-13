@@ -54,6 +54,9 @@ def load_shifted(path: Path | None, n: int = 300) -> list[dict]:
             r["text"] = r["combined"]
         elif "shifted" in r and "text" not in r:
             r["text"] = r["shifted"]
+        # Truncate very long texts to keep inference fast
+        if len(r.get("text", "")) > 1000:
+            r["text"] = r["text"][:1000]
     if len(raw) >= n:
         return raw[:n]
     return (raw * ((n // len(raw)) + 1))[:n]
@@ -188,8 +191,8 @@ def main():
         if (run_i + 1) % 10 == 0:
             print(f"  {run_i + 1}/{N_CALIBRATION_RUNS} done")
 
-    threshold = float(np.percentile(max_ks_values, 95))
-    print(f"  Calibrated threshold (95th pct of max KS): {threshold:.4f}")
+    threshold = float(np.percentile(max_ks_values, 97))
+    print(f"  Calibrated threshold (97th pct of max KS): {threshold:.4f}")
     print(f"  Max KS range: [{min(max_ks_values):.4f}, {max(max_ks_values):.4f}]")
     print()
 
