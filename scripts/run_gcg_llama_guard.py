@@ -147,7 +147,7 @@ def main():
 
     # Load candidate harmful prompts (more than needed, then filter)
     print("Loading harmful prompts from WildGuardMix...")
-    candidates = load_harmful_prompts(min(n_prompts * 5, 250))
+    candidates = load_harmful_prompts(500)
     print(f"Loaded {len(candidates)} candidates, filtering to those Llama Guard classifies as unsafe...")
 
     # Filter: only keep prompts where Llama Guard generates "unsafe"
