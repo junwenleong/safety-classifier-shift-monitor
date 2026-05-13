@@ -151,8 +151,11 @@ def main():
     parser = argparse.ArgumentParser(description="Full canary with empirical FAR calibration")
     parser.add_argument("--no-synthetic-shift", action="store_true",
                         help="Run without synthetic offset (real shift detection only)")
+    parser.add_argument("--calibration-percentile", type=float, default=97,
+                        help="Percentile for FAR calibration threshold")
     args = parser.parse_args()
     score_offset = 0.0 if args.no_synthetic_shift else SYNTHETIC_SHIFT
+    cal_pct = args.calibration_percentile
 
     wall_start = time.time()
 
@@ -191,8 +194,8 @@ def main():
         if (run_i + 1) % 10 == 0:
             print(f"  {run_i + 1}/{N_CALIBRATION_RUNS} done")
 
-    threshold = float(np.percentile(max_ks_values, 97))
-    print(f"  Calibrated threshold (97th pct of max KS): {threshold:.4f}")
+    threshold = float(np.percentile(max_ks_values, cal_pct))
+    print(f"  Calibrated threshold ({cal_pct}th pct of max KS): {threshold:.4f}")
     print(f"  Max KS range: [{min(max_ks_values):.4f}, {max(max_ks_values):.4f}]")
     print()
 
