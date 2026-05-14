@@ -153,21 +153,32 @@ def main():
                         help="Run without synthetic offset (real shift detection only)")
     parser.add_argument("--calibration-percentile", type=float, default=97,
                         help="Percentile for FAR calibration threshold")
+    parser.add_argument("--classifier", default="deberta",
+                        choices=["deberta", "text-moderation", "shieldgemma", "llama-guard"],
+                        help="Classifier to use")
     args = parser.parse_args()
     score_offset = 0.0 if args.no_synthetic_shift else SYNTHETIC_SHIFT
     cal_pct = args.calibration_percentile
 
     wall_start = time.time()
 
-    checkpoint = os.environ.get("DEBERTA_CHECKPOINT_PATH")
-    if checkpoint:
+    # Instantiate classifier
+    if args.classifier == "deberta":
         from shift_detection_monitor.classifiers.deberta import DeBERTaAdapter
-        print(f"Classifier: DeBERTaAdapter ({checkpoint})")
         classifier = DeBERTaAdapter()
-    else:
-        from scripts.canary_run import CanaryClassifier
-        print("DEBERTA_CHECKPOINT_PATH not set — using mock classifier")
-        classifier = CanaryClassifier(dim=768)
+        print(f"Classifier: DeBERTaAdapter (DEBERTA_CHECKPOINT_PATH={os.environ.get('DEBERTA_CHECKPOINT_PATH', 'not set')})")
+    elif args.classifier == "text-moderation":
+        from shift_detection_monitor.classifiers.gpt_oss_safeguard import TextModerationAdapter
+        classifier = TextModerationAdapter()
+        print(f"Classifier: TextModerationAdapter (TEXT_MODERATION_CHECKPOINT_PATH={os.environ.get('TEXT_MODERATION_CHECKPOINT_PATH', 'not set')})")
+    elif args.classifier == "shieldgemma":
+        from shift_detection_monitor.classifiers.shieldgemma import ShieldGemmaAdapter
+        classifier = ShieldGemmaAdapter()
+        print("Classifier: ShieldGemmaAdapter")
+    elif args.classifier == "llama-guard":
+        from shift_detection_monitor.classifiers.llama_guard import LlamaGuard3Adapter
+        classifier = LlamaGuard3Adapter()
+        print("Classifier: LlamaGuard3Adapter")
 
     # Load reference data — unharmful only
     print("Loading WildGuardMix reference (unharmful only)...")
