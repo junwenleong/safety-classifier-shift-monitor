@@ -8,6 +8,7 @@ Score = 1 - P(OK), i.e. probability of any unsafe category.
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any
 
 import numpy as np
@@ -41,7 +42,8 @@ class TextModerationAdapter:
     """
 
     def __init__(self, model_path: str | None = None, device: str | None = None) -> None:
-        self._model_path = model_path or "KoalaAI/Text-Moderation"
+        checkpoint = os.environ.get("TEXT_MODERATION_CHECKPOINT_PATH")
+        self._model_path = checkpoint or model_path or "KoalaAI/Text-Moderation"
         self._device_str = device
         self._model = None
         self._tokenizer = None
@@ -60,7 +62,7 @@ class TextModerationAdapter:
                 torch.device(self._device_str) if self._device_str else _get_device()
             )
             logger.info("Loading Text-Moderation from %s on %s", self._model_path, self._device)
-            self._tokenizer = AutoTokenizer.from_pretrained(self._model_path)
+            self._tokenizer = AutoTokenizer.from_pretrained("KoalaAI/Text-Moderation")
             self._model = AutoModelForSequenceClassification.from_pretrained(
                 self._model_path, output_hidden_states=True,
             )
@@ -109,11 +111,15 @@ class TextModerationAdapter:
 
             representation = self._penultimate_output[0, 0, :].astype(np.float64)
 
-            # Score = 1 - P(OK) = probability of any unsafe category
             logits = outputs.logits[0]
             probs = torch.softmax(logits, dim=0)
-            ok_prob = float(probs[self._ok_label_id].cpu())
-            score = 1.0 - ok_prob
+
+            # Binary fine-tuned model: P(unsafe) = P(label=1)
+            # Base 9-class model: P(unsafe) = 1 - P(OK)
+            if self._model.config.num_labels == 2:
+                score = float(probs[1].cpu())
+            else:
+                score = 1.0 - float(probs[self._ok_label_id].cpu())
 
             metadata = {"classification": "unsafe" if score > 0.5 else "safe"}
             return ClassifierOutput(score=score, representation=representation, metadata=metadata)
