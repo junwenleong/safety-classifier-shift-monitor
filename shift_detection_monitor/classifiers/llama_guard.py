@@ -108,13 +108,20 @@ class LlamaGuard3Adapter:
                 chat, return_tensors="pt"
             ).to(self._device)
 
+            # Generate one token (the newline) to reach the classification position
             with torch.no_grad():
-                outputs = self._model(input_ids)
+                gen_output = self._model.generate(
+                    input_ids, max_new_tokens=1, pad_token_id=0,
+                    output_hidden_states=False, return_dict_in_generate=False,
+                )
+            # Feed input + newline to get logits at classification position
+            with torch.no_grad():
+                outputs = self._model(gen_output)
 
             # Representation from hook: last token of penultimate layer
             representation = self._penultimate_output[0, -1, :].astype(np.float64)
 
-            # Safety score from logits
+            # Safety score: logits at the last position (after newline)
             logits = outputs.logits[0, -1, :]
             safe_id = self._tokenizer.encode("safe", add_special_tokens=False)[0]
             unsafe_id = self._tokenizer.encode("unsafe", add_special_tokens=False)[0]
