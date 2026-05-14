@@ -93,7 +93,7 @@ def main(device_override: str | None = None, max_steps: int = -1):
 
     # Load with num_labels=2 (binary), ignoring pretrained 9-class head
     model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, num_labels=2, ignore_mismatched_sizes=True, dtype=torch.float32
+        model_name, num_labels=2, ignore_mismatched_sizes=True
     )
 
     # Sanity check on CPU
