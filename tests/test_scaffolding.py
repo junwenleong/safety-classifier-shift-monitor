@@ -179,8 +179,8 @@ class TestConfigModels:
         assert len(cfg.factorial.classifiers) == 4
         assert "llama-guard-3-8b" in cfg.factorial.classifiers
         assert "shieldgemma-9b" in cfg.factorial.classifiers
-        assert "roberta-hatespeech" in cfg.factorial.classifiers
-        assert "deberta-v3-large" in cfg.factorial.classifiers
+        assert "text-moderation" in cfg.factorial.classifiers
+        assert "deberta-v3-base" in cfg.factorial.classifiers
 
     def test_invalid_alpha_too_high(self) -> None:
         from pydantic import ValidationError

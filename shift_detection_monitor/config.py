@@ -61,8 +61,8 @@ class FactorialConfig(BaseModel):
         default_factory=lambda: [
             "llama-guard-3-8b",
             "shieldgemma-9b",
-            "roberta-hatespeech",
-            "deberta-v3-large",
+            "text-moderation",
+            "deberta-v3-base",
         ]
     )
     shift_conditions: list[str] = Field(
