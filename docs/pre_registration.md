@@ -10,7 +10,7 @@ This document pre-registers the full factorial evaluation design for the Shift D
 
 | Factor | Levels | Values |
 |--------|--------|--------|
-| Classifiers | 4 | llama-guard-3-8b, shieldgemma-9b, roberta-hatespeech, deberta-v3-base |
+| Classifiers | 4 | llama-guard-3-8b, shieldgemma-9b, text-moderation, deberta-v3-base |
 | Shift Conditions | 5 | paraphrase, code-switch, adversarial-suffix, compositional-long-context, temporal |
 | Ground-Truth Regimes | 3 | regime_a (synthetic onset), regime_b (temporal split), regime_c (adversarial success) |
 | Window Sizes | 3 | 100, 200, 500 |
