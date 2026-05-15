@@ -141,6 +141,11 @@ def main():
                 "pre_score": pos.get("mean_pre"),
                 "post_score": pos.get("mean_post"),
                 "threshold": threshold,
+                "is_valid_detection": (
+                    pos["detection_latency"] is not None
+                    and pos["detection_latency"] >= 0
+                    and neg["alarm_step"] is None
+                ),
             }
 
             with open(OUTPUT, "a") as f:
@@ -167,7 +172,7 @@ def main():
         for shift in SHIFT_CONDITIONS:
             lats = [r["detection_latency"] for r in results
                     if r["classifier"] == clf and r["shift_condition"] == shift
-                    and r["detection_latency"] is not None]
+                    and r.get("is_valid_detection", r.get("detection_latency") is not None and r.get("detection_latency", -1) >= 0)]
             row += f"{(sum(lats)/len(lats)):.0f}{'':>8}" if lats else f"{'-':<14}"
         print(row)
 
