@@ -37,3 +37,7 @@ data/calibration/
 # Environment
 .env
 .envrc
+# Ignore heavy ML artifacts and environment configs
+checkpoints/
+logs/
+.python-version
