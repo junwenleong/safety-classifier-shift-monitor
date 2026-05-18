@@ -196,26 +196,33 @@ The interaction term dominates systematic variance. Top 3 interactions by magnit
 
 ## 5. Discussion
 
-### 5.1 Key Findings
+### 5.1 Deployment Requires Per-Classifier Monitoring Profiles
 
-- The KS detector on classifier scores is sufficient for detecting most shift types; MMD on embeddings provides complementary signal for subtle distributional changes that preserve score marginals.
-- Smaller window sizes (w=100) detect faster but at higher false alarm rates. The w=100 vs w=200 tradeoff is ~9 steps of latency for ~4% FAR reduction.
-- The dominance of the interaction term (η² = 0.265 > either main effect) implies that no single "best detector" exists — the optimal monitoring configuration depends on the specific classifier–shift pairing.
-- Encoder-based classifiers (DeBERTa, Text-Moderation) are generally faster to detect but more vulnerable to adversarial suffixes. Decoder-based classifiers (Llama Guard, ShieldGemma) are slower on paraphrase/code-switch but faster on adversarial suffixes.
+The dominance of the interaction term (η² = 0.265 > either main effect) is the central finding of the variance decomposition: detection difficulty is not a property of the classifier or the shift type alone, but of their pairing. The practical implication is that deployment teams cannot select a single monitoring configuration and apply it uniformly. The variance decomposition tells you *which* detector to pair with *which* classifier—this is the practitioner contribution of the factorial design.
 
-### 5.2 Limitations
+Concretely: DeBERTa requires aggressive monitoring for adversarial suffixes (+18.7 steps above expected) but can afford relaxed thresholds for paraphrase (−15.9 steps). ShieldGemma requires the opposite profile—tight monitoring for paraphrase (+34.5 steps) but standard thresholds for adversarial inputs. A monitoring system that ignores these interaction effects will either over-alert on easy pairings or under-alert on hard ones.
 
-- Conformal evaluation is limited to DeBERTa × temporal shift; coverage degradation patterns across other classifier–shift pairings remain uncharacterized.
-- The factorial uses simulated shift onset (abrupt injection at step $n_{\text{ref}}$); real-world shift is often gradual.
-- All classifiers are binary (safe/unsafe); multi-category classifiers may exhibit different shift signatures.
-- The 5-seed design provides moderate power for interaction effects but wide CIs on individual cells.
+### 5.2 Encoder vs. Decoder Safety Models: A Detection Tradeoff
 
-### 5.3 Future Work
+The factorial reveals a clean architectural split in detection behavior:
 
-- Gradual shift detection via change-point models (CUSUM, BOCPD).
-- Multi-classifier ensemble monitoring (alarm when ≥2 classifiers shift simultaneously).
-- Online conformal prediction with exchangeability-free guarantees.
-- Extension to multi-category safety taxonomies.
+**Discriminative models (DeBERTa, Text-Moderation)** detect paraphrase and compositional shift fast (26–37 steps) because these shifts alter the input distribution in ways that immediately change the score distribution. However, they are brittle to adversarial suffixes: DeBERTa's detection latency on adversarial-suffix (40.2 steps) is its worst condition, and its detection rate drops. The suffix preserves semantic content while appending tokens that the discriminative model has not seen—the score distribution shifts slowly because the model partially ignores the suffix.
+
+**Generative safety models (Llama Guard, ShieldGemma)** show the opposite pattern. They are slow on paraphrase (64–97 steps) because their scoring mechanism—generating a safety judgment token—is robust to surface-level rephrasing. But they detect adversarial suffixes quickly (26.7 steps for Llama Guard) because the suffix disrupts the generation distribution more visibly than it disrupts a classification head.
+
+This maps directly to deployment tradeoffs: if your threat model is adversarial red-teaming, monitor the discriminative classifier more aggressively. If your threat model is organic linguistic drift, monitor the generative classifier more aggressively.
+
+### 5.3 Limitations
+
+- **Single-condition conformal evaluation.** RQ2 was evaluated on DeBERTa × temporal shift only—the pairing with the strongest shift signal. Coverage degradation under subtler shifts (e.g., code-switch on Llama Guard) may be smaller, reducing the benefit of weighted correction. This is a limitation of the current evaluation, not a claim about the method's generality.
+- **Abrupt shift onset.** Our evaluation assumes abrupt shift onset at a known step; gradual drift would require CUSUM-style statistics and is a harder problem that we do not address.
+- **Residual variance.** 32% of variance in detection latency is attributable to seed/noise. This is expected with 5 seeds per cell but means individual cell estimates have wide confidence intervals. The factorial design provides power for main effects and interactions, not for individual cell-level claims.
+- **Binary classifiers only.** All four classifiers produce a single unsafe probability. Multi-category safety taxonomies (e.g., Llama Guard's 14 categories) may exhibit category-specific shift patterns invisible to a scalar score monitor.
+
+### 5.4 Future Work
+
+- **Gradual shift detection.** Extending the CS framework to detect gradual drift via CUSUM or Bayesian online change-point detection (BOCPD), where the shift onset is not abrupt but accumulates over hundreds of steps.
+- **Online conformal prediction without exchangeability.** The current weighted conformal layer assumes access to a post-alarm batch for density ratio estimation. Truly online conformal prediction under arbitrary distribution shift (Gibbs & Candès, 2021) would eliminate this batch requirement.
 
 ## References
 
