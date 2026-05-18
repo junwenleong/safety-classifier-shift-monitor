@@ -139,3 +139,54 @@ An alarm is considered a **false positive** when:
 - Frozen reference statistics (kernel bandwidth, reference CDF, PCA projection) serialized as artifacts.
 - Shifted corpora generated offline with manifests recording generator version, model, and parameters.
 - Pre-registration document committed to git before factorial runs begin.
+
+---
+
+## Amendment: Actual Evaluation Grid
+
+**Committed before extended runs begin.** The original pre-registration specified a 3,600-cell design. The executed evaluation is a reduced grid motivated by compute budget and data availability:
+
+### Regime A — Primary Factorial (executed)
+
+| Parameter | Value |
+|---|---|
+| Classifiers | 4 (DeBERTa, Text-Moderation, Llama Guard, ShieldGemma) |
+| Shift conditions | 5 (paraphrase, code-switch, compositional, temporal, adversarial-suffix) |
+| Seeds | 20 (0–19) |
+| Window sizes | 2 (100, 200) |
+| **Total cells** | **800** |
+
+### Regime B — Robustness Check (executed)
+
+| Parameter | Value |
+|---|---|
+| Classifiers | 2 (DeBERTa, Llama Guard) |
+| Shift condition | temporal only (292 real examples, post-training-cutoff) |
+| Seeds | 5 (0–4) |
+| Window sizes | 2 (100, 200) |
+| **Total cells** | **20** |
+
+Purpose: validate that detection works on a real temporal corpus (not synthetic injection), using one encoder and one decoder classifier.
+
+### Regime C — Proof of Concept (executed)
+
+| Parameter | Value |
+|---|---|
+| Classifiers | 4 (all) |
+| Shift condition | adversarial-success (GCG suffixes where `success=True` on DeBERTa) |
+| Seeds | 20 (0–19) |
+| Window sizes | 2 (100, 200) |
+| **Total cells** | **160** |
+
+Purpose: validate that the monitor responds to confirmed adversarial success, not just synthetic injection. Limited to 23 successful suffix examples — labeled as proof-of-concept.
+
+### Deviations from Original Pre-Registration
+
+| Original | Actual | Reason |
+|---|---|---|
+| 20 seeds | 20 seeds (Regime A) | Matched |
+| 3 ground-truth regimes | 3 regimes (A primary, B robustness, C proof-of-concept) | Scope adjusted |
+| Window sizes 100/200/500 | 100/200 only | w=500 exceeds shifted corpus size |
+| 3,600 total cells | 980 total cells | Compute budget (~29h for 200 cells) |
+
+Analysis plan, metrics, and all hyperparameters are unchanged from the original pre-registration.
