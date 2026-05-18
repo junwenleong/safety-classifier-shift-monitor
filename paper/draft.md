@@ -245,6 +245,7 @@ This maps directly to deployment tradeoffs: if your threat model is adversarial 
 - **Abrupt shift onset.** Our evaluation assumes abrupt shift onset at a known step; gradual drift would require CUSUM-style statistics and is a harder problem that we do not address.
 - **Residual variance.** 32% of variance in detection latency is attributable to seed/noise. This is expected with 5 seeds per cell but means individual cell estimates have wide confidence intervals. Post-hoc power analysis: with n=5 per cell, pairwise comparisons can only detect differences exceeding ~32 steps (Cohen's d = 1.46) at α=0.05 with 80% power. The factorial design provides power for main effects and interactions (all p < 0.001) but not for individual cell-level claims.
 - **Binary classifiers only.** All four classifiers produce a single unsafe probability. Multi-category safety taxonomies (e.g., Llama Guard's 14 categories) may exhibit category-specific shift patterns invisible to a scalar score monitor.
+- **Homogeneous negative controls.** Our negative control streams draw exclusively from WildGuardMix unharmful examples, forming a homogeneous reference distribution; production streams with higher natural variance—mixed content, multiple topics, temporal drift within the reference period—may require larger calibration sets or recalibration of the empirical threshold.
 
 ### 6.4 Future Work
 
