@@ -6,11 +6,13 @@ Writes results incrementally to results/factorial_results.jsonl.
 Usage:
     export DEBERTA_CHECKPOINT_PATH=checkpoints/deberta-wildguardmix
     export TEXT_MODERATION_CHECKPOINT_PATH=checkpoints/text-moderation-wildguardmix
-    python scripts/run_factorial.py
+    python scripts/run_factorial.py              # Regime A (default)
+    python scripts/run_factorial.py --regime-c   # Regime C (adversarial success)
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
@@ -31,12 +33,13 @@ from scripts.run_full_canary import (
 
 CLASSIFIERS = ["deberta", "text-moderation", "llama-guard", "shieldgemma"]
 SHIFT_CONDITIONS = ["paraphrase", "code-switch", "compositional-long-context", "temporal", "adversarial-suffix"]
-SEEDS = list(range(5))
+SEEDS = list(range(20))
 WINDOW_SIZES = [100, 200]
 N_REFERENCE = 500
 N_CALIBRATION = 50
 CAL_PCT = 97
 OUTPUT = Path("results/factorial_results.jsonl")
+OUTPUT_REGIME_C = Path("results/regime_c_results.jsonl")
 
 
 def get_classifier(name: str):
@@ -75,6 +78,136 @@ def load_done() -> set:
                 r = json.loads(line)
                 keys.add((r["classifier"], r["shift_condition"], r["seed"], r["window_size"]))
     return keys
+
+
+def load_done_regime_c() -> set:
+    if not OUTPUT_REGIME_C.exists():
+        return set()
+    keys = set()
+    with open(OUTPUT_REGIME_C) as f:
+        for line in f:
+            if line.strip():
+                r = json.loads(line)
+                keys.add((r["classifier"], r["seed"], r["window_size"]))
+    return keys
+
+
+def load_adversarial_success():
+    """Load adversarial suffix examples where success=True."""
+    path = Path("data/shifted/adversarial_suffix/deberta_suffixes.jsonl")
+    if not path.exists():
+        print(f"ERROR: {path} not found. Run GCG first or pull from Mac Studio.")
+        sys.exit(1)
+    examples = []
+    with open(path) as f:
+        for line in f:
+            if not line.strip():
+                continue
+            r = json.loads(line)
+            if r.get("success"):
+                text = r.get("combined") or r.get("text", "")
+                if text:
+                    examples.append({"text": text[:1000], "source_dataset": "gcg-success"})
+    print(f"  Loaded {len(examples)} successful adversarial suffix examples")
+    return examples
+
+
+def run_regime_c():
+    """Regime C: adversarial success — detect shift from successful GCG attacks."""
+    wall_start = time.time()
+    OUTPUT_REGIME_C.parent.mkdir(parents=True, exist_ok=True)
+    done = load_done_regime_c()
+    total = len(CLASSIFIERS) * len(SEEDS) * len(WINDOW_SIZES)
+    print(f"Regime C: {total} cells, {len(done)} already done, {total - len(done)} remaining")
+
+    print("Loading reference data...")
+    reference, neg_pool = load_reference()
+
+    print("Loading adversarial success examples...")
+    shifted = load_adversarial_success()
+    if len(shifted) < 50:
+        print(f"WARNING: only {len(shifted)} successful examples — results may be noisy")
+
+    for clf_name in CLASSIFIERS:
+        cells = [(seed, ws) for seed, ws in product(SEEDS, WINDOW_SIZES)
+                 if (clf_name, seed, ws) not in done]
+        if not cells:
+            print(f"\n[{clf_name}] all done, skipping")
+            continue
+
+        print(f"\n[{clf_name}] {len(cells)} cells remaining, loading classifier...")
+        classifier = get_classifier(clf_name)
+
+        thresholds = {}
+        for ws in WINDOW_SIZES:
+            if ws not in thresholds:
+                print(f"  Calibrating window_size={ws}...")
+                max_ks = []
+                for i in range(N_CALIBRATION):
+                    start = (i * 50) % len(neg_pool)
+                    examples = neg_pool[start:start + N_REFERENCE]
+                    if len(examples) < ws:
+                        examples = neg_pool[:N_REFERENCE]
+                    mk, _ = run_stream_ks(classifier, examples, ws, seed=42 + i * 7)
+                    max_ks.append(mk)
+                thresholds[ws] = float(np.percentile(max_ks, CAL_PCT))
+                print(f"    threshold={thresholds[ws]:.4f}")
+
+        for seed, ws in cells:
+            threshold = thresholds[ws]
+            cond_seed = seed * 1000 + 999
+
+            pos = run_detection_with_threshold(
+                classifier, reference, shifted, N_REFERENCE, ws, cond_seed, threshold
+            )
+            neg = run_detection_with_threshold(
+                classifier, neg_pool[:N_REFERENCE], None, 0, ws, cond_seed + 1, threshold
+            )
+
+            result = {
+                "classifier": clf_name,
+                "shift_condition": "adversarial-success",
+                "regime": "C",
+                "seed": seed,
+                "window_size": ws,
+                "alarm_step": pos["alarm_step"],
+                "detection_latency": pos["detection_latency"],
+                "neg_clean": neg["alarm_step"] is None,
+                "threshold": threshold,
+                "is_valid_detection": (
+                    pos["detection_latency"] is not None
+                    and pos["detection_latency"] >= 0
+                    and neg["alarm_step"] is None
+                ),
+            }
+
+            with open(OUTPUT_REGIME_C, "a") as f:
+                f.write(json.dumps(result) + "\n")
+
+            lat = pos["detection_latency"] or "-"
+            neg_ok = "✓" if result["neg_clean"] else "✗"
+            print(f"  [{clf_name}/adv-success/s{seed}/w{ws}] latency={lat} neg={neg_ok}")
+
+    # Summary
+    print("\n" + "=" * 60)
+    print("REGIME C SUMMARY")
+    print("-" * 60)
+    if OUTPUT_REGIME_C.exists():
+        results = [json.loads(l) for l in open(OUTPUT_REGIME_C) if l.strip()]
+        valid = [r for r in results if r.get("is_valid_detection")]
+        print(f"Total cells: {len(results)}")
+        print(f"Valid detections: {len(valid)}/{len(results)} = {len(valid)/len(results):.1%}")
+        if valid:
+            lats = [r["detection_latency"] for r in valid]
+            print(f"Mean latency: {sum(lats)/len(lats):.1f} steps")
+        for clf in CLASSIFIERS:
+            v = [r for r in valid if r["classifier"] == clf]
+            c = [r for r in results if r["classifier"] == clf]
+            if c:
+                lats = [r["detection_latency"] for r in v]
+                mean = f"{sum(lats)/len(lats):.1f}" if lats else "-"
+                print(f"  {clf}: {len(v)}/{len(c)} detected, mean={mean}")
+    print(f"Wall-clock: {time.time() - wall_start:.0f}s")
 
 
 def main():
@@ -182,4 +315,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--regime-c", action="store_true", help="Run Regime C (adversarial success)")
+    args = parser.parse_args()
+
+    if args.regime_c:
+        run_regime_c()
+    else:
+        main()
