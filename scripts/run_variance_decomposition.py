@@ -55,6 +55,64 @@ def load_cell_results() -> list[CellResult]:
     return rows
 
 
+def permutation_test(results, n_perm=1000):
+    """Permutation test: is η²_interaction significantly larger than expected by chance?"""
+    import numpy as np
+    rng = np.random.default_rng(42)
+
+    latencies = np.array([r.detection_latency for r in results])
+    classifiers = [r.classifier for r in results]
+    shifts = [r.shift_condition for r in results]
+    n = len(results)
+
+    def compute_eta_sq(lats, clfs, shfts):
+        from collections import defaultdict as dd
+        grand_mean = np.mean(lats)
+        ss_total = np.sum((lats - grand_mean) ** 2)
+        if ss_total < 1e-12:
+            return 0.0, 0.0, 0.0
+
+        clf_groups = dd(list)
+        shift_groups = dd(list)
+        inter_groups = dd(list)
+        for i in range(len(lats)):
+            clf_groups[clfs[i]].append(lats[i])
+            shift_groups[shfts[i]].append(lats[i])
+            inter_groups[f"{clfs[i]}:{shfts[i]}"].append(lats[i])
+
+        ss_clf = sum(len(v) * (np.mean(v) - grand_mean)**2 for v in clf_groups.values())
+        ss_shift = sum(len(v) * (np.mean(v) - grand_mean)**2 for v in shift_groups.values())
+
+        ss_inter = 0.0
+        for key, vals in inter_groups.items():
+            c, s = key.split(":", 1)
+            effect = np.mean(vals) - np.mean(clf_groups[c]) - np.mean(shift_groups[s]) + grand_mean
+            ss_inter += len(vals) * effect**2
+
+        return ss_clf / ss_total, ss_shift / ss_total, ss_inter / ss_total
+
+    obs_clf, obs_shift, obs_inter = compute_eta_sq(latencies, classifiers, shifts)
+
+    count_clf = count_shift = count_inter = 0
+    for _ in range(n_perm):
+        perm = rng.permutation(n)
+        perm_clfs = [classifiers[i] for i in perm]
+        perm_shifts = [shifts[i] for i in perm]
+        p_clf, p_shift, p_inter = compute_eta_sq(latencies, perm_clfs, perm_shifts)
+        if p_clf >= obs_clf:
+            count_clf += 1
+        if p_shift >= obs_shift:
+            count_shift += 1
+        if p_inter >= obs_inter:
+            count_inter += 1
+
+    return {
+        "classifier": {"eta_sq": obs_clf, "p_value": (count_clf + 1) / (n_perm + 1)},
+        "shift_type": {"eta_sq": obs_shift, "p_value": (count_shift + 1) / (n_perm + 1)},
+        "interaction": {"eta_sq": obs_inter, "p_value": (count_inter + 1) / (n_perm + 1)},
+    }
+
+
 def main():
     results = load_cell_results()
     print(f"Valid cells loaded: {len(results)}")
@@ -113,6 +171,15 @@ def main():
     else:
         print("\nNo cells flagged for insufficient observations.")
 
+    # Permutation test
+    print("\n" + "=" * 60)
+    print("PERMUTATION TEST (1000 permutations)")
+    print("-" * 60)
+    perm = permutation_test(results)
+    for factor, res in perm.items():
+        sig = "***" if res["p_value"] < 0.001 else "**" if res["p_value"] < 0.01 else "*" if res["p_value"] < 0.05 else "ns"
+        print(f"  {factor:<22} η²={res['eta_sq']:.4f}  p={res['p_value']:.4f} {sig}")
+
     print("=" * 60)
 
     # Save to JSON
@@ -128,6 +195,7 @@ def main():
         "residual_variance": decomp.residual_variance,
         "top3_interactions": [{"cell": k, "effect": v} for k, v in top3],
         "n_valid_cells": len(results),
+        "permutation_test": perm,
     }
     with open(OUTPUT, "w") as f:
         json.dump(out, f, indent=2)
