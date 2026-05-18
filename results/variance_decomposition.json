@@ -34,5 +34,19 @@
       "effect": -15.941519189564076
     }
   ],
-  "n_valid_cells": 173
+  "n_valid_cells": 173,
+  "permutation_test": {
+    "classifier": {
+      "eta_sq": 0.1958717123329181,
+      "p_value": 0.000999000999000999
+    },
+    "shift_type": {
+      "eta_sq": 0.21731412691796057,
+      "p_value": 0.000999000999000999
+    },
+    "interaction": {
+      "eta_sq": 0.2648408708438328,
+      "p_value": 0.000999000999000999
+    }
+  }
 }
