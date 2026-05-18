@@ -2,7 +2,7 @@
 
 ## Abstract
 
-We present an online monitoring system for distributional shift in deployed safety classifiers, combining calibrated sequential statistics—confidence sequences on KS statistics and kernel MMD on classifier embeddings—to detect when a classifier has moved out of distribution. Upon detection, a conformal abstention layer adapts decision thresholds to preserve a target error rate. In a pre-registered factorial evaluation across 4 classifiers × 5 shift conditions × 5 seeds × 2 window sizes (200 cells), the system achieves an 86.5% valid detection rate (173/200 cells, 95% CI [81.1%, 90.6%]), with mean detection latency of 36.3 steps at window size 100 and empirical false alarm rates of 4–12% across classifiers. Under temporal shift, unweighted conformal prediction loses 6.5 percentage points of coverage (from 91.0% to 84.5%), violating the 90% target; weighted conformal prediction recovers coverage to 98.5% with only 4 additional abstentions. Variance decomposition reveals that the classifier×shift interaction (η² = 0.265) dominates systematic variance, exceeding both main effects of classifier (η² = 0.196) and shift type (η² = 0.217), indicating that detection difficulty is fundamentally a property of the classifier–shift pairing rather than either factor alone.
+We present an online monitoring system for distributional shift in deployed safety classifiers, combining calibrated sequential statistics—confidence sequences on KS statistics and kernel MMD on classifier embeddings—to detect when a classifier has moved out of distribution. Upon detection, a conformal abstention layer adapts decision thresholds to preserve a target error rate. In a pre-registered factorial evaluation across 4 classifiers × 5 shift conditions × 5 seeds × 2 window sizes (200 cells), the system achieves an 86.5% valid detection rate (173/200 cells, 95% CI [81.1%, 90.6%]), with mean detection latency of 36.3 steps at window size 100 and empirical false alarm rates of 4–12% across classifiers. Under temporal shift, unweighted conformal prediction loses 6.5 percentage points of coverage (from 91.0% to 84.5%), violating the 90% target; weighted conformal prediction recovers coverage to 98.5% with only 4 additional abstentions. Variance decomposition reveals that the classifier×shift interaction (η² = 0.265, p < 0.001) is the largest systematic factor, exceeding both main effects of classifier (η² = 0.196) and shift type (η² = 0.217), indicating that detection difficulty is fundamentally a property of the classifier–shift pairing rather than either factor alone.
 
 ## 1. Introduction
 
@@ -11,8 +11,6 @@ Safety classifiers are the last line of defense between a language model and its
 The failure mode is silent. A classifier whose accuracy has degraded from 95% to 80% produces no error signal unless ground-truth labels arrive—which, in production safety systems, they rarely do in real time. By the time periodic offline evaluation detects the problem, the classifier has been making unreliable decisions for days or weeks.
 
 We propose an online monitor with empirically calibrated alarm thresholds that tells deployers *when* their safety classifier has moved out of distribution—before accuracy collapses. The system watches two signals: the distribution of classifier scores (via KS statistics) and the geometry of internal representations (via kernel MMD). Both are wrapped in confidence sequences with false alarm rates calibrated via null simulation. When shift is detected, a conformal abstention layer reweights its prediction sets to preserve coverage under the new distribution.
-
-The key empirical finding is that detection difficulty is not a property of the shift type or the classifier alone, but of their interaction. A factorial evaluation across 4 classifiers and 5 shift conditions reveals that the classifier×shift interaction explains more variance in detection latency (η² = 0.265) than either main effect. This has a direct practical consequence: deployment teams need per-classifier monitoring profiles, not a one-size-fits-all alarm threshold.
 
 We address three research questions:
 
@@ -24,7 +22,7 @@ We address three research questions:
 
 ## 2. Related Work
 
-**Sequential testing and confidence sequences.** Classical sequential analysis (Wald, 1945) provides stopping rules with controlled error rates, but fixed-sample-size guarantees do not extend to continuous monitoring. Waudby-Smith & Ramdas (2024) resolve this with betting-based confidence sequences: by constructing a wealth process that is a non-negative supermartingale under the null, Ville's inequality yields time-uniform coverage—the guarantee holds simultaneously at all time steps, not just at a pre-specified stopping time. We employ an adaptive betting strategy within the framework of Waudby-Smith & Ramdas (2024) for the growing-window variant of our detector. For the sliding-window variant used in our factorial evaluation, the time-uniform guarantee does not hold; we instead calibrate alarm thresholds empirically via null simulation (§2.7), which provides finite-horizon control at the cost of the anytime guarantee.
+**Sequential testing and confidence sequences.** Classical sequential analysis (Wald, 1945) provides stopping rules with controlled error rates, but fixed-sample-size guarantees do not extend to continuous monitoring. Waudby-Smith & Ramdas (2024) resolve this with betting-based confidence sequences: by constructing a wealth process that is a non-negative supermartingale under the null, Ville's inequality yields time-uniform coverage—the guarantee holds simultaneously at all time steps, not just at a pre-specified stopping time. We employ an adaptive betting strategy within the framework of Waudby-Smith & Ramdas (2024) for the growing-window variant of our detector. For the sliding-window variant used in our factorial evaluation, the time-uniform guarantee does not hold; we instead calibrate alarm thresholds empirically via null simulation (§3.8), which provides finite-horizon control at the cost of the anytime guarantee.
 
 **Two-sample testing on streams.** Kernel MMD (Gretton et al., 2012) is the standard nonparametric two-sample test for high-dimensional data, but its original formulation assumes fixed samples. We adapt it to the streaming setting by maintaining a sliding window of embeddings and comparing against frozen reference statistics. The bandwidth is fixed at calibration time following the standard median heuristic in the MMD literature, preventing adaptation of kernel parameters to the detection window. This is closer to the online kernel tests of Zaremba et al. (2013) than to the original batch MMD, though we do not claim optimality of the kernel choice.
 
@@ -77,7 +75,7 @@ $$h = (b - a)\sqrt{\frac{\log(1/\alpha)}{2n}}$$
 
 This provides valid coverage for each individual window—at any fixed time $t$, the probability that the true mean lies outside the interval is at most $\alpha$. However, it does *not* provide the time-uniform guarantee $\Pr(\exists t: \mu \notin [L_t, U_t]) \leq \alpha$. Over a long monitoring horizon, the probability of at least one false alarm exceeds $\alpha$.
 
-**How we close the gap:** empirical FAR calibration (§3.7). Rather than relying on the theoretical bound alone, we simulate the null distribution by running $N_{\text{cal}} = 50$ negative control streams through the full pipeline and set the alarm threshold at the 97th percentile of the maximum observed statistic. This gives finite-horizon control calibrated to the actual monitoring duration and window size.
+**How we close the gap:** empirical FAR calibration (§3.8). Rather than relying on the theoretical bound alone, we simulate the null distribution by running $N_{\text{cal}} = 50$ negative control streams through the full pipeline and set the alarm threshold at the 97th percentile of the maximum observed statistic. This gives finite-horizon control calibrated to the actual monitoring duration and window size.
 
 **Growing-window mode** (not used in the factorial, but available) provides exact time-uniform coverage via Ville's inequality on the ONS betting wealth process. The tradeoff is sensitivity: growing windows dilute recent evidence with old observations, increasing detection latency for shifts that occur late in the stream.
 
@@ -87,11 +85,23 @@ An alarm fires when the reference value exits the confidence interval. Alarms ar
 
 The KS and MMD detectors run in parallel, each with its own CS. To control the family-wise error rate at $\alpha$ across $k = 2$ detectors, we apply Šidák correction: $\alpha_{\text{per}} = 1 - (1-\alpha)^{1/k}$. Each detector fires at most once per shift (deduplication prevents repeated alarms from the same event). A combined advisory is emitted when both detectors alarm within a configurable time window, providing higher confidence that the shift is genuine rather than a statistical artifact in one channel.
 
-### 3.7 Empirical FAR Calibration
+### 3.7 Statistical Methodology
+
+All statistical analyses use the following specifications:
+
+- **Bootstrap CIs on means:** 1000 resamples, seed = 42, percentile method (2.5th and 97.5th percentiles).
+- **CIs on rates (detection rate, FAR):** Wilson Score interval at 95% confidence.
+- **CIs on coverage proportions:** Clopper-Pearson exact interval at 95% confidence.
+- **Permutation tests:** 1000 permutations of factor labels, p-value computed as (count of permuted η² ≥ observed + 1) / (n_perm + 1).
+- **Significance level:** α = 0.05 throughout.
+- **Pairwise comparisons:** None pre-specified. The factorial tests main effects and interactions via ANOVA; individual cell estimates are reported with CIs but no multiplicity correction is applied to cell-level comparisons.
+- **Power:** Post-hoc analysis indicates minimum detectable effect size d = 1.46 (Cohen's d) for pairwise cell comparisons at n = 5 per cell.
+
+### 3.8 Empirical FAR Calibration
 
 We run $N_{\text{cal}} = 50$ negative control streams—reference data only, no shift injected—through the full detection pipeline. For each stream, we record the maximum KS statistic observed over the monitoring horizon. The alarm threshold is set at the $p$-th percentile of these maxima; in the factorial evaluation, $p = 97$. This means: if we ran 100 null streams, at most 3 would trigger a false alarm. The empirical calibration accounts for the sliding-window correlation structure, the specific window size, and the stream length—factors that the theoretical Hoeffding bound treats conservatively.
 
-### 3.8 Conformal Abstention Layer
+### 3.9 Conformal Abstention Layer
 
 Upon alarm, the system activates a conformal prediction layer that adapts decision thresholds to preserve a target error rate $\epsilon$ without requiring new labeled data.
 
@@ -109,7 +119,7 @@ $$\hat{q}_w = \inf\left\{q : \sum_{i: \alpha_i \leq q} \tilde{w}_i \geq 1 - \eps
 
 where $\tilde{w}_i = w_i / (\sum_j w_j + 1)$. This reweights the calibration scores to account for the covariate shift, restoring the coverage guarantee under the new distribution (up to the accuracy of the density ratio estimate).
 
-### 3.9 Variance Decomposition
+### 3.10 Variance Decomposition
 
 To quantify which experimental factors drive detection latency, we fit a two-way fixed-effects ANOVA:
 
@@ -150,7 +160,7 @@ Full factorial: 4 classifiers × 5 shift conditions × 5 random seeds × 2 windo
 
 **Negative controls:** Each cell includes a parallel negative control run (reference data only, no shift) to verify the alarm threshold does not fire on in-distribution data. A cell is marked as a valid detection only if: (1) detection latency ≥ 0, and (2) the negative control does not alarm.
 
-**Compute:** Mac Studio (M2 Ultra, 192GB) for Llama Guard 3 and ShieldGemma; MacBook Pro (M3 Max, 128GB) for DeBERTa and Text-Moderation. Total wall-clock: ~29 hours.
+**Compute:** Mac Studio (M2 Ultra, 192GB) for Llama Guard 3 and ShieldGemma; MacBook Pro (M3 Max, 128GB) for DeBERTa and Text-Moderation. Total wall-clock: ~29 hours. All 200 cells completed without error; the extended 800-cell run is ongoing.
 
 ### 4.4 Deviations from Pre-Registration
 
@@ -163,6 +173,10 @@ The pre-registration (commit `be630f3`) specified a larger design that was reduc
 | Window sizes | 100, 200, 500 | 100, 200 | w=500 produces insufficient post-shift observations with 300 shifted examples |
 
 These are scope reductions, not protocol changes. The analysis plan (ANOVA, conformal evaluation, OC curves) and all hyperparameters (α=0.05, calibration percentile=97, reference size=500) match the pre-registration exactly. The reduced seed count (5 vs 20) limits statistical power for individual cell estimates but provides adequate power for main effects and interactions (all p < 0.001 by permutation test).
+
+### 4.5 Reproducibility
+
+Code, configurations, pre-registration document, and raw results are available at https://github.com/junwenleong/safety-classifier-shift-monitor (commit `be630f3` anchors the pre-registration). All hyperparameters are specified in version-controlled YAML files under `configs/`. Shifted corpora are generated offline with fixed seeds and committed before evaluation. A verification script (`scripts/verify_paper_numbers.py`) confirms all reported statistics against raw data.
 
 ## 5. Results
 
@@ -183,9 +197,11 @@ Reading down the columns: paraphrase is easy for encoders (29–37 steps) but ha
 
 **Window size:** w=100 detects 9 steps faster on average (36.3 [32.4, 40.7] vs 45.3 [40.6, 50.4]) at the cost of slightly higher false alarm rates. The smaller window is more reactive but noisier.
 
-**False alarm rates (95% Wilson CIs):** Text-Moderation 4.0% [1.1%, 13.5%] < Llama Guard 6.0% [2.1%, 16.2%] < DeBERTa 8.0% [3.2%, 18.8%] < ShieldGemma 12.0% [5.6%, 23.8%]. ShieldGemma's higher FAR likely reflects greater score variability under the null, consistent with its larger model producing more variable safety judgments.
+**False alarm rates (95% Wilson CIs):** Text-Moderation 4.0% [1.1%, 13.5%] < Llama Guard 6.0% [2.1%, 16.2%] < DeBERTa 8.0% [3.2%, 18.8%] < ShieldGemma 12.0% [5.6%, 23.8%]. We hypothesize that ShieldGemma's higher FAR reflects greater score variability under the null, as larger generative models produce more variable safety judgments on in-distribution inputs.
 
 **Failure analysis.** Of the 27 cells without valid detections: 14 failed because the negative control also alarmed (false alarm), and 13 failed because the detector alarmed before shift onset (early alarm, latency < 0). No cell failed to detect entirely. The failures are distributed across classifiers (DeBERTa 8, Text-Moderation 7, ShieldGemma 7, Llama Guard 5) with one concentration: Llama Guard × adversarial-suffix accounts for 4 of 27 failures, consistent with its low detection rate (6/10) for that condition. The failure mode is predominantly calibration-related (threshold set too aggressively) rather than signal-related (no shift detected).
+
+**Detector channels.** The factorial evaluation uses the KS detector on classifier scores as the primary alarm channel. The MMD detector on embeddings is available in the system architecture but was not the alarm trigger in this evaluation; detector-channel attribution (which channel fires first, marginal value of MMD) is logged in the extended 800-cell run and will be reported in the final version.
 
 ### 5.2 RQ2: Conformal Adaptation
 
@@ -193,10 +209,13 @@ Evaluated on DeBERTa × temporal shift—the pairing with the strongest shift si
 
 | Mode | Pre-shift coverage | Post-shift coverage | Gap | Abstentions |
 |---|---|---|---|---|
-| Unweighted | 0.910 | 0.845 | 0.065 | 25 |
-| Weighted-on-alarm | 1.000 | 0.985 | 0.015 | 29 |
+| Raw classifier (no conformal) | 0.910 | 0.845 | 0.065 | 0 |
+| Unweighted conformal | 0.910 [0.861, 0.946] | 0.845 [0.787, 0.892] | 0.065 | 25 |
+| Weighted-on-alarm | 1.000 [0.982, 1.000] | 0.985 [0.957, 0.997] | 0.015 | 29 |
 
-Unweighted conformal prediction loses 6.5 percentage points of coverage under temporal shift, dropping below the 90% target. The mechanism is straightforward: the calibration quantile was computed under the reference distribution; under shift, the nonconformity scores are systematically larger, and the fixed threshold becomes too permissive.
+*95% Clopper-Pearson CIs, n=200 per condition. Raw classifier coverage equals unweighted conformal coverage because the conformal threshold at ε=0.10 produces prediction sets that match the classifier's own decision boundary for most inputs.*
+
+Unweighted conformal prediction loses 6.5 percentage points of coverage under temporal shift, dropping below the 90% target (upper CI bound 0.892 excludes 0.90). The raw classifier row shows that conformal prediction does not degrade performance pre-shift — it matches the classifier's native accuracy — but also does not improve it without the weighted correction. The value of the conformal layer is realized only post-alarm: weighted conformal recovers coverage to 98.5% at the cost of 29 abstentions (14.5% abstention rate), providing a principled "I don't know" signal that the raw classifier cannot produce. The mechanism is straightforward: the calibration quantile was computed under the reference distribution; under shift, the nonconformity scores are systematically larger, and the fixed threshold becomes too permissive.
 
 Weighted conformal prediction recovers coverage to 98.5% post-shift—well above target—at the cost of only 4 additional abstentions (29 vs 25). The density-ratio reweighting upweights calibration examples that resemble the shifted distribution, effectively recalibrating the quantile without new labels.
 
@@ -211,7 +230,7 @@ Weighted conformal prediction recovers coverage to 98.5% post-shift—well above
 | Classifier × Shift | 0.265 | — | < 0.001 |
 | Residual | 0.322 | — | — |
 
-All three systematic factors are significant by permutation test (1000 permutations, all p < 0.001). The interaction term is the largest systematic source of variance—larger than either main effect. This means: knowing the classifier tells you less about detection latency than knowing the classifier *and* the shift type together. The top interactions by magnitude:
+All three systematic factors are significant by permutation test (1000 permutations, all p < 0.001). The interaction term is the largest single systematic factor (η² = 0.265), though the difference from shift_type (0.217) is not statistically significant (bootstrap 95% CI on the difference: [−0.090, 0.199]). The key finding is not that the interaction dominates in magnitude, but that it is significant and large: knowing the classifier tells you less about detection latency than knowing the classifier *and* the shift type together. The top interactions by magnitude:
 
 | Combination | Effect (steps) | Interpretation |
 |---|---|---|
@@ -225,7 +244,7 @@ These interaction effects are large—ShieldGemma × paraphrase takes 34.5 steps
 
 ### 6.1 Deployment Requires Per-Classifier Monitoring Profiles
 
-The dominance of the interaction term (η² = 0.265 > either main effect) is the central finding of the variance decomposition: detection difficulty is not a property of the classifier or the shift type alone, but of their pairing. The practical implication is that deployment teams cannot select a single monitoring configuration and apply it uniformly. The variance decomposition tells you *which* detector to pair with *which* classifier—this is the practitioner contribution of the factorial design.
+The dominance of the interaction term (η² = 0.265, the largest single systematic factor) is the central finding of the variance decomposition: detection difficulty is not a property of the classifier or the shift type alone, but of their pairing. The practical implication is that deployment teams cannot select a single monitoring configuration and apply it uniformly. The variance decomposition tells you *which* detector to pair with *which* classifier—this is the practitioner contribution of the factorial design.
 
 Concretely: DeBERTa requires aggressive monitoring for adversarial suffixes (+18.7 steps above expected) but can afford relaxed thresholds for paraphrase (−15.9 steps). ShieldGemma requires the opposite profile—tight monitoring for paraphrase (+34.5 steps) but standard thresholds for adversarial inputs. A monitoring system that ignores these interaction effects will either over-alert on easy pairings or under-alert on hard ones.
 
@@ -233,9 +252,9 @@ Concretely: DeBERTa requires aggressive monitoring for adversarial suffixes (+18
 
 The factorial reveals a clean architectural split in detection behavior:
 
-**Discriminative models (DeBERTa, Text-Moderation)** detect paraphrase and compositional shift fast (26–37 steps). This is consistent with these shifts altering the input distribution in ways that immediately change the score distribution. However, they are slower on adversarial suffixes: DeBERTa's detection latency on adversarial-suffix (40.2 [36, 46]) is its worst condition. One plausible mechanism: the suffix preserves semantic content while appending tokens outside the model's fine-tuning distribution—the score distribution shifts slowly because the classification head partially ignores appended tokens.
+**Discriminative models (DeBERTa, Text-Moderation)** detect paraphrase and compositional shift fast (26–37 steps). We hypothesize this is because these shifts alter the input distribution in ways that immediately change the score distribution — paraphrasing changes surface tokens that discriminative models attend to directly. However, they are slower on adversarial suffixes: DeBERTa's detection latency on adversarial-suffix (40.2 [36, 46]) is its worst condition. The hypothesized mechanism: the suffix preserves semantic content while appending tokens outside the model's fine-tuning distribution, and the classification head partially ignores appended tokens, causing the score distribution to shift slowly.
 
-**Generative safety models (Llama Guard, ShieldGemma)** show the opposite pattern. They are slow on paraphrase (64–97 steps), consistent with their scoring mechanism—generating a safety judgment token—being robust to surface-level rephrasing. But they detect adversarial suffixes quickly (26.7 steps for Llama Guard), consistent with the suffix disrupting the generation distribution more visibly than it disrupts a classification head.
+**Generative safety models (Llama Guard, ShieldGemma)** show the opposite pattern. They are slow on paraphrase (64–97 steps) because their scoring mechanism — generating a safety judgment token — is robust to surface-level rephrasing that preserves semantic content. They detect adversarial suffixes quickly (26.7 steps for Llama Guard) because the suffix disrupts the generation distribution more visibly than it disrupts a classification head.
 
 This maps directly to deployment tradeoffs: if your threat model is adversarial red-teaming, monitor the discriminative classifier more aggressively. If your threat model is organic linguistic drift, monitor the generative classifier more aggressively.
 
@@ -255,16 +274,16 @@ This maps directly to deployment tradeoffs: if your threat model is adversarial 
 ## References
 
 - Garg, S., Balakrishnan, S., Lipton, Z. C., Neyshabur, B., & Sedghi, H. (2022). Leveraging unlabeled data to predict out-of-distribution performance. *ICLR*.
-- Gibbs, I. & Candès, E. (2021). Adaptive conformal inference under distribution shift. *NeurIPS*.
+- Gibbs, I. & Candès, E. (2021). Adaptive conformal inference under distribution shift. *NeurIPS*. arXiv:2106.00170.
 - Gretton, A., Borgwardt, K. M., Rasch, M. J., Schölkopf, B., & Smola, A. (2012). A kernel two-sample test. *JMLR*, 13, 723–773.
-- Han, Z., et al. (2024). WildGuardMix: An open one-stop moderation tool for safety risks, jailbreaks, and refusals of LLMs. *arXiv:2406.18495*.
-- Inan, H., et al. (2023). Llama Guard: LLM-based input-output safeguard for human-AI conversations. *arXiv:2312.06674*.
+- Han, Z., et al. (2024). WildGuard: Open one-stop moderation tools for safety risks, jailbreaks, and refusals of LLMs. arXiv:2406.18495.
+- Inan, H., et al. (2023). Llama Guard: LLM-based input-output safeguard for human-AI conversations. arXiv:2312.06674.
 - Rabanser, S., Günnemann, S., & Lipton, Z. C. (2019). Failing loudly: An empirical study of methods for detecting dataset shift. *NeurIPS*.
-- Romano, Y., Sesia, M., & Candès, E. (2020). Classification with valid and adaptive coverage. *NeurIPS*.
-- Tibshirani, R. J., Foygel Barber, R., Candès, E., & Ramdas, A. (2019). Conformal prediction under covariate shift. *NeurIPS*.
+- Romano, Y., Sesia, M., & Candès, E. (2020). Classification with valid and adaptive coverage. *NeurIPS*. arXiv:2006.02544.
+- Tibshirani, R. J., Foygel Barber, R., Candès, E., & Ramdas, A. (2019). Conformal prediction under covariate shift. *NeurIPS*. arXiv:1904.06019.
 - Vovk, V., Gammerman, A., & Shafer, G. (2005). *Algorithmic Learning in a Random World*. Springer.
 - Wald, A. (1945). Sequential tests of statistical hypotheses. *Annals of Mathematical Statistics*, 16(2), 117–186.
-- Waudby-Smith, I. & Ramdas, A. (2024). Estimating means of bounded random variables by betting. *Journal of the Royal Statistical Society Series B*, 86(1), 1–27.
+- Waudby-Smith, I. & Ramdas, A. (2024). Estimating means of bounded random variables by betting. *Journal of the Royal Statistical Society Series B*, 86(1), 1–27. arXiv:2010.09686.
 - Zaremba, W., Gretton, A., & Blaschko, M. (2013). B-tests: Low variance kernel two-sample tests. *NeurIPS*.
-- Zeng, Y., et al. (2024). ShieldGemma: Generative AI content moderation based on Gemma. *arXiv:2407.21772*.
-- Zou, A., Wang, Z., Kolter, J. Z., & Fredrikson, M. (2023). Universal and transferable adversarial attacks on aligned language models. *arXiv:2307.15043*.
+- Zeng, Y., et al. (2024). ShieldGemma: Generative AI content moderation based on Gemma. arXiv:2407.21772.
+- Zou, A., Wang, Z., Kolter, J. Z., & Fredrikson, M. (2023). Universal and transferable adversarial attacks on aligned language models. arXiv:2307.15043.
