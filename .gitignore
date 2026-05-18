@@ -23,7 +23,6 @@ env/
 Thumbs.db
 
 # Results and data (generated, not tracked)
-results/
 data/reference/
 data/shifted/
 data/calibration/
