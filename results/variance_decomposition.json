@@ -1,0 +1,38 @@
+{
+  "factor_variances": {
+    "classifier": 0.19587171233291814,
+    "shift_type": 0.2173141269179606
+  },
+  "interaction_variances": {
+    "classifier:shift_type": 0.26484087084383284
+  },
+  "effect_sizes": {
+    "classifier": {
+      "estimate": 0.19587171233291814,
+      "ci_lower": 0.1365021569750961,
+      "ci_upper": 0.2926823022554445
+    },
+    "shift_type": {
+      "estimate": 0.2173141269179606,
+      "ci_lower": 0.1457938460586998,
+      "ci_upper": 0.3423924195576812
+    }
+  },
+  "flagged_cells": [],
+  "residual_variance": 0.32197328990528845,
+  "top3_interactions": [
+    {
+      "cell": "shieldgemma:paraphrase",
+      "effect": 34.475608901982625
+    },
+    {
+      "cell": "deberta:adversarial-suffix",
+      "effect": 18.728415450958806
+    },
+    {
+      "cell": "deberta:paraphrase",
+      "effect": -15.941519189564076
+    }
+  ],
+  "n_valid_cells": 173
+}
