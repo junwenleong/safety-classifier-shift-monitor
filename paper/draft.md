@@ -2,7 +2,7 @@
 
 ## Abstract
 
-We present an online monitoring system for distributional shift in deployed safety classifiers, combining calibrated sequential statistics—confidence sequences on KS statistics and kernel MMD on classifier embeddings—to detect when a classifier has moved out of distribution. Upon detection, a conformal abstention layer adapts decision thresholds to preserve a target error rate. In a pre-registered factorial evaluation across 4 classifiers × 5 shift conditions × 5 seeds × 2 window sizes (200 cells), the system achieves an 86.5% valid detection rate (173/200 cells, 95% CI [81.1%, 90.6%]), with mean detection latency of 36.3 steps at window size 100 and empirical false alarm rates of 4–12% across classifiers. Detection holds across three ground-truth regimes: synthetic onset (86.5%), real temporal jailbreaks from public red-team databases (85%, 17/20), and GCG adversarial success (13.8% overall, but 35% for Llama Guard on DeBERTa-targeted suffixes—indicating cross-classifier transfer detection). Under temporal shift, unweighted conformal prediction loses 6.5 percentage points of coverage (from 91.0% to 84.5%), violating the 90% target; weighted conformal prediction recovers coverage to 98.5% with only 4 additional abstentions. Variance decomposition reveals that the classifier×shift interaction (η² = 0.265, p < 0.001) is the largest systematic factor, exceeding both main effects of classifier (η² = 0.196) and shift type (η² = 0.217), indicating that detection difficulty is fundamentally a property of the classifier–shift pairing rather than either factor alone.
+We present an online monitoring system for distributional shift in deployed safety classifiers, combining calibrated sequential statistics—confidence sequences on KS statistics and kernel MMD on classifier embeddings—to detect when a classifier has moved out of distribution. Upon detection, a conformal abstention layer adapts decision thresholds to preserve a target error rate. In a pre-registered factorial evaluation across 4 classifiers × 5 shift conditions × 5 seeds × 2 window sizes (200 cells), the system achieves an 86.5% valid detection rate (173/200 cells, 95% CI [81.1%, 90.6%]), with mean detection latency of 36.3 steps at window size 100 and empirical false alarm rates of 4–12% across classifiers. Detection holds across three ground-truth regimes: synthetic onset (86.5%), real temporal jailbreaks from public red-team databases (85%, 17/20), and GCG adversarial success (13.8% overall, but 35% for Llama Guard on DeBERTa-targeted suffixes—detecting adversarial tokens as anomalous rather than through attack transfer). Under temporal shift, unweighted conformal prediction loses 6.5 percentage points of coverage (from 91.0% to 84.5%), violating the 90% target; weighted conformal prediction recovers coverage to 98.5% with only 4 additional abstentions. Variance decomposition reveals that the classifier×shift interaction (η² = 0.265, p < 0.001) is the largest systematic factor, exceeding both main effects of classifier (η² = 0.196) and shift type (η² = 0.217), indicating that detection difficulty is fundamentally a property of the classifier–shift pairing rather than either factor alone.
 
 ## 1. Introduction
 
@@ -259,9 +259,9 @@ The system detects shift in 17 of 20 cells (**85% detection rate**), with mean d
 
 Llama Guard achieves perfect detection on real temporal jailbreaks, consistent with its strong performance on temporal shift in Regime A (38.1 steps). DeBERTa's lower rate (70% vs 100% in Regime A) likely reflects the greater heterogeneity of real-world jailbreaks compared to the curated temporal corpus. The key finding: **detection generalizes to naturally-occurring shift**, closing the "you only detected shifts you injected" gap.
 
-#### Regime C Results: GCG Transfer Detection
+#### Regime C Results: Cross-Classifier Anomaly Detection
 
-Overall detection rate: 22/160 cells (**13.8%**). The cross-classifier breakdown reveals the central finding:
+Overall detection rate: 22/160 cells (**13.8%**). The cross-classifier breakdown:
 
 | Classifier | Detected / Total | Detection Rate |
 |---|---|---|
@@ -270,22 +270,40 @@ Overall detection rate: 22/160 cells (**13.8%**). The cross-classifier breakdown
 | DeBERTa | 2/40 | 5.0% |
 | Text-Moderation | 0/40 | 0.0% |
 
-The GCG suffixes were optimized against DeBERTa, yet **Llama Guard detects the resulting distributional shift at 7× DeBERTa's rate** (35% vs 5%). This is transfer attack detection: suffixes crafted to fool one classifier produce distributional signatures visible to a different classifier's monitor.
+The GCG suffixes were optimized against DeBERTa, yet Llama Guard's monitor fires at 7× DeBERTa's rate (35% vs 5%). A score direction analysis reveals the mechanism.
+
+#### Score Direction Analysis
+
+For all 14 valid Llama Guard detections, we computed mean pre-shift and post-shift classifier scores:
+
+| | Mean pre-shift score | Mean post-shift score | Direction |
+|---|---|---|---|
+| All 14 cells | 0.05 (safe) | 0.78 (unsafe) | **TOWARD UNSAFE** (+0.73) |
+
+The post-shift score is identical (0.7835) across all 14 cells, indicating that all 23 GCG-suffixed examples score identically through Llama Guard — consistent with the adversarial suffix being a fixed token pattern that Llama Guard uniformly classifies as highly unsafe.
+
+**The GCG suffixes did not transfer their adversarial effect to Llama Guard.** They did the opposite: inputs that DeBERTa classifies as safe (score → 0, attack successful) are classified as highly unsafe (score → 0.78) by Llama Guard. The monitor fires because the score distribution shifts *upward*, not because the attack fooled a second classifier.
 
 #### Mechanistic Interpretation
 
-GCG attacks that successfully flip DeBERTa's individual classifications do *not* produce detectable distributional shift in DeBERTa's score space. The mechanism: successfully attacked examples score near zero (classified as safe with high confidence), making them indistinguishable from the safe reference distribution. The attack succeeds *precisely because* it moves inputs into the region where safe examples already live—there is no distributional signal to detect.
+The asymmetry between classifiers reveals two distinct failure modes:
 
-However, these same adversarial suffixes *do* shift Llama Guard's score distribution. The suffixes—optimized to manipulate DeBERTa's classification head—have cross-architecture effects on Llama Guard's generation distribution that are invisible to the target classifier but visible to others. This suggests a deployment strategy: **monitor each classifier with a heterogeneous ensemble of detectors**, where cross-architecture monitoring catches attacks that are invisible to the target classifier's own score distribution.
+**DeBERTa (target classifier, 2/40 detected):** GCG suffixes successfully push DeBERTa's scores into the safe region (near zero), making attacked examples indistinguishable from the safe reference distribution. The attack succeeds *precisely because* it moves inputs into the region where safe examples already live — there is no distributional signal for the monitor to detect.
+
+**Llama Guard (non-target classifier, 14/40 detected):** The same garbled GCG token sequences that fool DeBERTa's classification head appear anomalous to Llama Guard's generation mechanism. Llama Guard scores these inputs as highly unsafe (0.78), producing a massive upward shift in the score distribution that the monitor detects easily.
+
+The correct interpretation is **cross-classifier anomaly detection**, not adversarial transfer: adversarial perturbations optimized against one classifier appear anomalous to architecturally different classifiers, enabling detection via score distribution shift even without attack transfer. The attacker evades the target classifier but is flagged by a monitor on a different classifier — not because the attack transferred, but because the adversarial tokens themselves look suspicious.
+
+**Practical implication:** Heterogeneous cross-classifier monitoring provides anomaly detection coverage that single-classifier monitoring misses. An attacker who successfully evades one classifier's score distribution may produce detectable anomalies in another classifier's score space. This does not require the attack to transfer — it requires only that adversarial perturbations look different to different architectures.
 
 | | Regime A (Synthetic) | Regime B (Temporal) | Regime C (Adversarial) |
 |---|---|---|---|
 | **Ground truth** | Synthetic onset at known step | Real temporal jailbreaks | GCG success = True |
 | **Detection rate** | 86.5% (173/200) | 85.0% (17/20) | 13.8% (22/160) |
 | **Mean latency** | 36.3 steps (w=100) | 32.6 steps | — |
-| **Key finding** | Interaction dominates variance | Generalizes to real shift | Cross-classifier transfer detection |
+| **Key finding** | Interaction dominates variance | Generalizes to real shift | Cross-classifier anomaly detection |
 
-*Table: Summary across three ground-truth regimes. Regime C's low overall rate masks the Llama Guard finding (35% detection of DeBERTa-targeted attacks).*
+*Table: Summary across three ground-truth regimes. Regime C's low overall rate masks the Llama Guard finding (35% detection via anomaly, not transfer).*
 
 ## 6. Discussion
 
