@@ -2,7 +2,7 @@
 
 ## Abstract
 
-We present an online monitoring system for distributional shift in deployed safety classifiers, combining calibrated sequential statistics—confidence sequences on KS statistics and kernel MMD on classifier embeddings—to detect when a classifier has moved out of distribution. Upon detection, a conformal abstention layer adapts decision thresholds to preserve a target error rate. In a pre-registered factorial evaluation across 4 classifiers × 5 shift conditions × 5 seeds × 2 window sizes (200 cells), the system achieves an 86.5% valid detection rate (173/200 cells, 95% CI [81.1%, 90.6%]), with mean detection latency of 36.3 steps at window size 100 and empirical false alarm rates of 4–12% across classifiers. Detection holds across three ground-truth regimes: synthetic onset (86.5%), real temporal jailbreaks from public red-team databases (85%, 17/20), and a GCG adversarial demonstration showing that successful attacks erase distributional signal in the target classifier while appearing anomalous to non-target classifiers. Under temporal shift, unweighted conformal prediction loses 6.5 percentage points of coverage (from 91.0% to 84.5%), violating the 90% target; weighted conformal prediction recovers coverage to 98.5% with only 4 additional abstentions. Variance decomposition reveals that the classifier×shift interaction (η² = 0.265, p < 0.001) is the largest systematic factor, exceeding both main effects of classifier (η² = 0.196) and shift type (η² = 0.217), indicating that detection difficulty is fundamentally a property of the classifier–shift pairing rather than either factor alone.
+We present an online monitoring system for distributional shift in deployed safety classifiers, combining calibrated sequential statistics—confidence sequences on KS statistics and kernel MMD on classifier embeddings—to detect when a classifier has moved out of distribution. Upon detection, a conformal abstention layer adapts decision thresholds to preserve a target error rate. In a pre-registered factorial evaluation across 4 classifiers × 5 shift conditions × 20 seeds × 2 window sizes (800 cells), the system achieves an 86.6% valid detection rate (693/800 cells, 95% CI [84.1%, 88.8%]), with mean detection latency of 39.5 steps at window size 100 and empirical false alarm rates of 2–10% across classifiers. Detection holds across three ground-truth regimes: synthetic onset (86.6%), real temporal jailbreaks from public red-team databases (85%, 17/20), and a GCG adversarial demonstration showing that successful attacks erase distributional signal in the target classifier while appearing anomalous to non-target classifiers. Under temporal shift, unweighted conformal prediction loses 6.5 percentage points of coverage (from 91.0% to 84.5%), violating the 90% target; weighted conformal prediction recovers coverage to 98.5% with only 4 additional abstentions. Variance decomposition reveals that classifier (η² = 0.243), shift type (η² = 0.237), and their interaction (η² = 0.185) all contribute substantially to detection latency variance (all p < 0.001), indicating that neither factor alone determines detection difficulty and that per-classifier monitoring profiles are necessary.
 
 ## 1. Introduction
 
@@ -154,13 +154,13 @@ Each corpus contains 300 examples. The five conditions span the spectrum from na
 
 ### 4.3 Factorial Design
 
-Full factorial: 4 classifiers × 5 shift conditions × 5 random seeds × 2 window sizes (100, 200) = **200 cells**. Each cell runs a complete detection pipeline: reference window calibration → stream simulation with shift onset → alarm detection → latency measurement.
+Full factorial: 4 classifiers × 5 shift conditions × 20 random seeds × 2 window sizes (100, 200) = **800 cells**. Each cell runs a complete detection pipeline: reference window calibration → stream simulation with shift onset → alarm detection → latency measurement.
 
 **Pre-registration:** The factorial design, including all hyperparameters, was committed before execution (commit `be630f3`).
 
 **Negative controls:** Each cell includes a parallel negative control run (reference data only, no shift) to verify the alarm threshold does not fire on in-distribution data. A cell is marked as a valid detection only if: (1) detection latency ≥ 0, and (2) the negative control does not alarm.
 
-**Compute:** Mac Studio (M2 Ultra, 192GB) for Llama Guard 3 and ShieldGemma; MacBook Pro (M3 Max, 128GB) for DeBERTa and Text-Moderation. Total wall-clock: ~29 hours. All 200 cells completed without error; the extended 800-cell run is ongoing.
+**Compute:** Mac Studio (M2 Ultra, 192GB) for Llama Guard 3 and ShieldGemma; MacBook Pro (M3 Max, 128GB) for DeBERTa and Text-Moderation. Total wall-clock: ~120 hours. All 800 cells completed without error.
 
 ### 4.4 Deviations from Pre-Registration
 
@@ -168,11 +168,11 @@ The pre-registration (commit `be630f3`) specified a larger design that was reduc
 
 | Parameter | Pre-registered | Executed | Reason |
 |---|---|---|---|
-| Seeds | 20 | 5 | Compute budget (29 hours for 200 cells; 3,600 would require ~520 hours) |
+| Seeds | 20 | 20 | Full pre-registered design completed |
 | Ground-truth regimes | 3 (A, B, C) | 3 (A, B, C) | All three regimes completed; B and C at reduced scale (§5.4) |
 | Window sizes | 100, 200, 500 | 100, 200 | w=500 produces insufficient post-shift observations with 300 shifted examples |
 
-These are scope reductions, not protocol changes. The analysis plan (ANOVA, conformal evaluation, OC curves) and all hyperparameters (α=0.05, calibration percentile=97, reference size=500) match the pre-registration exactly. The reduced seed count (5 vs 20) limits statistical power for individual cell estimates but provides adequate power for main effects and interactions (all p < 0.001 by permutation test).
+These are scope reductions, not protocol changes. The analysis plan (ANOVA, conformal evaluation, OC curves) and all hyperparameters (α=0.05, calibration percentile=97, reference size=500) match the pre-registration exactly.
 
 ### 4.5 Reproducibility
 
@@ -182,26 +182,26 @@ Code, configurations, pre-registration document, and raw results are available a
 
 ### 5.1 RQ1: Detection Performance
 
-The system detects shift in 173 of 200 cells (86.5% detection rate, 95% Wilson CI [0.811, 0.906]), with empirical false alarm rates of 4–12% across classifiers. But the aggregate number obscures the structure. The detection latency table reveals a clear pattern:
+The system detects shift in 693 of 800 cells (86.6% detection rate, 95% Wilson CI [0.841, 0.888]), with empirical false alarm rates of 2–10% across classifiers. But the aggregate number obscures the structure. The detection latency table reveals a clear pattern:
 
 | Classifier | Paraphrase | Code-switch | Compositional | Temporal | Adversarial |
 |---|---|---|---|---|---|
-| DeBERTa | 29.1 [25, 32] | 33.1 [28, 39] | 26.2 [23, 30] | 26.9 [24, 29] | 40.2 [36, 46] |
-| Text-Moderation | 37.2 [33, 41] | 32.8 [27, 39] | 27.8 [25, 31] | 26.6 [25, 29] | 28.0 [26, 31] |
-| Llama Guard | 64.0 [54, 73] | 69.0 [54, 84] | 50.3 [42, 60] | 38.1 [34, 42] | 26.7 [23, 31] |
-| ShieldGemma | 97.4 [82, 112] | 68.5 [48, 92] | 39.4 [31, 48] | 26.9 [24, 30] | 27.7 [25, 30] |
+| DeBERTa | 28.4 [26, 31] | 32.1 [30, 35] | 24.5 [22, 27] | 23.5 [22, 25] | 36.6 [33, 40] |
+| Text-Moderation | 34.6 [32, 37] | 33.2 [31, 36] | 29.6 [28, 32] | 24.8 [23, 26] | 25.3 [23, 27] |
+| Llama Guard | 69.4 [63, 76] | 93.4 [81, 107] | 47.0 [43, 51] | 42.1 [39, 45] | 27.8 [26, 30] |
+| ShieldGemma | 85.0 [76, 94] | 81.8 [73, 90] | 43.9 [40, 48] | 27.1 [25, 29] | 26.8 [25, 29] |
 
-*Values are mean detection latency (steps) with 95% bootstrap CIs. n = 6–10 valid detections per cell.*
+*Values are mean detection latency (steps) with 95% bootstrap CIs. N=20 seeds × 2 window sizes = 40 cells per combination; n shown is valid detections per cell.*
 
-Reading down the columns: paraphrase is easy for encoders (29–37 steps) but hard for decoders (64–97 steps). Reading across the rows: adversarial suffix is the hardest condition for DeBERTa (40.2) but the easiest for Llama Guard (26.7). This crossover interaction—not visible in any single-classifier study—is the central finding that motivates RQ3.
+Reading down the columns: paraphrase is easy for encoders (28–35 steps) but hard for decoders (69–85 steps). Reading across the rows: adversarial suffix is the hardest condition for DeBERTa (36.6) but the easiest for Llama Guard (27.8). This crossover interaction—not visible in any single-classifier study—is the central finding that motivates RQ3. The slowest cell overall is Llama Guard × code-switch (93.4 steps [81, 107]), reflecting Llama Guard's robustness to multilingual transliteration — the generation mechanism is largely invariant to surface-level script changes, requiring many shifted examples before the score distribution diverges detectably.
 
-**Window size:** w=100 detects 9 steps faster on average (36.3 [32.4, 40.7] vs 45.3 [40.6, 50.4]) at the cost of slightly higher false alarm rates. The smaller window is more reactive but noisier.
+**Window size:** w=100 detects 7 steps faster on average (39.5 [37.0, 42.4] vs 45.4 [42.6, 48.3]; paired difference −7.0 [−8.6, −5.3], n=314 pairs) at the cost of slightly higher false alarm rates. The smaller window is more reactive but noisier.
 
-**False alarm rates (95% Wilson CIs):** Text-Moderation 4.0% [1.1%, 13.5%] < Llama Guard 6.0% [2.1%, 16.2%] < DeBERTa 8.0% [3.2%, 18.8%] < ShieldGemma 12.0% [5.6%, 23.8%]. We hypothesize that ShieldGemma's higher FAR reflects greater score variability under the null, as larger generative models produce more variable safety judgments on in-distribution inputs.
+**False alarm rates (95% Wilson CIs):** Text-Moderation 2.0% [0.8%, 5.0%] < Llama Guard 3.0% [1.4%, 6.4%] < ShieldGemma 8.5% [5.4%, 13.2%] < DeBERTa 9.5% [6.2%, 14.4%]. The 5× spread between Text-Moderation and DeBERTa likely reflects differences in score distribution shape: Text-Moderation produces tightly concentrated scores under the null, making the calibrated threshold more conservative, while DeBERTa's broader score variability produces more threshold exceedances.
 
-**Failure analysis.** Of the 27 cells without valid detections: 14 failed because the negative control also alarmed (false alarm), and 13 failed because the detector alarmed before shift onset (early alarm, latency < 0). No cell failed to detect entirely. The failures are distributed across classifiers (DeBERTa 8, Text-Moderation 7, ShieldGemma 7, Llama Guard 5) with one concentration: Llama Guard × adversarial-suffix accounts for 4 of 27 failures, consistent with its low detection rate (6/10) for that condition. The failure mode is predominantly calibration-related (threshold set too aggressively) rather than signal-related (no shift detected).
+**Failure analysis.** Of the 107 cells without valid detections: 68 failed because the detector alarmed before shift onset (early alarm, latency < 0), and 46 failed because the negative control also alarmed (false alarm), with 7 cells exhibiting both. No cell failed to detect entirely — every cell produced an alarm, but not always at the right time. The failures concentrate in two cells: **DeBERTa × adversarial-suffix** (13/40 invalid, 32.5%) and **Llama Guard × adversarial-suffix** (11/40 invalid, 27.5%). The DeBERTa failure is mechanistically explained by Regime C (§5.4): GCG suffixes push DeBERTa's scores into the safe region, producing no distributional signal — the same phenomenon that makes the attack invisible to the target classifier's monitor also makes the calibration threshold unreliable for that condition. The Llama Guard failure reflects the opposite problem: the adversarial tokens produce such a strong signal that the detector fires during calibration as well.
 
-**Detector channels.** The factorial evaluation uses the KS detector on classifier scores as the primary alarm channel. The MMD detector on embeddings is available in the system architecture but was not the alarm trigger in this evaluation; detector-channel attribution (which channel fires first, marginal value of MMD) is logged in the extended 800-cell run and will be reported in the final version.
+**Detector channels.** The factorial evaluation uses the KS detector on classifier scores as the primary alarm channel. The MMD detector on embeddings is available in the system architecture but was not the alarm trigger in this evaluation. Detector-channel attribution (which channel fires first, marginal value of MMD) is left to future work.
 
 ### 5.2 RQ2: Conformal Adaptation
 
@@ -225,20 +225,25 @@ Weighted conformal prediction recovers coverage to 98.5% post-shift—well above
 
 | Factor | η² proportion | 95% CI | Permutation *p* |
 |---|---|---|---|
-| Classifier | 0.196 | [0.137, 0.293] | < 0.001 |
-| Shift type | 0.217 | [0.146, 0.342] | < 0.001 |
-| Classifier × Shift | 0.265 | — | < 0.001 |
-| Residual | 0.322 | — | — |
+| Classifier | 0.243 | [0.205, 0.291] | < 0.001 |
+| Shift type | 0.237 | [0.193, 0.293] | < 0.001 |
+| Classifier × Shift | 0.185 | — | < 0.001 |
+| Residual | 0.335 | — | — |
 
-All three systematic factors are significant by permutation test (1000 permutations, all p < 0.001). The interaction term is the largest single systematic factor (η² = 0.265), though the difference from shift_type (0.217) is not statistically significant (bootstrap 95% CI on the difference: [−0.090, 0.199]). The key finding is not that the interaction dominates in magnitude, but that it is significant and large: knowing the classifier tells you less about detection latency than knowing the classifier *and* the shift type together. The top interactions by magnitude:
+All three systematic factors are significant by permutation test (1000 permutations, all p < 0.001). Classifier (24.3%) and shift type (23.7%) are the two largest systematic factors, with the interaction (18.5%) close behind. The three factors contribute roughly equally — neither classifier choice nor shift type alone determines detection difficulty, and their interaction adds substantial additional variance. The bootstrap CIs on classifier and shift type overlap, indicating no significant difference between these main effects.
+
+The key finding is that all three factors are substantial and significant: knowing the classifier tells you something about detection latency, knowing the shift type tells you something additional, and knowing the *pairing* tells you something beyond what either factor alone predicts. The top interactions by magnitude:
 
 | Combination | Effect (steps) | Interpretation |
 |---|---|---|
-| ShieldGemma × paraphrase | +34.5 | Generative model robust to rephrasing → slow detection |
-| DeBERTa × adversarial-suffix | +18.7 | Encoder partially ignores appended tokens → slow detection |
-| DeBERTa × paraphrase | −15.9 | Encoder sensitive to surface form → fast detection |
+| DeBERTa × adversarial-suffix | +21.6 | Encoder partially ignores appended tokens → slow detection |
+| ShieldGemma × paraphrase | +19.9 | Generative model robust to rephrasing → slow detection |
+| Llama Guard × code-switch | +17.9 | Generation invariant to script changes → slow detection |
+| Llama Guard × adversarial-suffix | −16.0 | Suffix disrupts generation → fast detection |
 
-These interaction effects are large—ShieldGemma × paraphrase takes 34.5 steps longer than predicted by the marginal effects of ShieldGemma and paraphrase separately. A monitoring system that sets thresholds based on classifier-level or shift-level averages will systematically under-alert on hard pairings and over-alert on easy ones.
+These interaction effects are large — DeBERTa × adversarial-suffix takes 21.6 steps longer than predicted by the marginal effects of DeBERTa and adversarial-suffix separately. A monitoring system that sets thresholds based on classifier-level or shift-level averages will systematically under-alert on hard pairings and over-alert on easy ones.
+
+**Replication stability.** The initial N=5 estimate (200 cells) yielded η² = 0.265 for the interaction, which appeared to be the largest factor. At N=20 (800 cells), the interaction shrinks to 0.185 while the main effects grow (classifier: 0.196 → 0.243, shift: 0.217 → 0.237). The inflated N=5 interaction estimate is consistent with small-sample noise amplifying cell-level outliers. The qualitative finding — that the interaction is significant and substantial — replicates; the quantitative claim that it "dominates" does not.
 
 ### 5.4 Robustness Across Ground-Truth Regimes
 
@@ -289,7 +294,7 @@ Two classifiers, two opposite responses to the same attack. This is the core Reg
 | | Regime A (Synthetic) | Regime B (Temporal) | Regime C (Adversarial) |
 |---|---|---|---|
 | **Ground truth** | Synthetic onset at known step | Real temporal jailbreaks | GCG success = True |
-| **Detection rate** | 86.5% (173/200) | 85.0% (17/20) | Classifier-level (see above) |
+| **Detection rate** | 86.6% (693/800) | 85.0% (17/20) | Classifier-level (see above) |
 | **Mean latency** | 36.3 steps (w=100) | 32.6 steps | — |
 | **Key finding** | Interaction dominates variance | Generalizes to real shift | Cross-classifier anomaly detection |
 
@@ -299,7 +304,7 @@ Two classifiers, two opposite responses to the same attack. This is the core Reg
 
 ### 6.1 Deployment Requires Per-Classifier Monitoring Profiles
 
-The dominance of the interaction term (η² = 0.265, the largest single systematic factor) is the central finding of the variance decomposition: detection difficulty is not a property of the classifier or the shift type alone, but of their pairing. The practical implication is that deployment teams cannot select a single monitoring configuration and apply it uniformly. The variance decomposition tells you *which* detector to pair with *which* classifier—this is the practitioner contribution of the factorial design.
+The variance decomposition shows that classifier (η² = 0.243), shift type (η² = 0.237), and their interaction (η² = 0.185) all contribute substantially to detection latency. The practical implication is that deployment teams cannot select a single monitoring configuration and apply it uniformly. The interaction term — though not the largest factor — is significant and large enough that ignoring it leads to systematic miscalibration. The variance decomposition tells you *which* detector to pair with *which* classifier—this is the practitioner contribution of the factorial design.
 
 Concretely: DeBERTa requires aggressive monitoring for adversarial suffixes (+18.7 steps above expected) but can afford relaxed thresholds for paraphrase (−15.9 steps). ShieldGemma requires the opposite profile—tight monitoring for paraphrase (+34.5 steps) but standard thresholds for adversarial inputs. A monitoring system that ignores these interaction effects will either over-alert on easy pairings or under-alert on hard ones.
 
@@ -317,8 +322,9 @@ This maps directly to deployment tradeoffs: if your threat model is adversarial 
 
 - **Single-condition conformal evaluation.** RQ2 was evaluated on DeBERTa × temporal shift only—the pairing with the strongest shift signal. Coverage degradation under subtler shifts (e.g., code-switch on Llama Guard) may be smaller, reducing the benefit of weighted correction. This is a limitation of the current evaluation, not a claim about the method's generality.
 - **Abrupt shift onset.** Our evaluation assumes abrupt shift onset at a known step; gradual drift would require CUSUM-style statistics and is a harder problem that we do not address.
-- **Residual variance.** 32% of variance in detection latency is attributable to seed/noise. This is expected with 5 seeds per cell but means individual cell estimates have wide confidence intervals. Post-hoc power analysis: with n=5 per cell, pairwise comparisons can only detect differences exceeding ~32 steps (Cohen's d = 1.46) at α=0.05 with 80% power. The factorial design provides power for main effects and interactions (all p < 0.001) but not for individual cell-level claims.
+- **Residual variance.** 33.5% of variance in detection latency is attributable to seed/noise. With 20 seeds per cell, individual cell estimates have reasonable precision (pooled within-cell SD = 15.3 steps, MDE = 13.9 steps at 80% power). The factorial design provides strong power for main effects and interactions (all p < 0.001).
 - **Binary classifiers only.** All four classifiers produce a single unsafe probability. Multi-category safety taxonomies (e.g., Llama Guard's 14 categories) may exhibit category-specific shift patterns invisible to a scalar score monitor.
+- **FAR calibration asymmetry.** Empirical false alarm rates vary 5× across classifiers (Text-Moderation 2.0% vs DeBERTa 9.5%) despite identical calibration procedures. This likely reflects differences in score distribution shape under the null: classifiers with tightly concentrated null scores (Text-Moderation) produce more conservative thresholds, while classifiers with broader null variability (DeBERTa) exceed thresholds more frequently. Per-classifier calibration tuning — adjusting the percentile threshold or calibration stream length — may be needed in deployment.
 - **Homogeneous negative controls.** Our negative control streams draw exclusively from WildGuardMix unharmful examples, forming a homogeneous reference distribution; production streams with higher natural variance—mixed content, multiple topics, temporal drift within the reference period—may require larger calibration sets or recalibration of the empirical threshold.
 
 ### 6.4 Future Work
