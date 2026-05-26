@@ -90,7 +90,10 @@ def evaluate_coverage(layer: ConformalAbstentionLayer, test_data: list[tuple[Cla
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--classifier", default="deberta")
+    parser.add_argument("--output", default=None, help="Path to save results JSON")
     args = parser.parse_args()
+    if args.output is None:
+        args.output = f"results/conformal_{args.classifier.replace('-', '_')}.json"
 
     print(f"Classifier: {args.classifier}")
     print(f"Target coverage: {1 - TARGET_ERROR_RATE:.0%}")
@@ -186,6 +189,31 @@ def main():
         print(f"→ Weighted conformal recovers {cov_post_wt - cov_post_uw:.3f} coverage")
     else:
         print("→ Weighted conformal did not improve post-shift coverage")
+
+    # Save results JSON
+    results = {
+        "classifier": args.classifier,
+        "target_error_rate": TARGET_ERROR_RATE,
+        "n_calibration": N_CALIBRATION,
+        "n_pre_shift": N_PRE_SHIFT,
+        "n_post_shift": N_POST_SHIFT,
+        "unweighted": {
+            "pre_shift_coverage": float(cov_pre_uw),
+            "post_shift_coverage": float(cov_post_uw),
+            "coverage_gap": float(cov_pre_uw - cov_post_uw),
+            "post_shift_abstentions": abs_post_uw,
+        },
+        "weighted_on_alarm": {
+            "pre_shift_coverage": float(cov_pre_wt),
+            "post_shift_coverage": float(cov_post_wt),
+            "coverage_gap": float(cov_pre_wt - cov_post_wt),
+            "post_shift_abstentions": abs_post_wt,
+        },
+    }
+    out_path = Path(args.output)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(results, indent=2) + "\n")
+    print(f"\nResults saved to {out_path}")
 
 
 if __name__ == "__main__":
