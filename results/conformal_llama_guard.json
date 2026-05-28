@@ -1,0 +1,19 @@
+{
+  "classifier": "llama-guard",
+  "target_error_rate": 0.1,
+  "n_calibration": 300,
+  "n_pre_shift": 200,
+  "n_post_shift": 200,
+  "unweighted": {
+    "pre_shift_coverage": 0.89,
+    "post_shift_coverage": 0.555,
+    "coverage_gap": 0.33499999999999996,
+    "post_shift_abstentions": 41
+  },
+  "weighted_on_alarm": {
+    "pre_shift_coverage": 0.915,
+    "post_shift_coverage": 0.57,
+    "coverage_gap": 0.3450000000000001,
+    "post_shift_abstentions": 32
+  }
+}
