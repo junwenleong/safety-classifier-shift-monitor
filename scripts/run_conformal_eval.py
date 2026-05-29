@@ -170,6 +170,26 @@ def main():
     # Pre-shift coverage for weighted (before alarm, same as unweighted)
     cov_pre_wt, abs_pre_wt = evaluate_coverage(layer_wt, pre_data)
 
+    # --- Weight clipping diagnostic ---
+    from shift_detection_monitor.adaptation.density_ratio import DensityRatioEstimator
+    target_emb = np.array([r.representation for r in post_records if r.representation is not None])
+    dr_estimator = DensityRatioEstimator(method="logistic", max_weight=10.0)
+    dr_estimator.fit(cal_embeddings, target_emb)
+    cal_weights = dr_estimator.weights(cal_embeddings)
+    n_at_upper = np.sum(cal_weights >= 10.0 - 1e-6)
+    n_at_lower = np.sum(cal_weights <= 0.1 + 1e-6)
+    frac_clipped = (n_at_upper + n_at_lower) / len(cal_weights)
+    effective_n = (np.sum(cal_weights) ** 2) / np.sum(cal_weights ** 2)
+    weight_diagnostic = {
+        "frac_at_upper_clip": float(n_at_upper / len(cal_weights)),
+        "frac_at_lower_clip": float(n_at_lower / len(cal_weights)),
+        "frac_clipped_total": float(frac_clipped),
+        "effective_sample_size": float(effective_n),
+        "max_weight": float(np.max(cal_weights)),
+        "min_weight": float(np.min(cal_weights)),
+        "median_weight": float(np.median(cal_weights)),
+    }
+
     # --- Results table ---
     print("\n" + "=" * 75)
     print(f"CONFORMAL EVALUATION — {args.classifier} — temporal shift")
@@ -190,6 +210,14 @@ def main():
     else:
         print("→ Weighted conformal did not improve post-shift coverage")
 
+    print(f"\nWeight clipping diagnostic:")
+    print(f"  Frac at upper clip (≥10): {weight_diagnostic['frac_at_upper_clip']:.3f}")
+    print(f"  Frac at lower clip (≤0.1): {weight_diagnostic['frac_at_lower_clip']:.3f}")
+    print(f"  Total clipped: {weight_diagnostic['frac_clipped_total']:.3f}")
+    print(f"  Effective sample size: {weight_diagnostic['effective_sample_size']:.1f} / {N_CALIBRATION}")
+    print(f"  Weight range: [{weight_diagnostic['min_weight']:.3f}, {weight_diagnostic['max_weight']:.3f}]")
+    print(f"  Median weight: {weight_diagnostic['median_weight']:.3f}")
+
     # Save results JSON
     results = {
         "classifier": args.classifier,
@@ -209,6 +237,7 @@ def main():
             "coverage_gap": float(cov_pre_wt - cov_post_wt),
             "post_shift_abstentions": abs_post_wt,
         },
+        "weight_diagnostic": weight_diagnostic,
     }
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
