@@ -15,5 +15,14 @@
     "post_shift_coverage": 0.57,
     "coverage_gap": 0.3450000000000001,
     "post_shift_abstentions": 32
+  },
+  "weight_diagnostic": {
+    "frac_at_upper_clip": 0.0,
+    "frac_at_lower_clip": 1.0,
+    "frac_clipped_total": 1.0,
+    "effective_sample_size": 299.99999999999983,
+    "max_weight": 0.1,
+    "min_weight": 0.1,
+    "median_weight": 0.1
   }
 }
