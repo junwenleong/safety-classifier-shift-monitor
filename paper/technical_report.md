@@ -77,7 +77,7 @@ Weighted correction effectiveness degrades monotonically from discriminative to 
 
 | Classifier | Dim | Coverage gap | Recovery | Mechanism |
 |---|---|---|---|---|
-| DeBERTa | 768 | 6.5 pp | +14.0 pp | ESS = 79/300, max weight 3.34 |
+| DeBERTa | 1024 | 6.5 pp | +14.0 pp | ESS = 79/300, max weight 3.34 |
 | ShieldGemma | 3584 | 22.5 pp | +6.0 pp | ESS = 300/300, all at floor (no-op) |
 | Llama Guard | 4096 | 33.5 pp | +1.5 pp | ESS = 300/300, all at floor (no-op) |
 
