@@ -16,7 +16,7 @@ The monitor observes a stream of classifier outputs: unsafe-class probability an
 
 | Classifier | Architecture | Parameters | Embedding dim |
 |---|---|---|---|
-| DeBERTa-v3-large | Transformer encoder | 304M | 768 |
+| DeBERTa-v3-large | Transformer encoder | 304M | 1024 |
 | Text-Moderation (KoalaAI) | DeBERTa-v3-base | 86M | 768 |
 | Llama Guard 3 | Decoder-only LLM | 8B | 4096 |
 | ShieldGemma | Decoder-only LLM | 9B | 3584 |

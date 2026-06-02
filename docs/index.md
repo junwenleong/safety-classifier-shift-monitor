@@ -49,7 +49,7 @@ The monitor watches the distribution of classifier scores via a sliding-window K
 
 | Classifier | Embedding dim | Coverage gap | Weighted recovery | Mechanism |
 |---|---|---|---|---|
-| DeBERTa | 768-d | 6.5 pp | +14.0 pp | 79/300 calibration points get meaningful weights |
+| DeBERTa | 1024-d | 6.5 pp | +14.0 pp | 79/300 calibration points get meaningful weights |
 | ShieldGemma | 3584-d | 22.5 pp | +6.0 pp | All weights collapse to floor (ESS = 300/300) |
 | Llama Guard 3 | 4096-d | 33.5 pp | +1.5 pp | All weights collapse to floor (ESS = 300/300) |
 
