@@ -1,0 +1,8 @@
+title: "Jun Wen Leong"
+description: "86.6% online shift detection across 800 pre-registered cells — but weighted conformal correction collapses for generative models due to density ratio failure in high-dimensional embeddings."
+theme: minima
+url: "https://junwenleong.github.io"
+baseurl: "/safety-classifier-shift-monitor"
+markdown: kramdown
+twitter:
+  card: summary_large_image
