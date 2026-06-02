@@ -1,0 +1,19 @@
+{
+  "classifier": "deberta",
+  "target_error_rate": 0.1,
+  "n_calibration": 300,
+  "n_pre_shift": 200,
+  "n_post_shift": 200,
+  "unweighted": {
+    "pre_shift_coverage": 0.925,
+    "post_shift_coverage": 0.0,
+    "coverage_gap": 0.925,
+    "post_shift_abstentions": 42
+  },
+  "weighted_on_alarm": {
+    "pre_shift_coverage": 0.94,
+    "post_shift_coverage": 0.0,
+    "coverage_gap": 0.94,
+    "post_shift_abstentions": 29
+  }
+}
