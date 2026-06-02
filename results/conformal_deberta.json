@@ -5,15 +5,24 @@
   "n_pre_shift": 200,
   "n_post_shift": 200,
   "unweighted": {
-    "pre_shift_coverage": 0.925,
-    "post_shift_coverage": 0.0,
-    "coverage_gap": 0.925,
-    "post_shift_abstentions": 42
+    "pre_shift_coverage": 0.91,
+    "post_shift_coverage": 0.845,
+    "coverage_gap": 0.06500000000000006,
+    "post_shift_abstentions": 25
   },
   "weighted_on_alarm": {
-    "pre_shift_coverage": 0.94,
-    "post_shift_coverage": 0.0,
-    "coverage_gap": 0.94,
+    "pre_shift_coverage": 1.0,
+    "post_shift_coverage": 0.985,
+    "coverage_gap": 0.015000000000000013,
     "post_shift_abstentions": 29
+  },
+  "weight_diagnostic": {
+    "frac_at_upper_clip": 0.0,
+    "frac_at_lower_clip": 0.9166666666666666,
+    "frac_clipped_total": 0.9166666666666666,
+    "effective_sample_size": 79.41863483712295,
+    "max_weight": 3.3412105454991643,
+    "min_weight": 0.1,
+    "median_weight": 0.1
   }
 }
