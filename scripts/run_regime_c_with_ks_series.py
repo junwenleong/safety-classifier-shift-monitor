@@ -134,7 +134,7 @@ def run_with_ks_series(classifier, reference, shifted, shift_onset, window_size,
 
 
 def plot_trajectories(all_results: dict) -> None:
-    """Plot KS trajectories for all classifiers."""
+    """Plot KS trajectories normalized by per-classifier threshold."""
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(1, 1, figsize=(8, 4))
@@ -145,21 +145,22 @@ def plot_trajectories(all_results: dict) -> None:
 
     for clf_name, result in all_results.items():
         series = result["ks_series"]
+        threshold = result["threshold"]
         steps = [s["step"] for s in series]
-        ks_vals = [s["ks"] for s in series]
+        # Normalize by classifier's own threshold so 1.0 = alarm line
+        ks_vals = [s["ks"] / threshold for s in series]
         ax.plot(steps, ks_vals, label=labels[clf_name], color=colors[clf_name], lw=1.5)
 
     # Mark shift onset
     onset = list(all_results.values())[0]["shift_onset"]
     ax.axvline(onset, color="black", ls="--", lw=0.8, alpha=0.5, label="Shift onset")
 
-    # Mark threshold (use first available)
-    threshold = list(all_results.values())[0]["threshold"]
-    ax.axhline(threshold, color="gray", ls=":", lw=0.8, alpha=0.5, label=f"Threshold ({threshold:.3f})")
+    # Alarm threshold at 1.0 (normalized)
+    ax.axhline(1.0, color="gray", ls=":", lw=0.8, alpha=0.7, label="Alarm threshold")
 
     ax.set_xlabel("Stream Step")
-    ax.set_ylabel("KS Statistic")
-    ax.set_title("Regime C: KS Statistic Trajectories (Adversarial Success)")
+    ax.set_ylabel("KS / Threshold (normalized)")
+    ax.set_title("Regime C: Normalized KS Trajectories (Adversarial Success)")
     ax.legend(loc="upper left", fontsize=9)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
@@ -191,10 +192,10 @@ def main():
         print(f"  Calibrating (window_size={WINDOW_SIZE})...")
         max_ks = []
         for i in range(N_CALIBRATION):
-            start = (i * 50) % len(neg_pool)
-            examples = neg_pool[start:start + N_REFERENCE]
-            if len(examples) < WINDOW_SIZE:
-                examples = neg_pool[:N_REFERENCE]
+            # Shuffle neg_pool with unique seed per iteration (avoids slice exhaustion)
+            rng = np.random.default_rng(42 + i * 7)
+            indices = rng.permutation(len(neg_pool))[:N_REFERENCE]
+            examples = [neg_pool[j] for j in indices]
             mk, _ = run_stream_ks(classifier, examples, WINDOW_SIZE, seed=42 + i * 7)
             max_ks.append(mk)
         threshold = float(np.percentile(max_ks, CAL_PCT))
