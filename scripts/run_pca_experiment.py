@@ -72,8 +72,14 @@ def load_temporal_shift(n: int):
     return [{"text": r["text"], "label": 1} for r in raw[:n]]
 
 
-def run_pca_conformal(cal_embeddings, cal_scores, cal_labels, post_embeddings, post_scores, post_labels, pca_dim):
-    """Run conformal with PCA-reduced embeddings for density ratio."""
+def run_pca_conformal(cal_data, post_data, cal_embeddings, post_embeddings, pca_dim):
+    """Run conformal with PCA-reduced embeddings for density ratio.
+
+    Uses ConformalAbstentionLayer (same as P1+P4) to ensure correct
+    nonconformity score convention.
+    """
+    from shift_detection_monitor.types import ClassifierOutput
+
     # Fit PCA on calibration embeddings
     actual_dim = min(pca_dim, cal_embeddings.shape[1], cal_embeddings.shape[0])
     pca = PCA(n_components=actual_dim)
@@ -92,27 +98,49 @@ def run_pca_conformal(cal_embeddings, cal_scores, cal_labels, post_embeddings, p
     ess = float((np.sum(cal_weights) ** 2) / np.sum(cal_weights ** 2))
     collapse = (frac_at_floor + frac_at_ceil) > 0.95
 
-    # Weighted conformal coverage
-    # Normalize weights
-    w_norm = cal_weights / np.sum(cal_weights)
+    # Unweighted coverage via ConformalAbstentionLayer
+    layer_uw = ConformalAbstentionLayer(
+        target_error_rate=TARGET_ERROR_RATE,
+        conformal_mode="unweighted",
+        calibration_set=cal_data,
+    )
+    n_covered_uw = sum(1 for o, l in post_data if l in layer_uw.predict_set(o))
+    uw_coverage = n_covered_uw / len(post_data)
 
-    # Compute weighted quantile for threshold
-    nonconformity_scores = 1.0 - cal_scores  # simple nonconformity
-    sorted_idx = np.argsort(nonconformity_scores)
-    sorted_nc = nonconformity_scores[sorted_idx]
-    sorted_w = w_norm[sorted_idx]
-    cum_w = np.cumsum(sorted_w)
-    threshold_idx = np.searchsorted(cum_w, 1 - TARGET_ERROR_RATE)
-    threshold_idx = min(threshold_idx, len(sorted_nc) - 1)
-    weighted_threshold = sorted_nc[threshold_idx]
-
-    # Unweighted threshold for comparison
-    uw_threshold = np.quantile(nonconformity_scores, 1 - TARGET_ERROR_RATE)
-
-    # Coverage on post-shift
-    post_nc = 1.0 - post_scores
-    uw_coverage = float(np.mean(post_nc <= uw_threshold))
-    wt_coverage = float(np.mean(post_nc <= weighted_threshold))
+    # Weighted coverage: build FrozenReferenceStats with PCA-reduced embeddings,
+    # then use ConformalAbstentionLayer with on_alarm
+    # We need to create synthetic ClassifierOutputs with PCA-reduced representations
+    cal_data_pca = [
+        (ClassifierOutput(score=o.score, predicted_label=o.predicted_label, representation=cal_reduced[i]),
+         label)
+        for i, (o, label) in enumerate(cal_data)
+    ]
+    layer_wt = ConformalAbstentionLayer(
+        target_error_rate=TARGET_ERROR_RATE,
+        conformal_mode="weighted-on-alarm",
+        calibration_set=cal_data_pca,
+    )
+    frozen = FrozenReferenceStats(
+        kernel_bandwidth=1.0,
+        reference_cdf=np.array([o.score for o, _ in cal_data]),
+        reference_embeddings=cal_reduced,
+        mmd_null_distribution=np.zeros(100),
+        mmd_reference_value=0.0,
+        pca_components=None,
+        pca_mean=None,
+        n_reference=len(cal_data),
+    )
+    post_records = [
+        StreamRecord(
+            time_step=i, text="", score=o.score, representation=post_reduced[i],
+            ground_truth_label=label, is_shifted=True,
+            source_dataset="temporal", shift_condition="temporal",
+        )
+        for i, (o, label) in enumerate(post_data)
+    ]
+    layer_wt.on_alarm(post_records, frozen)
+    n_covered_wt = sum(1 for o, l in post_data if l in layer_wt.predict_set(o))
+    wt_coverage = n_covered_wt / len(post_data)
 
     return {
         "pca_dim": actual_dim,
@@ -124,11 +152,9 @@ def run_pca_conformal(cal_embeddings, cal_scores, cal_labels, post_embeddings, p
         "max_weight": float(np.max(cal_weights)),
         "min_weight": float(np.min(cal_weights)),
         "median_weight": float(np.median(cal_weights)),
-        "unweighted_coverage": uw_coverage,
-        "weighted_coverage": wt_coverage,
-        "coverage_recovery": wt_coverage - uw_coverage,
-        "weighted_threshold": float(weighted_threshold),
-        "unweighted_threshold": float(uw_threshold),
+        "unweighted_coverage": float(uw_coverage),
+        "weighted_coverage": float(wt_coverage),
+        "coverage_recovery": float(wt_coverage - uw_coverage),
     }
 
 
@@ -149,33 +175,25 @@ def main():
         print(f"[{clf_name}] Loading classifier...")
         classifier = get_classifier(clf_name)
 
-        # Extract embeddings
+        # Extract embeddings and build (ClassifierOutput, label) pairs
         print(f"  Running inference on calibration ({N_CALIBRATION})...")
-        cal_scores = []
+        cal_data = []
         cal_embeddings = []
-        cal_labels = []
         for ex in cal_examples:
             output = classifier.predict(ex["text"])
-            cal_scores.append(output.score)
+            cal_data.append((output, ex["label"]))
             cal_embeddings.append(output.representation)
-            cal_labels.append(ex["label"])
 
         print(f"  Running inference on post-shift ({N_POST_SHIFT})...")
-        post_scores = []
+        post_data = []
         post_embeddings = []
-        post_labels = []
         for ex in post_examples:
             output = classifier.predict(ex["text"])
-            post_scores.append(output.score)
+            post_data.append((output, ex["label"]))
             post_embeddings.append(output.representation)
-            post_labels.append(ex["label"])
 
         cal_emb = np.array(cal_embeddings)
         post_emb = np.array(post_embeddings)
-        cal_sc = np.array(cal_scores)
-        post_sc = np.array(post_scores)
-        cal_lb = np.array(cal_labels)
-        post_lb = np.array(post_labels)
 
         print(f"  Embedding dim: {cal_emb.shape[1]}")
 
@@ -204,7 +222,7 @@ def main():
             if pca_dim >= cal_emb.shape[1]:
                 continue
             print(f"  [PCA-{pca_dim}] Running...")
-            result = run_pca_conformal(cal_emb, cal_sc, cal_lb, post_emb, post_sc, post_lb, pca_dim)
+            result = run_pca_conformal(cal_data, post_data, cal_emb, post_emb, pca_dim)
             result["classifier"] = clf_name
             result["embedding_dim"] = int(cal_emb.shape[1])
             all_results.append(result)
