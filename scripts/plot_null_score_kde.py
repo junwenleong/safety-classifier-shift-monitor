@@ -28,8 +28,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 CLASSIFIERS = ["deberta", "text-moderation", "llama-guard", "shieldgemma"]
 CLASSIFIER_LABELS = {
-    "deberta": "DeBERTa-v3 (86M)",
-    "text-moderation": "Text-Moderation (304M)",
+    "deberta": "DeBERTa-v3-large (304M)",
+    "text-moderation": "Text-Moderation (86M)",
     "llama-guard": "Llama Guard 3 (8B)",
     "shieldgemma": "ShieldGemma (9B)",
 }
