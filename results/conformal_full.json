@@ -1,0 +1,302 @@
+[
+  {
+    "classifier": "deberta",
+    "shift_type": "temporal",
+    "unweighted": {
+      "pre_shift_coverage": 0.91,
+      "post_shift_coverage": 0.825,
+      "coverage_gap": 0.08500000000000008,
+      "post_shift_abstentions": 29
+    },
+    "weighted": {
+      "post_shift_coverage": 0.985,
+      "coverage_recovery": 0.16000000000000003,
+      "post_shift_abstentions": 34
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 0.92,
+      "frac_clipped_total": 0.92,
+      "effective_sample_size": 88.08136241708337,
+      "max_weight": 3.0216189147844643,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": false
+  },
+  {
+    "classifier": "deberta",
+    "shift_type": "paraphrase",
+    "unweighted": {
+      "pre_shift_coverage": 0.91,
+      "post_shift_coverage": 0.395,
+      "coverage_gap": 0.515,
+      "post_shift_abstentions": 72
+    },
+    "weighted": {
+      "post_shift_coverage": 0.785,
+      "coverage_recovery": 0.39,
+      "post_shift_abstentions": 84
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 0.6533333333333333,
+      "frac_clipped_total": 0.6533333333333333,
+      "effective_sample_size": 46.170682682338715,
+      "max_weight": 7.550596804348303,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": false
+  },
+  {
+    "classifier": "deberta",
+    "shift_type": "adversarial-suffix",
+    "unweighted": {
+      "pre_shift_coverage": 0.91,
+      "post_shift_coverage": 0.585,
+      "coverage_gap": 0.32500000000000007,
+      "post_shift_abstentions": 12
+    },
+    "weighted": {
+      "post_shift_coverage": 0.605,
+      "coverage_recovery": 0.020000000000000018,
+      "post_shift_abstentions": 8
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 0.9266666666666666,
+      "frac_clipped_total": 0.9266666666666666,
+      "effective_sample_size": 206.12673169657447,
+      "max_weight": 0.8191603469380428,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": false
+  },
+  {
+    "classifier": "text-moderation",
+    "shift_type": "temporal",
+    "unweighted": {
+      "pre_shift_coverage": 0.88,
+      "post_shift_coverage": 0.79,
+      "coverage_gap": 0.08999999999999997,
+      "post_shift_abstentions": 40
+    },
+    "weighted": {
+      "post_shift_coverage": 0.81,
+      "coverage_recovery": 0.020000000000000018,
+      "post_shift_abstentions": 32
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 1.0,
+      "frac_clipped_total": 1.0,
+      "effective_sample_size": 299.99999999999983,
+      "max_weight": 0.1,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": true
+  },
+  {
+    "classifier": "text-moderation",
+    "shift_type": "paraphrase",
+    "unweighted": {
+      "pre_shift_coverage": 0.88,
+      "post_shift_coverage": 0.365,
+      "coverage_gap": 0.515,
+      "post_shift_abstentions": 55
+    },
+    "weighted": {
+      "post_shift_coverage": 0.37,
+      "coverage_recovery": 0.0050000000000000044,
+      "post_shift_abstentions": 41
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 0.9866666666666667,
+      "frac_clipped_total": 0.9866666666666667,
+      "effective_sample_size": 297.12018109492925,
+      "max_weight": 0.26554899209310573,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": true
+  },
+  {
+    "classifier": "text-moderation",
+    "shift_type": "adversarial-suffix",
+    "unweighted": {
+      "pre_shift_coverage": 0.88,
+      "post_shift_coverage": 0.9,
+      "coverage_gap": -0.020000000000000018,
+      "post_shift_abstentions": 16
+    },
+    "weighted": {
+      "post_shift_coverage": 0.9,
+      "coverage_recovery": 0.0,
+      "post_shift_abstentions": 16
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 1.0,
+      "frac_clipped_total": 1.0,
+      "effective_sample_size": 299.99999999999983,
+      "max_weight": 0.1,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": true
+  },
+  {
+    "classifier": "llama-guard",
+    "shift_type": "temporal",
+    "unweighted": {
+      "pre_shift_coverage": 0.89,
+      "post_shift_coverage": 0.54,
+      "coverage_gap": 0.35,
+      "post_shift_abstentions": 40
+    },
+    "weighted": {
+      "post_shift_coverage": 0.56,
+      "coverage_recovery": 0.020000000000000018,
+      "post_shift_abstentions": 30
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 1.0,
+      "frac_clipped_total": 1.0,
+      "effective_sample_size": 299.99999999999983,
+      "max_weight": 0.1,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": true
+  },
+  {
+    "classifier": "llama-guard",
+    "shift_type": "paraphrase",
+    "unweighted": {
+      "pre_shift_coverage": 0.89,
+      "post_shift_coverage": 0.175,
+      "coverage_gap": 0.7150000000000001,
+      "post_shift_abstentions": 45
+    },
+    "weighted": {
+      "post_shift_coverage": 0.19,
+      "coverage_recovery": 0.015000000000000013,
+      "post_shift_abstentions": 28
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 0.99,
+      "frac_clipped_total": 0.99,
+      "effective_sample_size": 299.1224463388406,
+      "max_weight": 0.1918880419133902,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": true
+  },
+  {
+    "classifier": "llama-guard",
+    "shift_type": "adversarial-suffix",
+    "unweighted": {
+      "pre_shift_coverage": 0.89,
+      "post_shift_coverage": 0.63,
+      "coverage_gap": 0.26,
+      "post_shift_abstentions": 66
+    },
+    "weighted": {
+      "post_shift_coverage": 0.73,
+      "coverage_recovery": 0.09999999999999998,
+      "post_shift_abstentions": 38
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 1.0,
+      "frac_clipped_total": 1.0,
+      "effective_sample_size": 299.99999999999983,
+      "max_weight": 0.1,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": true
+  },
+  {
+    "classifier": "shieldgemma",
+    "shift_type": "temporal",
+    "unweighted": {
+      "pre_shift_coverage": 0.915,
+      "post_shift_coverage": 0.69,
+      "coverage_gap": 0.2250000000000001,
+      "post_shift_abstentions": 45
+    },
+    "weighted": {
+      "post_shift_coverage": 0.765,
+      "coverage_recovery": 0.07500000000000007,
+      "post_shift_abstentions": 27
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 1.0,
+      "frac_clipped_total": 1.0,
+      "effective_sample_size": 299.99999999999983,
+      "max_weight": 0.1,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": true
+  },
+  {
+    "classifier": "shieldgemma",
+    "shift_type": "paraphrase",
+    "unweighted": {
+      "pre_shift_coverage": 0.915,
+      "post_shift_coverage": 0.19,
+      "coverage_gap": 0.7250000000000001,
+      "post_shift_abstentions": 28
+    },
+    "weighted": {
+      "post_shift_coverage": 0.195,
+      "coverage_recovery": 0.0050000000000000044,
+      "post_shift_abstentions": 22
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 1.0,
+      "frac_clipped_total": 1.0,
+      "effective_sample_size": 299.99999999999983,
+      "max_weight": 0.1,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": true
+  },
+  {
+    "classifier": "shieldgemma",
+    "shift_type": "adversarial-suffix",
+    "unweighted": {
+      "pre_shift_coverage": 0.915,
+      "post_shift_coverage": 0.47,
+      "coverage_gap": 0.44500000000000006,
+      "post_shift_abstentions": 81
+    },
+    "weighted": {
+      "post_shift_coverage": 0.53,
+      "coverage_recovery": 0.06000000000000005,
+      "post_shift_abstentions": 53
+    },
+    "weight_diagnostic": {
+      "frac_at_upper_clip": 0.0,
+      "frac_at_lower_clip": 1.0,
+      "frac_clipped_total": 1.0,
+      "effective_sample_size": 299.99999999999983,
+      "max_weight": 0.1,
+      "min_weight": 0.1,
+      "median_weight": 0.1
+    },
+    "density_ratio_collapse": true
+  }
+]
