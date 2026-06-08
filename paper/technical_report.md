@@ -97,7 +97,7 @@ All three factors contribute substantially. A monitoring system that ignores the
 ### Robustness
 
 - **Real temporal jailbreaks (Regime B):** 85% detection (17/20 cells)
-- **Adversarial success (Regime C):** GCG suffixes that fool DeBERTa appear anomalous to Llama Guard (detected in 14/40 cells) — cross-classifier anomaly detection
+- **Cross-classifier canary architecture (Regime C):** GCG suffixes optimized against DeBERTa shift Llama Guard's scores *toward* unsafe (detected in 14/40 cells). A second architecturally-different classifier serves as a distributional canary — detecting evasion attacks not by classifying content, but by flagging anomalous score distributions that the targeted classifier cannot see.
 
 ---
 
@@ -113,17 +113,18 @@ All three factors contribute substantially. A monitoring system that ignores the
 
 4. **Window size = 100 is preferred.** 7 steps faster detection at marginal FAR cost.
 
-5. **Cross-classifier monitoring detects evasion attacks.** If an adversarial attack succeeds against one classifier (scores shift toward safe), monitoring a second architecturally-different classifier can detect the anomaly.
+5. **Deploy a second classifier as a distributional canary.** If an adversarial attack succeeds against one classifier (scores shift toward safe), an architecturally-different classifier detects the anomaly via its own score distribution shift — not by classifying content correctly, but because the attack-perturbed inputs look anomalous from a different representational vantage point. This is cheaper than running full classifiers in parallel: the canary need only produce scores, not final decisions.
 
 ---
 
 ## 5. Methodology and Reproducibility
 
 **Statistical methods:**
-- Bootstrap CIs (1000 resamples, seed 42, percentile method) on means
+- BCa bootstrap CIs on means (10,000 resamples, seed 42, bias-corrected and accelerated)
 - Wilson Score intervals on rates
 - Clopper-Pearson exact intervals on coverage proportions
-- Permutation tests (1000 permutations) for ANOVA significance
+- Permutation tests (10,000 permutations) for pairwise comparisons
+- Holm-Bonferroni correction on 8 highlighted comparisons (all survive at family-wise α = 0.05)
 - All reported at 95% confidence
 
 **Corpus validation:**
