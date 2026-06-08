@@ -1,6 +1,6 @@
 # Shift Detection Monitor
 
-Online monitoring system for distributional shift in deployed safety classifiers. Uses calibrated sequential statistics — time-uniform confidence sequences, MMD on classifier embeddings, and KS statistics on score distributions — to detect when a classifier has moved out of distribution. Upon detection, a conformal abstention layer adapts decision thresholds to preserve a target error rate.
+Online monitoring system for distributional shift in deployed safety classifiers. Uses a sliding-window KS statistic on classifier scores with empirically calibrated alarm thresholds to detect when a classifier has moved out of distribution. The system architecture includes a growing-window confidence sequence (Waudby-Smith & Ramdas 2024) with time-uniform coverage guarantees and an MMD detector on classifier embeddings; the pre-registered factorial evaluation uses the KS channel. Upon detection, a conformal abstention layer adapts decision thresholds to preserve a target error rate.
 
 ## Overview
 
@@ -9,6 +9,14 @@ The system operates on simulated production streams across a factorial evaluatio
 - **4 classifiers**: Llama Guard 3 (8B), ShieldGemma (9B), gpt-oss-safeguard, DeBERTa-v3-large
 - **5 shift conditions**: paraphrase, code-switch, adversarial suffix, compositional/long-context, temporal
 - **3 ground-truth regimes**: synthetic onset (A), temporal split (B), adversarial success (C)
+
+## Headline Findings
+
+1. **Density-ratio collapse in high-dimensional embeddings.** Weighted conformal correction fails for generative classifiers (Llama Guard, ShieldGemma) because logistic regression achieves perfect separability in 3584–4096-d embedding space, driving all density ratios to zero. PCA to ≤32 dimensions recovers +14 pp coverage for discriminative classifiers.
+
+2. **Architectural crossover invisible to single-classifier studies.** Encoders detect paraphrase fast (28–35 steps) but adversarial suffix slow; decoders show the opposite. The classifier × shift interaction explains 18.5% of detection latency variance — monitoring must be tuned per-classifier.
+
+3. **Cross-classifier canary architecture.** GCG suffixes optimized against DeBERTa appear anomalous to Llama Guard (scores shift *toward* unsafe). A second architecturally-different classifier serves as a distributional canary — detecting evasion attacks not by classifying content, but by flagging anomalous score distributions that the targeted classifier cannot see.
 
 ## Installation
 
