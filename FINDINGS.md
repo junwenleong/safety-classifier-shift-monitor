@@ -28,7 +28,7 @@ The monitor observes a stream of classifier outputs: unsafe-class probability an
 | Paraphrase | GPT-4o semantic rewording | Organic rephrasing |
 | Code-switch | Singlish transliteration | Non-English users |
 | Compositional | Harmful content in long-context wrappers | Context-window attacks |
-| Temporal | Real jailbreaks (lmsys/toxic-chat) | Emerging harm categories |
+| Temporal | Real jailbreaks from public red-team databases | Emerging harm categories |
 | Adversarial suffix | GCG-optimized tokens | Automated red-teaming |
 
 ## Results
@@ -84,7 +84,7 @@ The three systematic factors contribute roughly equally. The initial N=5 estimat
 
 - **Regime A (Synthetic onset):** 86.6% detection rate (800 cells)
 - **Regime B (Real temporal jailbreaks):** 85% detection rate (17/20 cells, mean latency 32.6 steps)
-- **Regime C (GCG adversarial):** Cross-classifier anomaly detection. DeBERTa (target): adversarial suffixes push scores toward safe, monitor fails (38/40). Llama Guard (non-target): same suffixes push scores toward unsafe (+0.73), monitor detects in 14/40. Adversarial perturbations optimized against one classifier appear anomalous to architecturally different classifiers.
+- **Regime C (GCG adversarial):** Cross-classifier anomaly detection. DeBERTa (target): adversarial suffixes push scores toward safe, monitor fails (38/40). Llama Guard (non-target): same suffixes push scores toward unsafe (+0.73), monitor detects in 14/40. Score direction diagnostics computed at evaluation time via `scripts/check_regime_c_direction.py`; detection counts verified by `verify_paper_numbers.py`. Adversarial perturbations optimized against one classifier appear anomalous to architecturally different classifiers.
 
 ## Corpus Validation
 
@@ -93,7 +93,7 @@ Manual review of samples from each corpus:
 - **Paraphrase (50/500):** ~18-22 preserved harmful intent; 14-20% became LLM refusals (safety responses instead of paraphrases). Detection latencies for paraphrase should be interpreted conservatively.
 - **Code-switch (50/500):** All 50 confirmed as authentic Singlish by native speaker. 20-30% became refusals; same caveat applies.
 - **Compositional (20/300):** 20/20 correctly placed harmful content at stated position. 100% structural integrity.
-- **Temporal (20/292):** 20/20 genuine jailbreak prompts from lmsys/toxic-chat. Zero false positives.
+- **Temporal (20/292):** 20/20 reviewed examples were genuine jailbreak prompts; zero false positives. Full corpus draws from three public red-team databases: lmsys/toxic-chat (39%), JailbreakBench (34%), ChatGPT-Jailbreak-Prompts (27%). Subsampled to 300 per factorial cell via repetition of 8 examples.
 - **Adversarial suffix (20/22):** 20/22 correct suffix concatenation with confirmed score flips (orig ≥0.95 → attacked ≤0.01). One example excluded post-validation (original score 0.002, already benign).
 
 ## Limitations
