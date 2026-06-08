@@ -111,8 +111,7 @@ def run_pca_conformal(cal_data, post_data, cal_embeddings, post_embeddings, pca_
     # then use ConformalAbstentionLayer with on_alarm
     # We need to create synthetic ClassifierOutputs with PCA-reduced representations
     cal_data_pca = [
-        (ClassifierOutput(score=o.score, predicted_label=o.predicted_label, representation=cal_reduced[i]),
-         label)
+        (ClassifierOutput(score=o.score, representation=cal_reduced[i]), label)
         for i, (o, label) in enumerate(cal_data)
     ]
     layer_wt = ConformalAbstentionLayer(
