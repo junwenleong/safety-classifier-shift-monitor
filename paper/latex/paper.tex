@@ -27,7 +27,7 @@ Jun Wen Leong \\
 \lhead{Preprint. Under review.}
 
 \begin{abstract}
-We present an online monitoring system for distributional shift in deployed safety classifiers, using calibrated sequential statistics on KS test statistics to detect when a classifier has moved out of distribution. Upon detection, a conformal abstention layer adapts decision thresholds to preserve a target error rate. In a pre-registered factorial evaluation across 4 classifiers $\times$ 5 shift conditions $\times$ 20 seeds $\times$ 2 window sizes (800 cells), the system achieves an 86.6\% valid detection rate (693/800 cells, 95\% CI [84.1\%, 88.8\%]), with mean detection latency of 39.5 steps at window size 100 and empirical false alarm rates of 2--10\% across classifiers. Detection holds across three ground-truth regimes: synthetic onset (86.6\%), real temporal jailbreaks from public red-team databases (85\%, 17/20), and a GCG adversarial demonstration showing that successful attacks erase distributional signal in the target classifier while appearing anomalous to non-target classifiers. Under temporal shift, unweighted conformal prediction loses 6.5 percentage points of coverage (from 91.0\% to 84.5\%), violating the 90\% target; weighted conformal prediction recovers coverage to 98.5\% with only 4 additional abstentions. However, this correction is architecture-dependent: weighted recovery degrades from 14 pp (DeBERTa, 1024-d) to 6 pp (ShieldGemma, 3584-d) to 1.5 pp (Llama Guard 3, 4096-d), correlating with both embedding dimensionality and the shift from task-specific to general-purpose representations. Variance decomposition reveals that classifier ($\eta^2 = 0.243$), shift type ($\eta^2 = 0.237$), and their interaction ($\eta^2 = 0.185$) all contribute substantially to detection latency variance (all $p < 0.001$), indicating that neither factor alone determines detection difficulty and that per-classifier monitoring profiles are necessary.
+We present an online monitoring system for distributional shift in deployed safety classifiers, using calibrated sequential statistics on KS test statistics to detect when a classifier has moved out of distribution. Upon detection, a conformal abstention layer adapts decision thresholds to preserve a target error rate. In a pre-registered factorial evaluation across 4 classifiers $\times$ 5 shift conditions $\times$ 20 seeds $\times$ 2 window sizes (800 cells), the system achieves an 86.6\% valid detection rate (693/800 cells, 95\% CI [84.1\%, 88.8\%]), with mean detection latency of 39.5 steps at window size 100 and empirical false alarm rates of 2--10\% across classifiers. Detection holds across three ground-truth regimes: synthetic onset (86.6\%), real temporal jailbreaks from public red-team databases (85\%, 17/20), and a GCG adversarial demonstration showing that successful attacks erase distributional signal in the target classifier while appearing anomalous to non-target classifiers. In a 4-classifier $\times$ 3-shift conformal evaluation, weighted conformal prediction recovers up to 39 pp of lost coverage for DeBERTa (effective sample size 46/300) but collapses to a no-op for all other classifiers (ESS${\approx}$300): logistic density ratio estimation achieves perfect source/target separability in their embedding spaces, clipping all importance weights to the floor. This collapse is consistent across temporal, paraphrase, and adversarial-suffix shifts, establishing it as an architectural property. PCA to 32 dimensions before density ratio estimation breaks the collapse, recovering 33 pp for Llama Guard and 21 pp for ShieldGemma on temporal shift. Variance decomposition reveals that classifier ($\eta^2 = 0.243$), shift type ($\eta^2 = 0.237$), and their interaction ($\eta^2 = 0.185$) all contribute substantially to detection latency variance (all $p < 0.001$), indicating that neither factor alone determines detection difficulty and that per-classifier monitoring profiles are necessary.
 \end{abstract}
 
 %==============================================================================
@@ -37,7 +37,7 @@ We present an online monitoring system for distributional shift in deployed safe
 
 Safety classifiers are the last line of defense between a language model and its users. When deployed at scale, they operate under a stationarity assumption: the distribution of inputs tomorrow will resemble the distribution on which the classifier was calibrated. This assumption fails routinely: through adversarial adaptation~\citep{zou2023universal}, organic linguistic drift, multilingual code-switching, and compositional attacks that chain benign components into harmful sequences.
 
-The failure mode is silent. A classifier whose accuracy has degraded from 95\% to 80\% produces no error signal unless ground-truth labels arrive. In production safety systems, labels rarely arrive in real time. By the time periodic offline evaluation detects the problem, the classifier has been making unreliable decisions for days or weeks.
+The failure mode is silent~\citep{rabanser2019failing}. A classifier whose accuracy has degraded from 95\% to 80\% produces no error signal unless ground-truth labels arrive. In production safety systems, labels rarely arrive in real time. By the time periodic offline evaluation detects the problem, the classifier has been making unreliable decisions for days or weeks. This silent-failure mode has recently been documented for embedding-based safety classifiers, where small representation drift collapses accuracy while confidence remains high~\citep{sahoo2026collapse}.
 
 We propose an online monitor with empirically calibrated alarm thresholds that tells deployers when their safety classifier has moved out of distribution, before accuracy collapses. The system watches the distribution of classifier scores via a sliding-window KS statistic, wrapped in a confidence sequence with false alarm rate calibrated via null simulation. When shift is detected, a conformal abstention layer reweights its prediction sets to preserve coverage under the new distribution.
 
@@ -56,11 +56,11 @@ We address three research questions:
 
 \paragraph{Sequential testing and confidence sequences.} Classical sequential analysis~\citep{wald1945sequential} provides stopping rules with controlled error rates, but fixed-sample-size guarantees do not extend to continuous monitoring. \citet{waudbysmith2024estimating} resolve this with betting-based confidence sequences: by constructing a wealth process that is a non-negative supermartingale under the null, Ville's inequality yields time-uniform coverage. The guarantee holds simultaneously at all time steps, not just at a pre-specified stopping time. We employ an adaptive betting strategy within this framework for the growing-window variant of our detector. For the sliding-window variant used in our factorial evaluation, the time-uniform guarantee does not hold; we instead calibrate alarm thresholds empirically via null simulation (\S\ref{sec:far-calibration}), which provides finite-horizon control at the cost of the anytime guarantee.
 
-\paragraph{Two-sample testing on streams.} Kernel MMD~\citep{gretton2012kernel} is the standard nonparametric two-sample test for high-dimensional data, but its original formulation assumes fixed samples. We adapt it to the streaming setting by maintaining a sliding window of embeddings and comparing against frozen reference statistics. The bandwidth is fixed at calibration time following the standard median heuristic, preventing adaptation of kernel parameters to the detection window. This is closer to the online kernel tests of \citet{zaremba2013btests} than to the original batch MMD, though we do not claim optimality of the kernel choice.
+\paragraph{Two-sample testing on streams.} Kernel MMD~\citep{gretton2012kernel} is the standard nonparametric two-sample test for high-dimensional data, but its original formulation assumes fixed samples. We adapt it to the streaming setting by maintaining a sliding window of embeddings and comparing against frozen reference statistics. The bandwidth is fixed at calibration time following the standard median heuristic, preventing adaptation of kernel parameters to the detection window. This is closer to the block-based kernel two-sample tests of \citet{zaremba2013btests} --- which reduce the cost of MMD estimation and provide a foundation for later online extensions --- than to the original batch MMD, though we do not claim optimality of the kernel choice.
 
-\paragraph{Conformal prediction under covariate shift.} Split conformal prediction~\citep{vovk2005algorithmic} provides distribution-free coverage guarantees under exchangeability. When the test distribution shifts, exchangeability breaks and coverage degrades. \citet{tibshirani2019conformal} restore coverage by reweighting the empirical distribution of calibration nonconformity scores with density ratios estimated from the covariate shift. Our weighted-on-alarm mode implements their approach, triggered by the shift detector rather than assumed available from unlabeled target covariates. The density ratio is estimated via logistic regression on classifier embeddings, a lightweight approximation that avoids the instability of kernel density estimation in high dimensions. \citet{gibbs2021adaptive} extend conformal prediction to the fully online setting without exchangeability; we note this as future work. For conformal prediction applied specifically to classification, \citet{romano2020classification} provide adaptive prediction sets that maintain valid coverage while minimizing set size; our abstention criterion (flag when $|C(x)| \neq 1$) follows their framework.
+\paragraph{Conformal prediction under covariate shift.} Split conformal prediction~\citep{vovk2005algorithmic} provides distribution-free coverage guarantees under exchangeability. When the test distribution shifts, exchangeability breaks and coverage degrades. \citet{tibshirani2019conformal} restore coverage by reweighting the empirical distribution of calibration nonconformity scores with density ratios estimated from the covariate shift, provided those density ratios are known or accurately estimated. Our weighted-on-alarm mode implements their approach, triggered by the shift detector rather than assumed available from unlabeled target covariates. The density ratio is estimated via logistic regression on classifier embeddings, a lightweight approximation that avoids the instability of kernel density estimation in high dimensions. \citet{gibbs2021adaptive} extend conformal prediction to the fully online setting without exchangeability; we note this as future work. For conformal prediction applied specifically to classification, \citet{romano2020classification} provide adaptive prediction sets that maintain valid coverage while minimizing set size; our abstention criterion (flag when $|C(x)| \neq 1$) follows their framework.
 
-\paragraph{Safety classifier monitoring.} Prior work on monitoring deployed classifiers focuses on performance estimation from unlabeled data~\citep{garg2022leveraging} or drift detection via population-level statistics~\citep{rabanser2019failing}, finding that performance depends strongly on shift type and representation. Our contribution is the integration of detection and adaptation: the shift detector triggers the conformal layer, which adapts thresholds without requiring new labels. The factorial evaluation design (crossing classifiers with shift conditions) is, to our knowledge, novel in this literature and reveals interaction effects invisible to single-classifier studies.
+\paragraph{Safety classifier monitoring.} Prior work on monitoring deployed classifiers focuses on performance estimation from unlabeled data~\citep{garg2022leveraging} or drift detection via population-level statistics~\citep{rabanser2019failing}, finding that performance depends strongly on shift type and representation. Closest to our setting, \citet{prinster2025watch} unify monitoring and adaptation within a single weighted-conformal-test-martingale framework that detects changepoints and adapts online to covariate shift. Our work differs in scope and emphasis: WATCH is a general-purpose monitoring framework, whereas we conduct a targeted empirical study of LLM safety classifiers under diverse shift conditions, revealing findings outside the scope of general monitoring --- specifically, the density-ratio collapse mechanism in high-dimensional generative embeddings, the crossover interaction between architecture and shift type, and cross-classifier anomaly detection for adversarial evasion. Architecturally, we use a separate sliding-window detector that triggers a downstream weighted conformal layer (rather than a unified martingale), though we view the architectural choice as secondary to the empirical contributions. Conformal prediction has been applied to content moderation via conformalized estimates of annotation disagreement~\citep{villatecastillo2024moderation}, but not coupled to online shift detection. To our knowledge, prior work studies shift detection and conformal adaptation largely separately; our contribution is to couple them in a label-free deployment pipeline for safety classifiers. The factorial evaluation design (crossing classifiers with shift conditions) and its variance decomposition reveal interaction effects invisible to single-classifier studies; we are not aware of prior work that analyzes classifier $\times$ shift interactions this way for safety classifiers, though variance-decomposition analyses of prompt sensitivity have recently appeared for general LLM evaluation~\citep{romanou2026brittlebench}.
 
 
 %==============================================================================
@@ -85,7 +85,7 @@ The KS detector tracks whether the marginal distribution of classifier scores ha
 \begin{equation}
 D_w = \sup_x |\hat{F}_w(x) - \hat{F}_{\text{ref}}(x)|
 \end{equation}
-If the input distribution shifts in a way that changes how the classifier scores inputs, the empirical CDF of recent scores diverges from the reference CDF. The KS statistic measures the maximum pointwise divergence, making it sensitive to any location, scale, or shape change in the score distribution.
+If the input distribution shifts in a way that changes how the classifier scores inputs, the empirical CDF of recent scores diverges from the reference CDF. The KS statistic measures the maximum pointwise divergence, making it sensitive to any location, scale, or shape change in the score distribution. The sliding-window KS test is a standard concept-drift detector (e.g., the KSWIN method available in common drift-detection libraries); we adopt it as a lightweight, well-understood detection channel rather than as a methodological contribution.
 
 \subsection{MMD Detector (Implemented, Not Evaluated)}
 \label{sec:mmd}
@@ -160,18 +160,18 @@ with factors classifier ($C$, 4 levels) and shift type ($S$, 5 levels). We repor
 \label{sec:classifiers}
 
 \begin{table}[t]
-\caption{Safety classifiers evaluated. All fine-tuned on WildGuardMix (unharmful/harmful binary classification).}
+\caption{Safety classifiers evaluated. Encoders fine-tuned on WildGuardMix (binary classification); decoders use original pre-trained weights.}
 \label{tab:classifiers}
 \centering
 \small
-\begin{tabular}{llcc}
+\begin{tabular}{llccc}
 \toprule
-\textbf{Classifier} & \textbf{Architecture} & \textbf{Parameters} & \textbf{Embedding dim} \\
+\textbf{Classifier} & \textbf{Architecture} & \textbf{Parameters} & \textbf{Embedding dim} & \textbf{Training data} \\
 \midrule
-DeBERTa-v3-large & Transformer encoder & 304M & 1024 \\
-Text-Moderation (KoalaAI) & DeBERTa-v3-base & 86M & 768 \\
-Llama Guard 3 & Decoder-only LLM & 8B & 4096 \\
-ShieldGemma & Decoder-only LLM & 9B & 3584 \\
+DeBERTa-v3-large & Transformer encoder & 304M & 1024 & WildGuardMix \\
+Text-Moderation (KoalaAI) & DeBERTa-v3-base & 86M & 768 & WildGuardMix \\
+Llama Guard 3 & Decoder-only LLM & 8B & 4096 & Proprietary \\
+ShieldGemma & Decoder-only LLM & 9B & 3584 & Proprietary \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -182,7 +182,7 @@ The selection spans two architectural families (discriminative encoders and gene
 \label{sec:shifts}
 
 \begin{table}[t]
-\caption{Shift conditions. Each corpus contains 300 examples.}
+\caption{Shift conditions. Each corpus is subsampled to 300 examples per factorial cell (temporal: 292 unique examples padded to 300 via repetition).}
 \label{tab:shifts}
 \centering
 \small
@@ -193,7 +193,7 @@ The selection spans two architectural families (discriminative encoders and gene
 Paraphrase & GPT-4o paraphrasing of harmful prompts & Organic rephrasing \\
 Code-switch & Multilingual transliteration & Non-English users \\
 Compositional & Multi-turn concatenation into long contexts & Context-window attacks \\
-Temporal & Recent harmful content (post-training-cutoff) & Emerging harm categories \\
+Temporal & Real jailbreaks from public red-team databases & Emerging harm categories \\
 Adversarial suffix & GCG-optimized suffixes~\citep{zou2023universal} & Automated red-teaming \\
 \bottomrule
 \end{tabular}
@@ -201,7 +201,7 @@ Adversarial suffix & GCG-optimized suffixes~\citep{zou2023universal} & Automated
 
 The five conditions span the spectrum from naturalistic drift (paraphrase, temporal) to deliberate adversarial attack (GCG suffixes), with code-switch and compositional as intermediate cases.
 
-\paragraph{Corpus validation.} We manually reviewed a sample from each corpus (50 examples for paraphrase and code-switch, 20 for compositional, temporal, and adversarial suffix). Paraphrase: approximately 14--20\% of examples became LLM refusals where the paraphrasing model declined to paraphrase harmful content, outputting safety responses instead. These contaminate the paraphrase condition with a refusal-text signal distinct from the intended semantic-preserving paraphrase shift; detection latencies for paraphrase should be interpreted conservatively. Code-switch: all 50 examples were confirmed as authentic Singlish by a native speaker; 20--30\% became refusals, with the same caveat. Compositional: 20/20 correctly placed harmful content at the stated position (beginning/middle/end) within benign long-context wrappers; 100\% structural integrity. Temporal: 20/20 were genuine jailbreak prompts from \texttt{lmsys/toxic-chat}, covering persona hijack, DAN-style injection, and NSFW extraction; zero false positives. Adversarial suffix: 20/22 showed correct suffix concatenation with confirmed score flips (original $\geq 0.95 \rightarrow$ attacked $\leq 0.01$); one example was excluded post-validation (original score 0.002, already classified benign).
+\paragraph{Corpus validation.} We manually reviewed a sample from each corpus (50 examples for paraphrase and code-switch, 20 for compositional, temporal, and adversarial suffix). Paraphrase: approximately 14--20\% of examples became LLM refusals where the paraphrasing model declined to paraphrase harmful content, outputting safety responses instead. These contaminate the paraphrase condition with a refusal-text signal distinct from the intended semantic-preserving paraphrase shift; detection latencies for paraphrase should be interpreted conservatively. Code-switch: all 50 examples were confirmed as authentic Singlish by a native speaker; 20--30\% became refusals, with the same caveat. Compositional: 20/20 correctly placed harmful content at the stated position (beginning/middle/end) within benign long-context wrappers; 100\% structural integrity. Temporal: 20/20 reviewed examples were genuine jailbreak prompts covering persona hijack, DAN-style injection, and NSFW extraction; zero false positives. The full temporal corpus (292 examples) draws from three public red-team databases: \texttt{lmsys/toxic-chat} (39\%), JailbreakBench (34\%), and ChatGPT-Jailbreak-Prompts (27\%). Adversarial suffix: 20/22 showed correct suffix concatenation with confirmed score flips (original $\geq 0.95 \rightarrow$ attacked $\leq 0.01$); one example was excluded post-validation (original score 0.002, already classified benign).
 
 \subsection{Factorial Design}
 \label{sec:factorial}
@@ -261,44 +261,46 @@ The table reveals a crossover interaction. Paraphrase is easy for encoders (28--
 
 \paragraph{Window size.} $w{=}100$ detects 7 steps faster on average (39.5 [37.0, 42.4] vs 45.4 [42.6, 48.3]; paired difference $-7.0$ [$-8.6$, $-5.3$], $n{=}314$ pairs) at the cost of slightly higher false alarm rates.
 
-\paragraph{False alarm rates (95\% Wilson CIs).} Text-Moderation 2.0\% [0.8\%, 5.0\%] $<$ Llama Guard 3.0\% [1.4\%, 6.4\%] $<$ ShieldGemma 8.5\% [5.4\%, 13.2\%] $<$ DeBERTa 9.5\% [6.2\%, 14.4\%]. The $5\times$ spread likely reflects differences in score distribution shape under the null: Text-Moderation produces tightly concentrated scores, making the calibrated threshold more conservative.
+\paragraph{False alarm rates (95\% Wilson CIs).} Text-Moderation 2.0\% [0.8\%, 5.0\%] $<$ Llama Guard 3.0\% [1.4\%, 6.4\%] $<$ ShieldGemma 8.5\% [5.4\%, 13.2\%] $<$ DeBERTa 9.5\% [6.2\%, 14.4\%]. The $5\times$ spread reflects differences in score distribution shape under the null (Figure~\ref{fig:null-kde}): classifiers with wider score distributions (ShieldGemma $\sigma{=}0.14$, Llama Guard $\sigma{=}0.14$) produce more variable KS statistics, requiring higher calibrated thresholds and yielding higher residual FAR.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{../figures/fig_null_score_kde.pdf}
+\caption{Null score distributions (in-distribution, $n{=}500$ per classifier). Text-Moderation and DeBERTa produce tightly concentrated scores near zero; Llama Guard and ShieldGemma show wider distributions with heavier tails, explaining the $5\times$ FAR spread across classifiers.}
+\label{fig:null-kde}
+\end{figure}
 
 \paragraph{Failure analysis.} Of 107 invalid cells: 68 alarmed before shift onset (early alarm), 46 had dirty negative controls (false alarm), 7 exhibited both. Failures concentrate in DeBERTa $\times$ adversarial-suffix (13/40 invalid, 32.5\%) and Llama Guard $\times$ adversarial-suffix (11/40 invalid, 27.5\%). The DeBERTa failure is mechanistically explained by Regime C (\S\ref{sec:regime-c}): GCG suffixes push DeBERTa's scores into the safe region, producing no distributional signal. The Llama Guard failure reflects the opposite: adversarial tokens produce such a strong signal that the detector fires during calibration as well.
 
 \subsection{RQ2: Conformal Adaptation}
 \label{sec:conformal-results}
 
-Evaluated on temporal shift for DeBERTa (discriminative, 1024-d), ShieldGemma (generative, 3584-d), and Llama Guard 3 (generative, 4096-d).
+Evaluated across all four classifiers on three shift types (temporal, paraphrase, adversarial suffix), extending the initial temporal-only evaluation to test whether weighted conformal recovery is shift-type-dependent.
 
 \begin{table}[t]
-\caption{Conformal adaptation results. 95\% Clopper--Pearson CIs, $n{=}200$ per condition.}
+\caption{Conformal adaptation: coverage gap (unweighted) and recovery (weighted-on-alarm) across classifiers and shift types. ESS = effective sample size of density-ratio weights (out of $n_{\text{cal}}{=}300$); lower ESS indicates more effective reweighting. $n{=}200$ post-shift examples per cell.}
 \label{tab:conformal}
 \centering
 \small
-\begin{tabular}{llcccc}
+\begin{tabular}{l ccc ccc ccc}
 \toprule
-\textbf{Classifier} & \textbf{Mode} & \textbf{Pre-shift cov.} & \textbf{Post-shift cov.} & \textbf{Gap} & \textbf{Abstain} \\
+& \multicolumn{3}{c}{\textbf{Temporal}} & \multicolumn{3}{c}{\textbf{Paraphrase}} & \multicolumn{3}{c}{\textbf{Adversarial suffix}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+\textbf{Classifier} & Gap & Rec. & ESS & Gap & Rec. & ESS & Gap & Rec. & ESS \\
 \midrule
-DeBERTa & Raw classifier & 0.910 & 0.845 & 0.065 & 0 \\
-DeBERTa & Unweighted & 0.910 [.861, .946] & 0.845 [.787, .892] & 0.065 & 25 \\
-DeBERTa & Weighted-on-alarm & 1.000 [.982, 1.00] & 0.985 [.957, .997] & 0.015 & 29 \\
-\midrule
-Llama Guard 3 & Unweighted & 0.890 [.838, .930] & 0.555 [.483, .625] & 0.335 & 41 \\
-Llama Guard 3 & Weighted-on-alarm & 0.915 [.867, .950] & 0.570 [.498, .640] & 0.345 & 32 \\
-\midrule
-ShieldGemma & Unweighted & 0.915 [.867, .950] & 0.690 [.621, .753] & 0.225 & 47 \\
-ShieldGemma & Weighted-on-alarm & 0.925 [.879, .957] & 0.750 [.684, .808] & 0.175 & 31 \\
+DeBERTa & .085 & +.160 & 88 & .515 & +.390 & 46 & .325 & +.020 & 206 \\
+Text-Mod. & .090 & +.020 & 300 & .515 & +.005 & 300 & $-.020$ & +.000 & 300 \\
+Llama Guard & .350 & +.020 & 300 & .715 & +.015 & 300 & .260 & +.100 & 300 \\
+ShieldGemma & .225 & +.075 & 300 & .725 & +.005 & 300 & .445 & +.060 & 300 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-For DeBERTa, unweighted conformal prediction loses 6.5 percentage points of coverage under temporal shift, dropping below the 90\% target (upper CI bound 0.892 excludes 0.90). Weighted conformal prediction recovers coverage to 98.5\% post-shift at the cost of only 4 additional abstentions (29 vs 25). The recovery is statistically significant: the weighted lower bound (0.957) exceeds the unweighted upper bound (0.892), with non-overlapping 95\% CIs. The density-ratio reweighting upweights calibration examples that resemble the shifted distribution, recalibrating the quantile without new labels.
+The table reveals three findings. First, density-ratio collapse (ESS${\approx}$300, indicating uniform floor-clipped weights) is consistent across all three shift types for Text-Moderation, Llama Guard, and ShieldGemma. The collapse is an architectural property, not a shift-specific artifact. Second, DeBERTa is the sole classifier where weighted conformal achieves meaningful recovery, but its effectiveness shows a gradient across shift types: paraphrase (ESS${=}$46, recovery${=}$+0.390) $>$ temporal (ESS${=}$88, recovery${=}$+0.160) $>$ adversarial suffix (ESS${=}$206, recovery${=}$+0.020). Third, DeBERTa on adversarial suffix shows near-total collapse (92.7\% of weights at floor, max weight 0.82) despite not reaching the binary collapse threshold --- the GCG suffixes, optimized against DeBERTa specifically, push its embeddings into a region nearly perfectly separable from reference.
 
-\paragraph{Weighted correction fails for generative models.} Weighted correction effectiveness degrades monotonically from discriminative to generative classifiers: DeBERTa recovers 14 pp (0.845 $\rightarrow$ 0.985), ShieldGemma recovers 6 pp (0.690 $\rightarrow$ 0.750), and Llama Guard 3 recovers 1.5 pp (0.555 $\rightarrow$ 0.570). This gradient correlates with both embedding dimensionality (1024-d $\rightarrow$ 3584-d $\rightarrow$ 4096-d) and representational generality.
+\paragraph{Mechanism.} The logistic regression density ratio estimator achieves perfect source/target separability in all collapsed cases, assigning $\hat{P}(\text{target} \mid x) \approx 0$ to every calibration point. All weights clip to the floor $1/C = 0.1$, rendering the weighted quantile mathematically identical to the unweighted quantile. ESS is the continuous predictor of recovery effectiveness: ESS${=}$46 yields +0.390 recovery; ESS${=}$88 yields +0.160; ESS${\geq}$200 yields ${\leq}$+0.020.
 
-A weight clipping diagnostic reveals the mechanism. The logistic regression density ratio estimator achieves perfect separability between source and target embeddings for both generative models, assigning $\hat{P}(\text{target} \mid x) \approx 0$ to every calibration point. All 300 weights clip to the floor $1/C = 0.1$ (effective sample size = 300/300 at identical weights), rendering the weighted quantile mathematically identical to the unweighted quantile --- a complete no-op. The apparent 6 pp and 1.5 pp ``recovery'' derives entirely from the $+1$ denominator term in the normalized weights $\tilde{w}_i = w_i / (\sum_j w_j + 1)$, not from meaningful reweighting. For DeBERTa, 91.7\% of weights clip to the floor but ${\sim}25$ calibration examples retain non-trivial weights (max 3.34, effective sample size 79/300), and these drive the genuine 14 pp recovery.
-
-Both generative models exhibit the same counterintuitive abstention pattern: weighted conformal abstains \emph{less} than unweighted (ShieldGemma: 47 $\rightarrow$ 31; Llama Guard: 41 $\rightarrow$ 32) while covering marginally more --- a consequence of the $+1$ term shifting the quantile slightly rather than genuine density-ratio correction. The consistency across both generative architectures confirms this is a fundamental limitation of parametric density ratio estimation in high-dimensional general-purpose embedding spaces, not a model-specific artifact. Future work should explore dimensionality reduction (e.g., PCA to the safety-relevant subspace) or non-parametric estimators that do not achieve perfect separability before computing importance weights.
+\paragraph{Dimensionality reduction as a fix.} PCA to 32 dimensions before density ratio estimation breaks the collapse for both generative classifiers on temporal shift: Llama Guard recovers 33.0 pp (coverage 0.555 $\rightarrow$ 0.885, ESS drops from 300 to 19.6), and ShieldGemma recovers 20.5 pp (0.690 $\rightarrow$ 0.895, ESS drops from 300 to 85.0). At 32 dimensions, 82--91\% of embedding variance is retained, but the logistic classifier can no longer achieve perfect separability. At 64 dimensions, ShieldGemma re-collapses (ESS${=}$300) while Llama Guard remains fixed (ESS${=}$135); at 128 dimensions, both re-collapse. The critical threshold is ${\leq}$32 dimensions for these embedding spaces. DeBERTa (768-d, no baseline collapse) shows no degradation under PCA, confirming the reduction removes noise dimensions rather than safety-relevant signal. This result is demonstrated on temporal shift; the mechanism (preventing linear separability) is shift-agnostic, but validation across additional shift types is needed before deployment.
 
 \subsection{RQ3: Variance Decomposition}
 \label{sec:variance}
@@ -346,11 +348,18 @@ We filter GCG-optimized suffixes to the 22 examples that successfully flip DeBER
 
 DeBERTa (target classifier): adversarial suffixes shift scores toward safe (post $\approx 0.01$), making attacked examples indistinguishable from the safe reference distribution. The monitor fails to detect in 38/40 seed-window combinations.
 
-Llama Guard (non-target classifier): the same adversarial suffixes shift scores toward unsafe (post $= 0.78$), producing a massive upward shift ($+0.73$) that the monitor detects in 14/40 seed-window combinations. A score direction analysis confirms all 14 detections are TOWARD\_UNSAFE: the GCG suffixes did not transfer their adversarial effect to Llama Guard. They made inputs appear more dangerous, not safer.
+Llama Guard (non-target classifier): the same adversarial suffixes shift scores toward unsafe (post $= 0.78$), producing a massive upward shift ($+0.73$) that the monitor detects in 14/40 seed-window combinations.\footnote{Score direction diagnostics (post-shift mean scores and deltas) were computed at evaluation time via \texttt{scripts/check\_regime\_c\_direction.py} and are not reproduced by the verification script, which checks only detection counts. Full KS statistic time series for all four classifiers are stored in \texttt{results/regime\_c\_ks\_series.json} and can be reproduced without model inference.} A score direction analysis confirms all 14 detections are TOWARD\_UNSAFE: the GCG suffixes did not transfer their adversarial effect to Llama Guard. They made inputs appear more dangerous, not safer.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{../figures/fig_regime_c_ks_trajectories.pdf}
+\caption{Regime C: KS statistic trajectories normalized by per-classifier threshold ($y{=}1.0$ is the alarm line). All classifiers hover near but below their thresholds on the 22-example adversarial corpus, explaining why detection is marginal. DeBERTa exceeds threshold briefly (false alarm before onset); the others remain sub-threshold.}
+\label{fig:regime-c-ks}
+\end{figure}
 
 The correct interpretation is cross-classifier anomaly detection, not adversarial transfer: adversarial perturbations optimized against one classifier appear anomalous to architecturally different classifiers, enabling detection via score distribution shift even without attack transfer.
 
-\paragraph{Corpus limitation.} The Regime C corpus comprises 22 successful adversarial examples; the identical Llama Guard score across examples (0.78) reflects a fixed adversarial token pattern rather than distributional variation. The 14 Llama Guard detections are replications of a single observation across seeds, not independent shift events. The finding is robust and reproducible, but should be interpreted as a classifier-level result rather than a cell-level detection rate.
+\paragraph{Corpus limitation.} The Regime C corpus comprises 22 successful adversarial examples; the identical Llama Guard score across examples (0.78) reflects a fixed adversarial token pattern rather than distributional variation. The 14 Llama Guard detections are replications of a single observation across seeds, not independent shift events. With window size 200 and calibrated thresholds, no classifier reliably detects shift from this corpus (Figure~\ref{fig:regime-c-ks}): all four KS trajectories hover near but below their respective thresholds, confirming the 22-example corpus is at the margin of detectability. The finding is robust and reproducible (full KS time series stored), but should be interpreted as a classifier-level result rather than a cell-level detection rate. A larger adversarial corpus with varied attack patterns would be needed to establish reliable cross-classifier detection.
 
 
 %==============================================================================
@@ -368,35 +377,37 @@ Concretely: DeBERTa requires aggressive monitoring for adversarial suffixes ($+2
 \subsection{Encoder vs.\ Decoder Safety Models}
 \label{sec:encoder-decoder}
 
-The factorial reveals a clean architectural split. Discriminative models (DeBERTa, Text-Moderation) detect paraphrase and compositional shift fast (26--37 steps) because these shifts alter surface tokens that discriminative models attend to directly. They are slower on adversarial suffixes: the classification head partially ignores appended tokens, causing the score distribution to shift slowly.
+The factorial reveals two distinct architectural patterns that should not be conflated.
 
-Generative safety models (Llama Guard, ShieldGemma) show the opposite pattern. They are slow on paraphrase (64--97 steps) because the generation mechanism is robust to surface-level rephrasing that preserves semantic content. They detect adversarial suffixes quickly (26--28 steps) because the suffix disrupts the generation distribution more visibly than it disrupts a classification head.
+\paragraph{RQ1 (Detection latency): clean encoder/decoder split.} Discriminative models (DeBERTa, Text-Moderation) detect paraphrase and compositional shift fast (26--37 steps), while being slower on adversarial suffixes. Generative safety models (Llama Guard, ShieldGemma) show the opposite: slow on paraphrase (64--97 steps) and fast on adversarial suffixes (26--28 steps). This crossover interaction is an architectural phenomenon: surface-level rephrasing alters tokens that discriminative models attend to directly, while adversarial suffixes disrupt the generation distribution more visibly than a classification head. Detection latency separates cleanly by architecture family.
 
-This maps to deployment tradeoffs: if the threat model is adversarial red-teaming, monitor the discriminative classifier more aggressively. If the threat model is organic linguistic drift, monitor the generative classifier more aggressively.
+\paragraph{RQ2 (Conformal recovery): not an encoder/decoder split.} The density-ratio collapse pattern does \emph{not} follow the same architectural divide. Text-Moderation (encoder, 86M, 768-d) collapses on all three shift types despite sharing training data (WildGuardMix) and architecture family (DeBERTa-v3) with the sole non-collapsing classifier. Only DeBERTa-v3-large (304M, 1024-d) avoids collapse.
+
+We observe collapse despite same-distribution fine-tuning in the smaller encoder (Text-Moderation, 86M, 768-d, 9-class pretrained) but not in the larger encoder (DeBERTa-v3-large, 304M, 1024-d, binary). We hypothesize this reflects the multi-class pretraining objective of Text-Moderation (9 content categories: S, H, V, HR, SH, S3, H2, V2, OK), which shapes its embedding space to cleanly separate content categories --- making it trivially easy for logistic regression to distinguish any two distributions in that space. However, we cannot distinguish this from scale effects (86M vs 304M, 768-d vs 1024-d) without a controlled ablation. The mechanism question remains open; what is empirically clear is that collapse is near-universal and training-distribution alignment alone does not prevent it.
 
 \subsection{Limitations}
 \label{sec:limitations}
 
 \begin{itemize}
-\item \textbf{Single-condition conformal evaluation.} RQ2 was evaluated on temporal shift only (DeBERTa, ShieldGemma, and Llama Guard 3). Coverage degradation under subtler shifts (paraphrase, code-switch) may be smaller, and the weighted correction's effectiveness may vary across shift types as well as architectures.
+\item \textbf{PCA fix validated on temporal shift only.} The PCA-32 dimensionality reduction that breaks density-ratio collapse has been demonstrated on temporal shift; generality across shift types is mechanistically expected but not empirically confirmed.
 \item \textbf{Abrupt shift onset.} The evaluation assumes abrupt shift onset at a known step; gradual drift would require CUSUM-style statistics.
 \item \textbf{Residual variance.} 33.5\% of variance in detection latency is attributable to seed/noise. With 20 seeds per cell, the MDE is 13.9 steps at 80\% power.
 \item \textbf{Binary classifiers only.} All four classifiers produce a single unsafe probability. Multi-category safety taxonomies may exhibit category-specific shift patterns invisible to a scalar score monitor.
-\item \textbf{FAR calibration asymmetry.} Empirical false alarm rates vary $5\times$ across classifiers (Text-Moderation 2.0\% vs DeBERTa 9.5\%) despite identical calibration procedures. This likely reflects differences in score distribution shape under the null. Per-classifier calibration tuning may be needed in deployment.
+\item \textbf{FAR calibration asymmetry.} Empirical false alarm rates vary $5\times$ across classifiers (Text-Moderation 2.0\% vs DeBERTa 9.5\%) despite identical calibration procedures (explained by null score distribution shape, Figure~\ref{fig:null-kde}). Per-classifier calibration tuning may be needed in deployment.
 \item \textbf{Homogeneous negative controls.} Negative control streams draw exclusively from WildGuardMix unharmful examples; production streams with higher natural variance may require larger calibration sets.
 \end{itemize}
 
 \subsection{Future Work}
 \label{sec:future}
 
-Extending the CS framework to detect gradual drift via CUSUM or Bayesian online change-point detection, where the shift onset accumulates over hundreds of steps. Truly online conformal prediction under arbitrary distribution shift~\citep{gibbs2021adaptive} would eliminate the batch requirement for density ratio estimation.
+Extending the CS framework to detect gradual drift via CUSUM or Bayesian online change-point detection, where the shift onset accumulates over hundreds of steps. Truly online conformal prediction under arbitrary distribution shift~\citep{gibbs2021adaptive} would eliminate the batch requirement for density ratio estimation. Validating the PCA-32 fix across additional shift types and classifiers, and exploring non-parametric density ratio estimators~\citep{rhodes2020telescoping} that may avoid the separability failure mode without requiring dimensionality reduction.
 
 %==============================================================================
 \section{Conclusion}
 \label{sec:conclusion}
 %==============================================================================
 
-We presented an online monitoring system that detects distributional shift in deployed safety classifiers with 86.6\% detection rate across 800 pre-registered factorial cells, mean latency of 39.5 steps at window size 100, and false alarm rates of 2--10\%. The system generalizes across three ground-truth regimes: synthetic onset, real temporal jailbreaks, and adversarial success. Variance decomposition reveals that classifier, shift type, and their interaction all contribute substantially to detection difficulty, motivating per-classifier monitoring profiles. Upon detection, weighted conformal prediction recovers coverage from 84.5\% to 98.5\% for discriminative models, but effectiveness degrades monotonically for generative models (6 pp recovery for ShieldGemma, 1.5 pp for Llama Guard 3), revealing that density ratio estimation fails in general-purpose embedding spaces. Code, configurations, and raw results are available at \url{https://github.com/junwenleong/safety-classifier-shift-monitor}.
+We presented an online monitoring system that detects distributional shift in deployed safety classifiers with 86.6\% detection rate across 800 pre-registered factorial cells, mean latency of 39.5 steps at window size 100, and false alarm rates of 2--10\%. The system generalizes across three ground-truth regimes: synthetic onset, real temporal jailbreaks, and adversarial success. Variance decomposition reveals that classifier, shift type, and their interaction all contribute substantially to detection difficulty, motivating per-classifier monitoring profiles. Upon detection, weighted conformal prediction recovers up to 39 pp of lost coverage for DeBERTa across three shift types, but density-ratio estimation collapses for all other classifiers (ESS${\approx}$300, weights uniformly clipped to floor). This collapse is consistent across shift types, establishing it as a near-universal property of safety classifier embeddings rather than a shift-specific artifact. PCA to 32 dimensions breaks the collapse, recovering 33 pp for Llama Guard and 21 pp for ShieldGemma on temporal shift, demonstrating that the failure mode has a practical fix. Code, configurations, and raw results are available at \url{https://github.com/junwenleong/safety-classifier-shift-monitor}.
 
 %==============================================================================
 \bibliography{references}
