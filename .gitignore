@@ -40,3 +40,6 @@ data/calibration/
 checkpoints/
 logs/
 .python-version
+
+# Local task tracking
+todo.md
