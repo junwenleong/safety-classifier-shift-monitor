@@ -29,6 +29,28 @@ pip install -e ".[dev,inference]"
 - pytest + Hypothesis (dev)
 - PyTorch + HuggingFace Transformers (inference, optional)
 
+### Reproducing Encoder Checkpoints
+
+The two encoder classifiers (DeBERTa-v3-large and Text-Moderation) are fine-tuned on WildGuardMix. Checkpoints are not committed (too large); reproduce them with:
+
+```bash
+# DeBERTa-v3-large → checkpoints/deberta-wildguardmix/
+python scripts/finetune_deberta.py
+
+# Text-Moderation (KoalaAI) → checkpoints/text-moderation-wildguardmix/
+python scripts/finetune_text_moderation.py
+```
+
+Both scripts use `allenai/wildguardmix` from HuggingFace, binary classification (safe=0, unsafe=1), with early stopping. Training takes ~2 hours per model on Apple Silicon (MPS) or NVIDIA GPU.
+
+Set environment variables before running evaluation:
+```bash
+export DEBERTA_CHECKPOINT_PATH=checkpoints/deberta-wildguardmix
+export TEXT_MODERATION_CHECKPOINT_PATH=checkpoints/text-moderation-wildguardmix
+```
+
+Decoder classifiers (Llama Guard 3, ShieldGemma) use their original pre-trained weights from HuggingFace and require no additional setup.
+
 ## Quickstart
 
 ### Validate a configuration
