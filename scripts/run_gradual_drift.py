@@ -147,7 +147,11 @@ def run_stream(classifier, reference, shifted, seed, threshold, mode="abrupt"):
 
 
 def calibrate_threshold(classifier, reference, neg_pool):
-    """Calibrate threshold from null streams (no shift)."""
+    """Calibrate threshold from null streams (no shift).
+    
+    Matches the factorial's approach: freeze reference from first WINDOW_SIZE
+    examples, then track max KS only after 2*WINDOW_SIZE steps (warmup).
+    """
     max_ks_values = []
     for cal_seed in range(N_CALIBRATION):
         rng = random.Random(cal_seed + 1000)
@@ -171,9 +175,10 @@ def calibrate_threshold(classifier, reference, neg_pool):
         ks_det = KSDetector(frozen_stats=frozen, window_size=WINDOW_SIZE)
 
         max_ks = 0.0
-        for rec in records:
+        for i, rec in enumerate(records):
             val = ks_det.update(rec)
-            if val > max_ks:
+            # Only track max after warmup, matching detection logic
+            if i >= 2 * WINDOW_SIZE and val > max_ks:
                 max_ks = val
         max_ks_values.append(max_ks)
 
