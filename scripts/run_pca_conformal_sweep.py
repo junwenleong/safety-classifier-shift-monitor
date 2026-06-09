@@ -148,11 +148,11 @@ def main():
                     "classifier": clf,
                     "shift_type": shift,
                     "pca_dim": dim,
-                    "unweighted_coverage": unweighted_cov,
-                    "weighted_coverage": weighted_cov,
-                    "recovery": recovery,
-                    "ess": ess,
-                    "variance_retained": var_retained,
+                    "unweighted_coverage": float(unweighted_cov),
+                    "weighted_coverage": float(weighted_cov),
+                    "recovery": float(recovery),
+                    "ess": float(ess),
+                    "variance_retained": float(var_retained),
                 }
                 results.append(result)
                 print(f"      dim={dim:>2}: coverage {unweighted_cov:.3f}→{weighted_cov:.3f} (+{recovery:.3f}), ESS={ess:.1f}, var_retained={var_retained:.3f}")
