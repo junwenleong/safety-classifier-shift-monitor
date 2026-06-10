@@ -315,6 +315,32 @@ def main():
     else:
         print("  ⚠ Gradual drift results not found, skipping")
 
+    print("\n[Post-Factorial — Ramp Sweep]")
+    ramp_path = Path("results/ramp_rate_sweep.json")
+    if ramp_path.exists():
+        ramp = json.load(open(ramp_path))
+        # Part 1: ramp-rate sweep at 50% mixing
+        if "ramp_durations" in ramp:
+            r50 = ramp["ramp_durations"].get("50", {})
+            check("Ramp 50 KS detection rate", 1.0, r50.get("ks", {}).get("detection_rate", 0), tol=0.01)
+            check("Ramp 50 CS detection rate", 1.0, r50.get("cs", {}).get("detection_rate", 0), tol=0.01)
+            r200 = ramp["ramp_durations"].get("200", {})
+            check("Ramp 200 KS n_detected", 9, r200.get("ks", {}).get("n_detected", 0), tol=0)
+        # Part 2: mixing-level sweep
+        if "mixing_levels" in ramp:
+            m100 = ramp["mixing_levels"].get("1.0", {})
+            check("Mix 100% KS detection rate", 1.0, m100.get("ks", {}).get("detection_rate", 0), tol=0.01)
+            check("Mix 100% CS detection rate", 1.0, m100.get("cs", {}).get("detection_rate", 0), tol=0.01)
+        # Part 3: extended 30% mixing (n=30)
+        if "mixing_30_extended" in ramp:
+            ext = ramp["mixing_30_extended"]
+            check("Mix 30% extended CS n_detected", 29, ext["cs"]["n_detected"], tol=0)
+            check("Mix 30% extended KS n_detected", 13, ext["ks"]["n_detected"], tol=0)
+            check("Mix 30% extended n", 30, ext["n"], tol=0)
+            check("Mix 30% Fisher p < 0.001", 1, 1 if ext["fisher_p"] < 0.001 else 0, tol=0)
+    else:
+        print("  ⚠ Ramp sweep results not found, skipping")
+
     # ========================================================================
     # SUMMARY
     # ========================================================================

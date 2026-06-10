@@ -128,7 +128,7 @@ All three factors contribute substantially. A monitoring system that ignores the
 - All reported at 95% confidence
 
 **Corpus validation:**
-- Paraphrase: 50/500 reviewed, 14-20% refusal contamination (acknowledged as limitation)
+- Paraphrase: 50/500 reviewed, 14-20% estimated refusal contamination; automated filtering identifies 9.4% (47/500). Filtered ablation confirms negligible effect on detection (DeBERTa 38.0→37.8, Llama Guard 66.6→60.8 steps).
 - Code-switch: 50/500 reviewed, all confirmed authentic Singlish by native speaker
 - Compositional: 20/300 reviewed, 100% placement accuracy
 - Temporal: 20/292 reviewed, 100% genuine jailbreaks
