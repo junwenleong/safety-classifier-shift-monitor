@@ -146,7 +146,7 @@ An alarm is considered a **false positive** when:
 
 **Committed before extended runs begin.** The original pre-registration specified a 3,600-cell design. The executed evaluation is a reduced grid motivated by compute budget and data availability:
 
-### Regime A -- Primary Factorial (executed)
+### Regime A — Primary Factorial (executed)
 
 | Parameter | Value |
 |---|---|
@@ -156,7 +156,7 @@ An alarm is considered a **false positive** when:
 | Window sizes | 2 (100, 200) |
 | **Total cells** | **800** |
 
-### Regime B -- Robustness Check (executed)
+### Regime B — Robustness Check (executed)
 
 | Parameter | Value |
 |---|---|
@@ -168,7 +168,7 @@ An alarm is considered a **false positive** when:
 
 Purpose: validate that detection works on a real temporal corpus (not synthetic injection), using one encoder and one decoder classifier.
 
-### Regime C -- Proof of Concept (executed)
+### Regime C — Proof of Concept (executed)
 
 | Parameter | Value |
 |---|---|
@@ -178,7 +178,7 @@ Purpose: validate that detection works on a real temporal corpus (not synthetic 
 | Window sizes | 2 (100, 200) |
 | **Total cells** | **160** |
 
-Purpose: validate that the monitor responds to confirmed adversarial success, not just synthetic injection. Limited to 23 successful suffix examples -- labeled as proof-of-concept.
+Purpose: validate that the monitor responds to confirmed adversarial success, not just synthetic injection. Limited to 23 successful suffix examples — labeled as proof-of-concept.
 
 ### Deviations from Original Pre-Registration
 

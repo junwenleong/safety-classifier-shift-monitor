@@ -104,7 +104,7 @@ After completing the pre-registered factorial evaluation, external review identi
 **Method:**
 - Score distribution spread analysis (std of null scores by classifier)
 - Detection latency vs embedding displacement scatter plot (using cached reference embeddings)
-- No new experiments -- analysis of existing data
+- No new experiments — analysis of existing data
 
 **Hypothesis:** Discriminative classifiers have sharper score boundaries (lower score spread under null) making them more sensitive to lexical perturbation. Generative classifiers smooth the boundary, delaying detection.
 
