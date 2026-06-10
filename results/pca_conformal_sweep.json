@@ -1,0 +1,162 @@
+[
+  {
+    "classifier": "llama-guard",
+    "shift_type": "temporal",
+    "pca_dim": 4,
+    "unweighted_coverage": 1.0,
+    "weighted_coverage": 1.0,
+    "recovery": 0.0,
+    "ess": 18.03157296926218,
+    "variance_retained": 0.6388628482818604
+  },
+  {
+    "classifier": "llama-guard",
+    "shift_type": "temporal",
+    "pca_dim": 8,
+    "unweighted_coverage": 1.0,
+    "weighted_coverage": 1.0,
+    "recovery": 0.0,
+    "ess": 20.331752540417426,
+    "variance_retained": 0.7076694965362549
+  },
+  {
+    "classifier": "llama-guard",
+    "shift_type": "temporal",
+    "pca_dim": 16,
+    "unweighted_coverage": 1.0,
+    "weighted_coverage": 1.0,
+    "recovery": 0.0,
+    "ess": 22.322796949203845,
+    "variance_retained": 0.7803580164909363
+  },
+  {
+    "classifier": "llama-guard",
+    "shift_type": "temporal",
+    "pca_dim": 32,
+    "unweighted_coverage": 1.0,
+    "weighted_coverage": 1.0,
+    "recovery": 0.0,
+    "ess": 131.07919451675363,
+    "variance_retained": 0.8454886674880981
+  },
+  {
+    "classifier": "llama-guard",
+    "shift_type": "paraphrase",
+    "pca_dim": 4,
+    "unweighted_coverage": 0.98,
+    "weighted_coverage": 0.965,
+    "recovery": -0.015000000000000013,
+    "ess": 76.79515605191797,
+    "variance_retained": 0.5668643712997437
+  },
+  {
+    "classifier": "llama-guard",
+    "shift_type": "paraphrase",
+    "pca_dim": 8,
+    "unweighted_coverage": 0.98,
+    "weighted_coverage": 0.97,
+    "recovery": -0.010000000000000009,
+    "ess": 90.58441295179794,
+    "variance_retained": 0.6527383327484131
+  },
+  {
+    "classifier": "llama-guard",
+    "shift_type": "paraphrase",
+    "pca_dim": 16,
+    "unweighted_coverage": 0.98,
+    "weighted_coverage": 0.97,
+    "recovery": -0.010000000000000009,
+    "ess": 32.5255730115908,
+    "variance_retained": 0.7386469841003418
+  },
+  {
+    "classifier": "llama-guard",
+    "shift_type": "paraphrase",
+    "pca_dim": 32,
+    "unweighted_coverage": 0.98,
+    "weighted_coverage": 0.97,
+    "recovery": -0.010000000000000009,
+    "ess": 32.00575272742051,
+    "variance_retained": 0.8174207210540771
+  },
+  {
+    "classifier": "shieldgemma",
+    "shift_type": "temporal",
+    "pca_dim": 4,
+    "unweighted_coverage": 1.0,
+    "weighted_coverage": 1.0,
+    "recovery": 0.0,
+    "ess": 23.484802834415433,
+    "variance_retained": 0.7573606371879578
+  },
+  {
+    "classifier": "shieldgemma",
+    "shift_type": "temporal",
+    "pca_dim": 8,
+    "unweighted_coverage": 1.0,
+    "weighted_coverage": 1.0,
+    "recovery": 0.0,
+    "ess": 26.415297081352147,
+    "variance_retained": 0.812532365322113
+  },
+  {
+    "classifier": "shieldgemma",
+    "shift_type": "temporal",
+    "pca_dim": 16,
+    "unweighted_coverage": 1.0,
+    "weighted_coverage": 1.0,
+    "recovery": 0.0,
+    "ess": 54.766394320715484,
+    "variance_retained": 0.859917938709259
+  },
+  {
+    "classifier": "shieldgemma",
+    "shift_type": "temporal",
+    "pca_dim": 32,
+    "unweighted_coverage": 1.0,
+    "weighted_coverage": 1.0,
+    "recovery": 0.0,
+    "ess": 299.99999999999983,
+    "variance_retained": 0.9012320637702942
+  },
+  {
+    "classifier": "shieldgemma",
+    "shift_type": "paraphrase",
+    "pca_dim": 4,
+    "unweighted_coverage": 0.965,
+    "weighted_coverage": 0.98,
+    "recovery": 0.015000000000000013,
+    "ess": 61.24692275063908,
+    "variance_retained": 0.7222716212272644
+  },
+  {
+    "classifier": "shieldgemma",
+    "shift_type": "paraphrase",
+    "pca_dim": 8,
+    "unweighted_coverage": 0.965,
+    "weighted_coverage": 0.965,
+    "recovery": 0.0,
+    "ess": 69.6042324193435,
+    "variance_retained": 0.7912407517433167
+  },
+  {
+    "classifier": "shieldgemma",
+    "shift_type": "paraphrase",
+    "pca_dim": 16,
+    "unweighted_coverage": 0.965,
+    "weighted_coverage": 0.95,
+    "recovery": -0.015000000000000013,
+    "ess": 63.43630860505283,
+    "variance_retained": 0.8470474481582642
+  },
+  {
+    "classifier": "shieldgemma",
+    "shift_type": "paraphrase",
+    "pca_dim": 32,
+    "unweighted_coverage": 0.965,
+    "weighted_coverage": 1.0,
+    "recovery": 0.03500000000000003,
+    "ess": 28.14600693274029,
+    "variance_retained": 0.8921850919723511
+  }
+]

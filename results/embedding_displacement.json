@@ -1,0 +1,92 @@
+{
+  "results": [
+    {
+      "classifier": "deberta",
+      "shift": "paraphrase",
+      "mean_displacement": 8.262647533416748,
+      "mean_latency": 28.393939393939394,
+      "n_seeds": 10
+    },
+    {
+      "classifier": "deberta",
+      "shift": "temporal",
+      "mean_displacement": 11.852595710754395,
+      "mean_latency": 23.485714285714284,
+      "n_seeds": 10
+    },
+    {
+      "classifier": "deberta",
+      "shift": "adversarial-suffix",
+      "mean_displacement": 7.947708225250244,
+      "mean_latency": 36.592592592592595,
+      "n_seeds": 10
+    },
+    {
+      "classifier": "text-moderation",
+      "shift": "paraphrase",
+      "mean_displacement": 15.453541660308838,
+      "mean_latency": 34.588235294117645,
+      "n_seeds": 10
+    },
+    {
+      "classifier": "text-moderation",
+      "shift": "temporal",
+      "mean_displacement": 28.420320510864258,
+      "mean_latency": 24.75,
+      "n_seeds": 10
+    },
+    {
+      "classifier": "text-moderation",
+      "shift": "adversarial-suffix",
+      "mean_displacement": 30.32484951019287,
+      "mean_latency": 25.294117647058822,
+      "n_seeds": 10
+    },
+    {
+      "classifier": "llama-guard",
+      "shift": "paraphrase",
+      "mean_displacement": 11.467314052581788,
+      "mean_latency": 69.43243243243244,
+      "n_seeds": 10
+    },
+    {
+      "classifier": "llama-guard",
+      "shift": "temporal",
+      "mean_displacement": 21.635177612304688,
+      "mean_latency": 42.15,
+      "n_seeds": 10
+    },
+    {
+      "classifier": "llama-guard",
+      "shift": "adversarial-suffix",
+      "mean_displacement": 29.262937545776367,
+      "mean_latency": 27.75862068965517,
+      "n_seeds": 10
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift": "paraphrase",
+      "mean_displacement": 95.64689712524414,
+      "mean_latency": 85.0,
+      "n_seeds": 10
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift": "temporal",
+      "mean_displacement": 264.3472900390625,
+      "mean_latency": 27.09375,
+      "n_seeds": 10
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift": "adversarial-suffix",
+      "mean_displacement": 245.72283935546875,
+      "mean_latency": 26.84375,
+      "n_seeds": 10
+    }
+  ],
+  "correlation": {
+    "r": -0.08855484041449428,
+    "p": 0.7843346929772423
+  }
+}
