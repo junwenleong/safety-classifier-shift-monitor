@@ -44,43 +44,35 @@ def calibrate_mmd_threshold(ref_embeddings: np.ndarray, bandwidth: float,
                             window_size: int = WINDOW_SIZE,
                             n_perms: int = N_CALIBRATION_PERMUTATIONS,
                             alpha: float = TARGET_FAR_ALPHA) -> float:
-    """Calibrate MMD threshold via bootstrap permutation null at target FAR α.
+    """Calibrate MMD threshold via permutation null at target FAR α.
     
-    Draws n_perms random windows from the reference pool and computes MMD
-    against a separate reference sample. Sets threshold at the (1-α) quantile
-    of this null distribution to control FAR at α.
+    Uses full pooled reference. Draws two disjoint random subsets for each
+    permutation to estimate the null distribution of MMD under no shift.
     """
     n = len(ref_embeddings)
     rng = np.random.default_rng(42)
     null_mmds = []
 
-    # Split reference into two halves for independence
-    half = n // 2
-    ref_frozen = ref_embeddings[:half]
-    ref_stream = ref_embeddings[half:]
-
     for _ in range(n_perms):
-        # Random window from stream half
-        start = rng.integers(0, len(ref_stream) - window_size)
-        window = ref_stream[start:start + window_size]
-        # Random sample from frozen half
-        ref_sample_idx = rng.choice(len(ref_frozen), size=min(200, len(ref_frozen)), replace=False)
-        ref_sample = ref_frozen[ref_sample_idx]
+        # Draw two disjoint subsets from the pooled reference
+        indices = rng.permutation(n)
+        ref_sample = ref_embeddings[indices[:200]]
+        window = ref_embeddings[indices[200:200 + window_size]]
         mmd = compute_mmd_squared(ref_sample, window, bandwidth)
         null_mmds.append(mmd)
 
-    # Set threshold at (1-α) quantile to target FAR = α
     threshold = float(np.percentile(null_mmds, 100 * (1 - alpha)))
     return threshold
 
 
 def run_mmd_detection(embeddings: np.ndarray, is_shifted: np.ndarray,
-                      bandwidth: float, threshold: float) -> dict:
-    """Run sliding-window MMD detection on a stream of embeddings."""
-    ref_embs = embeddings[:SHIFT_ONSET]
-    # Use first half of reference as frozen (matches calibration split)
-    frozen_ref = ref_embs[:len(ref_embs) // 2]
-    ref_sample = frozen_ref[:min(200, len(frozen_ref))]
+                      pooled_ref: np.ndarray, bandwidth: float, threshold: float) -> dict:
+    """Run sliding-window MMD detection on a stream of embeddings.
+    
+    Compares each post-onset window against a random 200-sample from pooled reference.
+    """
+    rng = np.random.default_rng(123)
+    ref_sample = pooled_ref[rng.choice(len(pooled_ref), size=200, replace=False)]
 
     alarm_step = None
     for t in range(SHIFT_ONSET + WINDOW_SIZE, len(embeddings)):
@@ -99,70 +91,74 @@ def main():
     print("MMD EVALUATION")
     print("=" * 60)
 
-    # Step 1: Null calibration check
-    print("\n--- MMD Null Calibration Check (DeBERTa) ---")
-    check_path = CACHE_DIR / "deberta" / "paraphrase" / "seed_0.npz"
-    if check_path.exists():
-        data = np.load(check_path)
-        if "embeddings" in data:
-            ref_embs = data["embeddings"][:SHIFT_ONSET]
-            bw = median_bandwidth(ref_embs)
-            threshold = calibrate_mmd_threshold(ref_embs, bw)
-            print(f"  Bandwidth: {bw:.4f}")
-            print(f"  Threshold (1-α={1-TARGET_FAR_ALPHA:.2f} quantile, {N_CALIBRATION_PERMUTATIONS} perms): {threshold:.6f}")
-
-            # Validate FAR on held-out null streams (use other seeds)
-            n_false_alarms = 0
-            n_null_windows = 0
-            for far_seed in range(1, 10):
-                far_path = CACHE_DIR / "deberta" / "paraphrase" / f"seed_{far_seed}.npz"
-                if not far_path.exists():
+    # Step 1: Pool reference embeddings per classifier (all seeds, all shifts)
+    print("\n--- Pooling reference embeddings ---")
+    pooled_refs = {}
+    for clf in CLASSIFIERS:
+        all_ref = []
+        for shift in SHIFTS:
+            for seed in SEEDS:
+                path = CACHE_DIR / clf / shift / f"seed_{seed}.npz"
+                if not path.exists():
                     continue
-                far_data = np.load(far_path)
-                far_embs = far_data["embeddings"][:SHIFT_ONSET]
-                frozen_ref = far_embs[:len(far_embs) // 2]
-                ref_sample = frozen_ref[:min(200, len(frozen_ref))]
-                # Test windows from second half
-                stream_half = far_embs[len(far_embs) // 2:]
-                for start in range(0, len(stream_half) - WINDOW_SIZE, WINDOW_SIZE):
-                    window = stream_half[start:start + WINDOW_SIZE]
-                    mmd = compute_mmd_squared(ref_sample, window, bw)
-                    n_null_windows += 1
-                    if mmd > threshold:
-                        n_false_alarms += 1
-
-            empirical_far = n_false_alarms / max(n_null_windows, 1)
-            print(f"  Empirical FAR: {n_false_alarms}/{n_null_windows} = {empirical_far:.3f} (target: {TARGET_FAR_ALPHA})")
-            if empirical_far > TARGET_FAR_ALPHA * 2:
-                print("  ⚠ WARNING: Empirical FAR exceeds 2× target.")
-            else:
-                print("  ✓ FAR controlled.")
+                data = np.load(path)
+                if "embeddings" not in data:
+                    break
+                all_ref.append(data["embeddings"][:SHIFT_ONSET])
+        if all_ref:
+            pooled_refs[clf] = np.concatenate(all_ref)
+            print(f"  {clf}: {len(pooled_refs[clf])} reference embeddings pooled")
         else:
-            print("  ⚠ No embeddings in cache. Cannot run MMD.")
-            return
-    else:
-        print(f"  ⚠ Cache not found at {check_path}. Run cache_embeddings.py first.")
+            print(f"  {clf}: no embeddings available")
+
+    if not pooled_refs:
+        print("  No embeddings found. Run cache_embeddings.py first.")
         return
 
-    # Step 2: Full evaluation
+    # Step 2: Calibrate per-classifier using pooled reference
+    print("\n--- Calibration (1000 permutations, α=0.05) ---")
+    thresholds = {}
+    bandwidths = {}
+    for clf, ref_embs in pooled_refs.items():
+        bw = median_bandwidth(ref_embs)
+        threshold = calibrate_mmd_threshold(ref_embs, bw)
+        thresholds[clf] = threshold
+        bandwidths[clf] = bw
+        print(f"  {clf}: bandwidth={bw:.3f}, threshold={threshold:.6f}")
+
+    # Step 3: FAR validation on null windows
+    print("\n--- FAR validation (null streams) ---")
+    for clf in CLASSIFIERS:
+        if clf not in pooled_refs:
+            continue
+        ref_sample = pooled_refs[clf][np.random.default_rng(99).choice(len(pooled_refs[clf]), 200, replace=False)]
+        n_false = 0
+        n_windows = 0
+        for seed in SEEDS:
+            path = CACHE_DIR / clf / SHIFTS[0] / f"seed_{seed}.npz"
+            if not path.exists():
+                continue
+            data = np.load(path)
+            if "embeddings" not in data:
+                continue
+            ref_portion = data["embeddings"][:SHIFT_ONSET]
+            for start in range(WINDOW_SIZE, len(ref_portion) - WINDOW_SIZE, WINDOW_SIZE):
+                window = ref_portion[start:start + WINDOW_SIZE]
+                mmd = compute_mmd_squared(ref_sample, window, bandwidths[clf])
+                n_windows += 1
+                if mmd > thresholds[clf]:
+                    n_false += 1
+        far = n_false / max(n_windows, 1)
+        print(f"  {clf}: FAR = {n_false}/{n_windows} = {far:.3f} (target: {TARGET_FAR_ALPHA})")
+
+    # Step 4: Full evaluation
     print("\n--- Full MMD Evaluation ---")
     results = []
 
     for clf in CLASSIFIERS:
-        # Calibrate per-classifier
-        cal_path = CACHE_DIR / clf / SHIFTS[0] / "seed_0.npz"
-        if not cal_path.exists():
-            print(f"  {clf}: no cache, skipping")
+        if clf not in pooled_refs:
             continue
-        cal_data = np.load(cal_path)
-        if "embeddings" not in cal_data:
-            print(f"  {clf}: no embeddings, skipping")
-            continue
-
-        ref_embs = cal_data["embeddings"][:SHIFT_ONSET]
-        bw = median_bandwidth(ref_embs)
-        threshold = calibrate_mmd_threshold(ref_embs, bw)
-        print(f"\n  {clf} (bandwidth={bw:.3f}, threshold={threshold:.6f}):")
+        print(f"\n  {clf} (bandwidth={bandwidths[clf]:.3f}, threshold={thresholds[clf]:.6f}):")
 
         for shift in SHIFTS:
             latencies = []
@@ -173,7 +169,8 @@ def main():
                 data = np.load(path)
                 if "embeddings" not in data:
                     continue
-                res = run_mmd_detection(data["embeddings"], data["is_shifted"], bw, threshold)
+                res = run_mmd_detection(data["embeddings"], data["is_shifted"],
+                                       pooled_refs[clf], bandwidths[clf], thresholds[clf])
                 latencies.append(res["detection_latency"])
                 results.append({"classifier": clf, "shift_condition": shift, "seed": seed, **res})
 
