@@ -1,0 +1,23 @@
+{
+  "factor_variances": {
+    "classifier": 0.243,
+    "shift_type": 0.237
+  },
+  "interaction_variances": {
+    "classifier:shift_type": 0.185
+  },
+  "effect_sizes": {
+    "classifier": {
+      "estimate": 0.243,
+      "ci_lower": 0.205,
+      "ci_upper": 0.291
+    },
+    "shift_type": {
+      "estimate": 0.237,
+      "ci_lower": 0.193,
+      "ci_upper": 0.293
+    }
+  },
+  "residual_variance": 0.335,
+  "n_valid_cells": 693
+}
