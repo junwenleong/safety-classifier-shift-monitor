@@ -121,7 +121,19 @@ def main():
         print("  Insufficient data for correlation")
 
     # Save
-    output_data = {"results": results, "correlation": {"r": r_val, "p": p_val} if len(disps) >= 3 else None}
+    per_shift_corr = {}
+    for shift in SHIFTS:
+        s_disps = [r["mean_displacement"] for r in results if r["shift"] == shift and r["mean_latency"] is not None]
+        s_lats = [r["mean_latency"] for r in results if r["shift"] == shift and r["mean_latency"] is not None]
+        if len(s_disps) >= 3:
+            r_s, p_s = sp_stats.pearsonr(s_disps, s_lats)
+            per_shift_corr[shift] = {"r": r_s, "p": p_s}
+
+    output_data = {
+        "results": results,
+        "correlation": {"r": r_val, "p": p_val} if len(disps) >= 3 else None,
+        "per_shift_correlation": per_shift_corr,
+    }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT, "w") as f:
         json.dump(output_data, f, indent=2)
