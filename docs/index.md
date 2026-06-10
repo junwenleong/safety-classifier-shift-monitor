@@ -8,15 +8,15 @@ image: https://junwenleong.github.io/safety-classifier-shift-monitor/assets/og-i
 
 *Jun Wen Leong · June 2026*
 
-I built an online monitoring system that detects distributional shift in deployed safety classifiers using only the classifier's own outputs — no labels required. Across 800 pre-registered factorial cells (4 classifiers × 5 shift types × 20 seeds × 2 window sizes), it catches 86.6% of shifts with mean latency of 39.5 steps.
+I built an online monitoring system that detects distributional shift in deployed safety classifiers using only the classifier's own outputs, without requiring labels. Across 800 pre-registered factorial cells (4 classifiers × 5 shift types × 20 seeds × 2 window sizes), it catches 86.6% of shifts with mean latency of 39.5 steps.
 
-**The bad news:** the standard fix — weighted conformal prediction — silently fails for 3 of 4 classifiers. The density ratios collapse to floor, and the "adaptation" you think is running is doing nothing.
+**The bad news:** the standard fix (weighted conformal prediction) silently fails for 3 of 4 classifiers. The density ratios collapse to floor, and the "adaptation" you think is running is doing nothing.
 
 ---
 
 ## Why this matters
 
-Safety classifiers degrade silently. When the input distribution shifts — adversarial adaptation, multilingual users, emerging attack patterns — accuracy drops with no error signal. You have no ground-truth labels in real time. By the time periodic offline evaluation catches it, your classifier has been making unreliable decisions for days.
+Safety classifiers degrade silently. When the input distribution shifts (adversarial adaptation, multilingual users, emerging attack patterns) accuracy drops with no error signal. You have no ground-truth labels in real time. By the time periodic offline evaluation catches it, your classifier has been making unreliable decisions for days.
 
 This system watches only the classifier's score distribution and fires an alarm when it changes. No labels, no oracle, no human review of individual predictions.
 
@@ -33,7 +33,7 @@ This system watches only the classifier's score distribution and fires an alarm 
 
 *Mean detection latency in steps. Lower is faster.*
 
-The critical pattern: **encoders and decoders invert on shift type.** DeBERTa catches paraphrase in 28 steps but adversarial suffix takes 37. Llama Guard catches adversarial in 28 steps but paraphrase takes 69. A single monitoring threshold miscalibrates systematically for one class of shift. The interaction effect explains 18.5% of latency variance — you need per-classifier monitoring profiles.
+The critical pattern: **encoders and decoders invert on shift type.** DeBERTa catches paraphrase in 28 steps but adversarial suffix takes 37. Llama Guard catches adversarial in 28 steps but paraphrase takes 69. A single monitoring threshold miscalibrates systematically for one class of shift. The interaction effect explains 18.5% of latency variance, so you need per-classifier monitoring profiles.
 
 ---
 
@@ -45,16 +45,16 @@ For the other three classifiers, it does nothing:
 
 | Classifier | Embedding dim | ESS | Recovery | What's happening |
 |---|---|---|---|---|
-| DeBERTa | 1024 | 88 | +14 pp | ✓ Working — 24 calibration points retain meaningful weights |
-| Text-Mod. | 768 | 300 | +2 pp | ✗ Collapsed — all weights at floor |
-| Llama Guard | 4096 | 300 | +2 pp | ✗ Collapsed — all weights at floor |
-| ShieldGemma | 3584 | 300 | +7.5 pp | ✗ Collapsed — all weights at floor |
+| DeBERTa | 1024 | 88 | +14 pp | ✓ Working: 24 calibration points retain meaningful weights |
+| Text-Mod. | 768 | 300 | +2 pp | ✗ Collapsed: all weights at floor |
+| Llama Guard | 4096 | 300 | +2 pp | ✗ Collapsed: all weights at floor |
+| ShieldGemma | 3584 | 300 | +7.5 pp | ✗ Collapsed: all weights at floor |
 
-*ESS = effective sample size out of 300 calibration points. ESS ≈ 300 means uniform weights — no adaptation.*
+*ESS = effective sample size out of 300 calibration points. ESS ≈ 300 means uniform weights, i.e. no adaptation.*
 
 **The mechanism:** Logistic regression achieves perfect separability between source and target embeddings in the high-dimensional space. Every calibration point gets classified as "source" with near-certainty, driving all density ratios to zero. All weights clip to the floor (0.1). The residual +2–7 pp "recoveries" are a formula artifact of the test-point term (w(X_test) = 1.0 raises the quantile from 90.3% to 93.3%), not genuine adaptation.
 
-You think conformal correction is running. Your monitoring dashboard shows "weights applied." But ESS ≈ n_cal means the weights are uniform — you're paying the computational cost of density estimation for zero benefit.
+You think conformal correction is running. Your monitoring dashboard shows "weights applied." But ESS ≈ n_cal means the weights are uniform. You're paying the computational cost of density estimation for zero benefit.
 
 ---
 
@@ -69,9 +69,9 @@ PCA before density ratio estimation breaks the collapse:
 
 At 32 dimensions, 82–91% of embedding variance is retained but the logistic classifier can no longer achieve perfect separability. At 64 dimensions, ShieldGemma re-collapses; at 128, both re-collapse. The critical threshold is ≤32 dimensions for these embedding spaces.
 
-DeBERTa (1024-d, no baseline collapse) shows no degradation under PCA — the reduction removes noise dimensions rather than safety-relevant signal.
+DeBERTa (1024-d, no baseline collapse) shows no degradation under PCA. The reduction removes noise dimensions rather than safety-relevant signal.
 
-**Practical recommendation:** If you're using weighted conformal with a generative safety classifier, project embeddings to ≤32 dimensions before estimating density ratios. Check ESS — if it's near n_cal, your reweighting is doing nothing.
+**Practical recommendation:** If you're using weighted conformal with a generative safety classifier, project embeddings to ≤32 dimensions before estimating density ratios. Check ESS: if it's near n_cal, your reweighting is doing nothing.
 
 ---
 
