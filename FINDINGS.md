@@ -96,17 +96,53 @@ Manual review of samples from each corpus:
 - **Temporal (20/292):** 20/20 reviewed examples were genuine jailbreak prompts; zero false positives. Full corpus draws from three public red-team databases: lmsys/toxic-chat (39%), JailbreakBench (34%), ChatGPT-Jailbreak-Prompts (27%). Subsampled to 300 per factorial cell via repetition of 8 examples.
 - **Adversarial suffix (20/22):** 20/22 correct suffix concatenation with confirmed score flips (orig ≥0.95 → attacked ≤0.01). One example excluded post-validation (original score 0.002, already benign).
 
+## Post-Factorial Results
+
+### Detection Channel Comparison
+
+**CS growing-window:** 120/120 detection (100%), 0/40 FAR (0%), ~2× latency vs KS. At 30% mixing: CS 29/30 (97%) vs KS 13/30 (43%), Fisher exact p < 0.0001, non-overlapping Wilson CIs [0.83, 0.99] vs [0.27, 0.61].
+
+**Deployment profile:** KS is preferred at high mixing (fast); CS is necessary at low mixing (reliable). Real drift is rarely 100% contamination — the CS advantage at low mixing is operationally significant.
+
+**MMD on embeddings:** 120/120 detection at latency=100 (immediate). FAR controlled: DeBERTa 3.3%, Text-Mod 3.3%, ShieldGemma 0%, Llama Guard 10%. MMD provides binary alarm with no latency gradation — KS grades severity, MMD provides guaranteed backstop.
+
+### Gradual Drift Sensitivity
+
+Ramp-rate sweep (DeBERTa × paraphrase, cached scores, n=10):
+- 50-step ramp: KS 10/10 (mean 94), CS 10/10 (mean 151)
+- 200-step ramp: KS 9/10 (mean 210), CS 9/10 (mean 223)
+
+Mixing-level sweep (50-step ramp):
+- 30%: KS 4/10, CS 9/10
+- 50%: KS 10/10, CS 10/10
+- 100%: KS 10/10 (mean 64), CS 10/10 (mean 83)
+
+### Mechanistic Hypothesis
+
+Null score std correlates with mean detection latency: r=0.97, p=0.032 (n=4 classifiers). Pattern is shift-specific: paraphrase/temporal/compositional show wider→slower (r=0.70–0.97); adversarial suffix reverses (r=−0.20), producing the crossover.
+
+Embedding displacement does NOT mirror this pattern (overall r=−0.09, p=0.78). Detection is mediated by score-boundary geometry, not representation-space distance.
+
+### Filtered Paraphrase Ablation
+
+Refusal rate: 47/500 = 9.4% (lower than 14–20% manual estimate). Removing refusals has negligible effect: DeBERTa 38.0→37.8 steps, Llama Guard 66.6→60.8 steps. Both 5/5 detected in both conditions.
+
+### PCA Generalization
+
+ESS reduction at dim=32 generalizes to paraphrase shift: Llama Guard ESS=32, ShieldGemma ESS=28 (both breaking separability). Coverage recovery magnitude is split-dependent; primary result (temporal: +33pp Llama Guard, +20.5pp ShieldGemma) uses fresh inference with proper conformal framework.
+
 ## Limitations
 
-- **Single-condition conformal evaluation.** RQ2 evaluated on temporal shift only. Other shift types may show different patterns.
-- **Abrupt shift onset.** Gradual drift would require CUSUM-style statistics.
+- **Gradual drift detection boundary.** At ≤30% mixing, KS detects only 43%. CS detects 97% but requires growing memory. Below 30%, neither channel reliably detects.
+- **MMD provides no latency gradation.** Fires immediately (latency=100) on any shift; useful as binary backstop but not for severity assessment.
 - **Residual variance.** 33.5% of latency variance is noise. MDE is 13.9 steps at 80% power.
 - **Binary classifiers only.** Multi-category safety taxonomies may exhibit category-specific shift invisible to scalar scores.
-- **Refusal contamination.** 14-20% of paraphrase and 20-30% of code-switch corpora are LLM refusals rather than faithful transformations.
-- **FAR asymmetry.** False alarm rates vary 5× across classifiers despite identical calibration.
+- **Refusal contamination.** 9.4% of paraphrase corpus are LLM refusals (lower than the 14–20% manual estimate). Filtered ablation confirms negligible effect on detection.
+- **FAR asymmetry.** False alarm rates vary 5× across classifiers despite identical calibration. Llama Guard MMD FAR is 10% (2× target).
+- **PCA fix validated on temporal + paraphrase.** ESS reduction generalizes but coverage recovery magnitude depends on calibration split.
 
 ## Verification
 
-All numbers in this document were programmatically verified against raw experimental data using `scripts/verify_paper_numbers.py` (21 assertions, all passing). Experiment configurations in `configs/` were committed before execution (commit `be630f3`). The factorial design, all hyperparameters, and ground-truth regimes match the pre-registration exactly.
+All numbers in this document were programmatically verified against raw experimental data using `scripts/verify_paper_numbers.py` (81 assertions, all passing). Experiment configurations in `configs/` were committed before execution (commit `be630f3`). Post-factorial additions pre-registered in `docs/pre_registration_amendment_2.md` (committed June 8, executed June 9–10).
 
 Paper: [arXiv](#) · Code and results: [github.com/junwenleong/safety-classifier-shift-monitor](https://github.com/junwenleong/safety-classifier-shift-monitor)

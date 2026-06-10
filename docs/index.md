@@ -81,15 +81,26 @@ Detection generalizes beyond synthetic onset:
 
 ## What I built
 
-- Confidence sequence engine with empirical FAR calibration
+- Three-channel detection architecture: KS (graded severity), CS (low-mixing sensitivity), MMD (binary backstop)
+- Confidence sequence engine with time-uniform coverage guarantees (demonstrated: 100% detection, 0% FAR)
 - Sliding-window KS detector on classifier score distributions
-- MMD detector on penultimate-layer embeddings (implemented, not evaluated in factorial)
+- MMD detector on penultimate-layer embeddings (immediate detection, FAR controlled at 3–10%)
 - Conformal abstention layer with unweighted and weighted-on-alarm modes
 - Density ratio estimation via logistic regression with weight clipping
 - Full factorial evaluation harness with negative/positive controls
-- Variance decomposition (two-way ANOVA with bootstrap CIs and permutation tests)
+- Variance decomposition (two-way ANOVA with BCa bootstrap CIs and permutation tests)
+- Ramp-rate and mixing-level sensitivity characterization
 - 5 shift dataset builders (paraphrase, code-switch, compositional, temporal, adversarial suffix)
-- 173 tests (unit + property-based via Hypothesis)
+
+---
+
+## Post-factorial findings
+
+**CS vs KS deployment profile:** At 30% mixing (realistic contamination), CS detects 97% while KS detects only 43% (p < 0.0001). At 50%+, both detect but KS is ~2× faster. CS is necessary when signals are weak; KS is preferred when signals are strong.
+
+**MMD as binary alarm:** With proper calibration (1000-permutation bootstrap, pooled reference), MMD fires immediately on all shifts with no latency variation. Provides guaranteed backstop; KS provides severity grading.
+
+**Mechanistic hypothesis:** Null score standard deviation correlates with detection latency (r=0.97, n=4 classifiers). Tighter score boundaries → faster detection. Embedding displacement does NOT predict latency (r=−0.09), ruling out representation-space geometry as the driver.
 
 ---
 
@@ -97,4 +108,4 @@ Detection generalizes beyond synthetic onset:
 
 [arXiv Paper](#) · [GitHub Repository](https://github.com/junwenleong/safety-classifier-shift-monitor) · [Full Results (FINDINGS.md)](https://github.com/junwenleong/safety-classifier-shift-monitor/blob/main/FINDINGS.md) · [Verification Script](https://github.com/junwenleong/safety-classifier-shift-monitor/blob/main/scripts/verify_paper_numbers.py)
 
-All reported statistics were programmatically verified against raw experimental data (800 factorial cells) using `verify_paper_numbers.py` (21 assertions, all passing).
+All reported statistics were programmatically verified against raw experimental data using `verify_paper_numbers.py` (81 assertions, all passing). Pre-registration committed before execution; post-factorial additions documented in separate amendment.
