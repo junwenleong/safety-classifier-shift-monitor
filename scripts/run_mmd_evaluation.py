@@ -29,7 +29,8 @@ SHIFTS = ["paraphrase", "temporal", "adversarial-suffix"]
 SEEDS = list(range(10))
 SHIFT_ONSET = 500
 WINDOW_SIZE = 100
-N_CALIBRATION_WINDOWS = 50  # null windows for threshold calibration
+N_CALIBRATION_PERMUTATIONS = 1000  # bootstrap permutations for null distribution
+TARGET_FAR_ALPHA = 0.05  # target false alarm rate
 
 
 def median_bandwidth(X: np.ndarray) -> float:
@@ -40,34 +41,37 @@ def median_bandwidth(X: np.ndarray) -> float:
 
 
 def calibrate_mmd_threshold(ref_embeddings: np.ndarray, bandwidth: float,
-                            window_size: int = WINDOW_SIZE, n_cal: int = N_CALIBRATION_WINDOWS,
-                            percentile: float = 97) -> float:
-    """Calibrate MMD threshold from null distribution.
+                            window_size: int = WINDOW_SIZE,
+                            n_perms: int = N_CALIBRATION_PERMUTATIONS,
+                            alpha: float = TARGET_FAR_ALPHA) -> float:
+    """Calibrate MMD threshold via bootstrap permutation null at target FAR α.
     
-    Uses bootstrap: draw random window from reference, compare against a 
-    separate random sample from reference. Uses 50 windows with proper
-    separation between reference sample and test window.
+    Draws n_perms random windows from the reference pool and computes MMD
+    against a separate reference sample. Sets threshold at the (1-α) quantile
+    of this null distribution to control FAR at α.
     """
     n = len(ref_embeddings)
     rng = np.random.default_rng(42)
     null_mmds = []
 
-    # Split reference into two halves for proper calibration
+    # Split reference into two halves for independence
     half = n // 2
-    ref_frozen = ref_embeddings[:half]  # "frozen reference" for comparison
-    ref_stream = ref_embeddings[half:]  # "stream" to draw null windows from
+    ref_frozen = ref_embeddings[:half]
+    ref_stream = ref_embeddings[half:]
 
-    for _ in range(n_cal):
+    for _ in range(n_perms):
         # Random window from stream half
         start = rng.integers(0, len(ref_stream) - window_size)
         window = ref_stream[start:start + window_size]
-        # Compare against frozen half (sample 200 for speed)
+        # Random sample from frozen half
         ref_sample_idx = rng.choice(len(ref_frozen), size=min(200, len(ref_frozen)), replace=False)
         ref_sample = ref_frozen[ref_sample_idx]
         mmd = compute_mmd_squared(ref_sample, window, bandwidth)
         null_mmds.append(mmd)
 
-    return float(np.percentile(null_mmds, percentile))
+    # Set threshold at (1-α) quantile to target FAR = α
+    threshold = float(np.percentile(null_mmds, 100 * (1 - alpha)))
+    return threshold
 
 
 def run_mmd_detection(embeddings: np.ndarray, is_shifted: np.ndarray,
@@ -105,21 +109,34 @@ def main():
             bw = median_bandwidth(ref_embs)
             threshold = calibrate_mmd_threshold(ref_embs, bw)
             print(f"  Bandwidth: {bw:.4f}")
-            print(f"  Threshold (97th pct): {threshold:.6f}")
+            print(f"  Threshold (1-α={1-TARGET_FAR_ALPHA:.2f} quantile, {N_CALIBRATION_PERMUTATIONS} perms): {threshold:.6f}")
 
-            # Run on reference-only to check FAR
-            n_false = 0
-            for start in range(0, SHIFT_ONSET - WINDOW_SIZE, WINDOW_SIZE):
-                window = ref_embs[start:start + WINDOW_SIZE]
-                mmd = compute_mmd_squared(ref_embs[:200], window, bw)
-                if mmd > threshold:
-                    n_false += 1
-            n_windows = (SHIFT_ONSET - WINDOW_SIZE) // WINDOW_SIZE
-            print(f"  Null FAR check: {n_false}/{n_windows} windows exceed threshold")
-            if n_false / max(n_windows, 1) > 0.1:
-                print("  ⚠ WARNING: FAR > 10% on null. Threshold may need adjustment.")
+            # Validate FAR on held-out null streams (use other seeds)
+            n_false_alarms = 0
+            n_null_windows = 0
+            for far_seed in range(1, 10):
+                far_path = CACHE_DIR / "deberta" / "paraphrase" / f"seed_{far_seed}.npz"
+                if not far_path.exists():
+                    continue
+                far_data = np.load(far_path)
+                far_embs = far_data["embeddings"][:SHIFT_ONSET]
+                frozen_ref = far_embs[:len(far_embs) // 2]
+                ref_sample = frozen_ref[:min(200, len(frozen_ref))]
+                # Test windows from second half
+                stream_half = far_embs[len(far_embs) // 2:]
+                for start in range(0, len(stream_half) - WINDOW_SIZE, WINDOW_SIZE):
+                    window = stream_half[start:start + WINDOW_SIZE]
+                    mmd = compute_mmd_squared(ref_sample, window, bw)
+                    n_null_windows += 1
+                    if mmd > threshold:
+                        n_false_alarms += 1
+
+            empirical_far = n_false_alarms / max(n_null_windows, 1)
+            print(f"  Empirical FAR: {n_false_alarms}/{n_null_windows} = {empirical_far:.3f} (target: {TARGET_FAR_ALPHA})")
+            if empirical_far > TARGET_FAR_ALPHA * 2:
+                print("  ⚠ WARNING: Empirical FAR exceeds 2× target.")
             else:
-                print("  ✓ FAR controlled on null stream.")
+                print("  ✓ FAR controlled.")
         else:
             print("  ⚠ No embeddings in cache. Cannot run MMD.")
             return
