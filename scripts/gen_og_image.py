@@ -21,11 +21,11 @@ except OSError:
     font_author = ImageFont.load_default()
 
 # Main headline - result first
-headline = "Weighted conformal fails silently\nfor 3 of 4 safety classifiers"
+headline = "Your safety classifier is drifting.\nHere's how to know."
 draw.multiline_text((80, 140), headline, fill=white, font=font_large, spacing=16)
 
 # Subline
-subline = "Density ratios collapse in high-dimensional embeddings.\nYour adaptation layer is doing nothing."
+subline = "86.6% detection across 800 pre-registered factorial cells."
 draw.multiline_text((80, 340), subline, fill=grey, font=font_small, spacing=10)
 
 # Author + date
