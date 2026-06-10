@@ -1,0 +1,207 @@
+{
+  "experiment": "gradual_drift",
+  "classifier": "deberta",
+  "shift_condition": "paraphrase",
+  "ramp_duration": 200,
+  "max_mixing": 0.5,
+  "window_size": 100,
+  "n_seeds": 20,
+  "threshold": 0.29000000000000004,
+  "abrupt": {
+    "detection_rate": 1.0,
+    "mean_latency": 51.8,
+    "median_latency": 52.0,
+    "latencies": [
+      58,
+      51,
+      43,
+      47,
+      62,
+      56,
+      45,
+      44,
+      51,
+      60,
+      64,
+      57,
+      34,
+      57,
+      41,
+      49,
+      59,
+      59,
+      46,
+      53
+    ],
+    "all_results": [
+      {
+        "alarm_step": 558,
+        "detection_latency": 58
+      },
+      {
+        "alarm_step": 551,
+        "detection_latency": 51
+      },
+      {
+        "alarm_step": 543,
+        "detection_latency": 43
+      },
+      {
+        "alarm_step": 547,
+        "detection_latency": 47
+      },
+      {
+        "alarm_step": 562,
+        "detection_latency": 62
+      },
+      {
+        "alarm_step": 556,
+        "detection_latency": 56
+      },
+      {
+        "alarm_step": 545,
+        "detection_latency": 45
+      },
+      {
+        "alarm_step": 544,
+        "detection_latency": 44
+      },
+      {
+        "alarm_step": 551,
+        "detection_latency": 51
+      },
+      {
+        "alarm_step": 560,
+        "detection_latency": 60
+      },
+      {
+        "alarm_step": 564,
+        "detection_latency": 64
+      },
+      {
+        "alarm_step": 557,
+        "detection_latency": 57
+      },
+      {
+        "alarm_step": 534,
+        "detection_latency": 34
+      },
+      {
+        "alarm_step": 557,
+        "detection_latency": 57
+      },
+      {
+        "alarm_step": 541,
+        "detection_latency": 41
+      },
+      {
+        "alarm_step": 549,
+        "detection_latency": 49
+      },
+      {
+        "alarm_step": 559,
+        "detection_latency": 59
+      },
+      {
+        "alarm_step": 559,
+        "detection_latency": 59
+      },
+      {
+        "alarm_step": 546,
+        "detection_latency": 46
+      },
+      {
+        "alarm_step": 553,
+        "detection_latency": 53
+      }
+    ]
+  },
+  "gradual": {
+    "detection_rate": 0.0,
+    "mean_latency": null,
+    "median_latency": null,
+    "latencies": [],
+    "all_results": [
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      },
+      {
+        "alarm_step": null,
+        "detection_latency": null
+      }
+    ]
+  }
+}

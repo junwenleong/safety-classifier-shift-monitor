@@ -1,0 +1,982 @@
+{
+  "results": [
+    {
+      "classifier": "deberta",
+      "shift_condition": "paraphrase",
+      "seed": 0,
+      "alarm_step": 554,
+      "detection_latency": 54,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "paraphrase",
+      "seed": 1,
+      "alarm_step": 562,
+      "detection_latency": 62,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "paraphrase",
+      "seed": 2,
+      "alarm_step": 551,
+      "detection_latency": 51,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "paraphrase",
+      "seed": 3,
+      "alarm_step": 564,
+      "detection_latency": 64,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "paraphrase",
+      "seed": 4,
+      "alarm_step": 552,
+      "detection_latency": 52,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "paraphrase",
+      "seed": 5,
+      "alarm_step": 553,
+      "detection_latency": 53,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "paraphrase",
+      "seed": 6,
+      "alarm_step": 553,
+      "detection_latency": 53,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "paraphrase",
+      "seed": 7,
+      "alarm_step": 563,
+      "detection_latency": 63,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "paraphrase",
+      "seed": 8,
+      "alarm_step": 558,
+      "detection_latency": 58,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "paraphrase",
+      "seed": 9,
+      "alarm_step": 562,
+      "detection_latency": 62,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "temporal",
+      "seed": 0,
+      "alarm_step": 531,
+      "detection_latency": 31,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "temporal",
+      "seed": 1,
+      "alarm_step": 530,
+      "detection_latency": 30,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "temporal",
+      "seed": 2,
+      "alarm_step": 531,
+      "detection_latency": 31,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "temporal",
+      "seed": 3,
+      "alarm_step": 532,
+      "detection_latency": 32,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "temporal",
+      "seed": 4,
+      "alarm_step": 531,
+      "detection_latency": 31,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "temporal",
+      "seed": 5,
+      "alarm_step": 530,
+      "detection_latency": 30,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "temporal",
+      "seed": 6,
+      "alarm_step": 531,
+      "detection_latency": 31,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "temporal",
+      "seed": 7,
+      "alarm_step": 535,
+      "detection_latency": 35,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "temporal",
+      "seed": 8,
+      "alarm_step": 532,
+      "detection_latency": 32,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "temporal",
+      "seed": 9,
+      "alarm_step": 530,
+      "detection_latency": 30,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "adversarial-suffix",
+      "seed": 0,
+      "alarm_step": 537,
+      "detection_latency": 37,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "adversarial-suffix",
+      "seed": 1,
+      "alarm_step": 549,
+      "detection_latency": 49,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "adversarial-suffix",
+      "seed": 2,
+      "alarm_step": 546,
+      "detection_latency": 46,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "adversarial-suffix",
+      "seed": 3,
+      "alarm_step": 550,
+      "detection_latency": 50,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "adversarial-suffix",
+      "seed": 4,
+      "alarm_step": 552,
+      "detection_latency": 52,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "adversarial-suffix",
+      "seed": 5,
+      "alarm_step": 549,
+      "detection_latency": 49,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "adversarial-suffix",
+      "seed": 6,
+      "alarm_step": 547,
+      "detection_latency": 47,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "adversarial-suffix",
+      "seed": 7,
+      "alarm_step": 544,
+      "detection_latency": 44,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "adversarial-suffix",
+      "seed": 8,
+      "alarm_step": 543,
+      "detection_latency": 43,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "deberta",
+      "shift_condition": "adversarial-suffix",
+      "seed": 9,
+      "alarm_step": 548,
+      "detection_latency": 48,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "paraphrase",
+      "seed": 0,
+      "alarm_step": 567,
+      "detection_latency": 67,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "paraphrase",
+      "seed": 1,
+      "alarm_step": 567,
+      "detection_latency": 67,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "paraphrase",
+      "seed": 2,
+      "alarm_step": 558,
+      "detection_latency": 58,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "paraphrase",
+      "seed": 3,
+      "alarm_step": 566,
+      "detection_latency": 66,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "paraphrase",
+      "seed": 4,
+      "alarm_step": 566,
+      "detection_latency": 66,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "paraphrase",
+      "seed": 5,
+      "alarm_step": 557,
+      "detection_latency": 57,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "paraphrase",
+      "seed": 6,
+      "alarm_step": 564,
+      "detection_latency": 64,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "paraphrase",
+      "seed": 7,
+      "alarm_step": 573,
+      "detection_latency": 73,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "paraphrase",
+      "seed": 8,
+      "alarm_step": 565,
+      "detection_latency": 65,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "paraphrase",
+      "seed": 9,
+      "alarm_step": 566,
+      "detection_latency": 66,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "temporal",
+      "seed": 0,
+      "alarm_step": 532,
+      "detection_latency": 32,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "temporal",
+      "seed": 1,
+      "alarm_step": 529,
+      "detection_latency": 29,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "temporal",
+      "seed": 2,
+      "alarm_step": 530,
+      "detection_latency": 30,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "temporal",
+      "seed": 3,
+      "alarm_step": 532,
+      "detection_latency": 32,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "temporal",
+      "seed": 4,
+      "alarm_step": 532,
+      "detection_latency": 32,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "temporal",
+      "seed": 5,
+      "alarm_step": 529,
+      "detection_latency": 29,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "temporal",
+      "seed": 6,
+      "alarm_step": 532,
+      "detection_latency": 32,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "temporal",
+      "seed": 7,
+      "alarm_step": 536,
+      "detection_latency": 36,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "temporal",
+      "seed": 8,
+      "alarm_step": 530,
+      "detection_latency": 30,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "temporal",
+      "seed": 9,
+      "alarm_step": 529,
+      "detection_latency": 29,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "adversarial-suffix",
+      "seed": 0,
+      "alarm_step": 528,
+      "detection_latency": 28,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "adversarial-suffix",
+      "seed": 1,
+      "alarm_step": 532,
+      "detection_latency": 32,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "adversarial-suffix",
+      "seed": 2,
+      "alarm_step": 530,
+      "detection_latency": 30,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "adversarial-suffix",
+      "seed": 3,
+      "alarm_step": 534,
+      "detection_latency": 34,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "adversarial-suffix",
+      "seed": 4,
+      "alarm_step": 529,
+      "detection_latency": 29,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "adversarial-suffix",
+      "seed": 5,
+      "alarm_step": 528,
+      "detection_latency": 28,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "adversarial-suffix",
+      "seed": 6,
+      "alarm_step": 530,
+      "detection_latency": 30,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "adversarial-suffix",
+      "seed": 7,
+      "alarm_step": 528,
+      "detection_latency": 28,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "adversarial-suffix",
+      "seed": 8,
+      "alarm_step": 529,
+      "detection_latency": 29,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "text-moderation",
+      "shift_condition": "adversarial-suffix",
+      "seed": 9,
+      "alarm_step": 530,
+      "detection_latency": 30,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "paraphrase",
+      "seed": 0,
+      "alarm_step": 639,
+      "detection_latency": 139,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "paraphrase",
+      "seed": 1,
+      "alarm_step": 642,
+      "detection_latency": 142,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "paraphrase",
+      "seed": 2,
+      "alarm_step": 636,
+      "detection_latency": 136,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "paraphrase",
+      "seed": 3,
+      "alarm_step": 645,
+      "detection_latency": 145,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "paraphrase",
+      "seed": 4,
+      "alarm_step": 600,
+      "detection_latency": 100,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "paraphrase",
+      "seed": 5,
+      "alarm_step": 606,
+      "detection_latency": 106,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "paraphrase",
+      "seed": 6,
+      "alarm_step": 640,
+      "detection_latency": 140,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "paraphrase",
+      "seed": 7,
+      "alarm_step": 644,
+      "detection_latency": 144,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "paraphrase",
+      "seed": 8,
+      "alarm_step": 643,
+      "detection_latency": 143,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "paraphrase",
+      "seed": 9,
+      "alarm_step": 620,
+      "detection_latency": 120,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "temporal",
+      "seed": 0,
+      "alarm_step": 557,
+      "detection_latency": 57,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "temporal",
+      "seed": 1,
+      "alarm_step": 551,
+      "detection_latency": 51,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "temporal",
+      "seed": 2,
+      "alarm_step": 545,
+      "detection_latency": 45,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "temporal",
+      "seed": 3,
+      "alarm_step": 549,
+      "detection_latency": 49,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "temporal",
+      "seed": 4,
+      "alarm_step": 559,
+      "detection_latency": 59,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "temporal",
+      "seed": 5,
+      "alarm_step": 563,
+      "detection_latency": 63,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "temporal",
+      "seed": 6,
+      "alarm_step": 550,
+      "detection_latency": 50,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "temporal",
+      "seed": 7,
+      "alarm_step": 552,
+      "detection_latency": 52,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "temporal",
+      "seed": 8,
+      "alarm_step": 554,
+      "detection_latency": 54,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "temporal",
+      "seed": 9,
+      "alarm_step": 558,
+      "detection_latency": 58,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "adversarial-suffix",
+      "seed": 0,
+      "alarm_step": 538,
+      "detection_latency": 38,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "adversarial-suffix",
+      "seed": 1,
+      "alarm_step": 535,
+      "detection_latency": 35,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "adversarial-suffix",
+      "seed": 2,
+      "alarm_step": 540,
+      "detection_latency": 40,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "adversarial-suffix",
+      "seed": 3,
+      "alarm_step": 534,
+      "detection_latency": 34,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "adversarial-suffix",
+      "seed": 4,
+      "alarm_step": 537,
+      "detection_latency": 37,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "adversarial-suffix",
+      "seed": 5,
+      "alarm_step": 536,
+      "detection_latency": 36,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "adversarial-suffix",
+      "seed": 6,
+      "alarm_step": 535,
+      "detection_latency": 35,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "adversarial-suffix",
+      "seed": 7,
+      "alarm_step": 538,
+      "detection_latency": 38,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "adversarial-suffix",
+      "seed": 8,
+      "alarm_step": 539,
+      "detection_latency": 39,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "llama-guard",
+      "shift_condition": "adversarial-suffix",
+      "seed": 9,
+      "alarm_step": 536,
+      "detection_latency": 36,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "paraphrase",
+      "seed": 0,
+      "alarm_step": 653,
+      "detection_latency": 153,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "paraphrase",
+      "seed": 1,
+      "alarm_step": 677,
+      "detection_latency": 177,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "paraphrase",
+      "seed": 2,
+      "alarm_step": 692,
+      "detection_latency": 192,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "paraphrase",
+      "seed": 3,
+      "alarm_step": 667,
+      "detection_latency": 167,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "paraphrase",
+      "seed": 4,
+      "alarm_step": 639,
+      "detection_latency": 139,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "paraphrase",
+      "seed": 5,
+      "alarm_step": 654,
+      "detection_latency": 154,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "paraphrase",
+      "seed": 6,
+      "alarm_step": 683,
+      "detection_latency": 183,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "paraphrase",
+      "seed": 7,
+      "alarm_step": 658,
+      "detection_latency": 158,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "paraphrase",
+      "seed": 8,
+      "alarm_step": 677,
+      "detection_latency": 177,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "paraphrase",
+      "seed": 9,
+      "alarm_step": 661,
+      "detection_latency": 161,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "temporal",
+      "seed": 0,
+      "alarm_step": 550,
+      "detection_latency": 50,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "temporal",
+      "seed": 1,
+      "alarm_step": 540,
+      "detection_latency": 40,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "temporal",
+      "seed": 2,
+      "alarm_step": 541,
+      "detection_latency": 41,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "temporal",
+      "seed": 3,
+      "alarm_step": 544,
+      "detection_latency": 44,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "temporal",
+      "seed": 4,
+      "alarm_step": 547,
+      "detection_latency": 47,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "temporal",
+      "seed": 5,
+      "alarm_step": 542,
+      "detection_latency": 42,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "temporal",
+      "seed": 6,
+      "alarm_step": 547,
+      "detection_latency": 47,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "temporal",
+      "seed": 7,
+      "alarm_step": 548,
+      "detection_latency": 48,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "temporal",
+      "seed": 8,
+      "alarm_step": 542,
+      "detection_latency": 42,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "temporal",
+      "seed": 9,
+      "alarm_step": 544,
+      "detection_latency": 44,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "adversarial-suffix",
+      "seed": 0,
+      "alarm_step": 555,
+      "detection_latency": 55,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "adversarial-suffix",
+      "seed": 1,
+      "alarm_step": 554,
+      "detection_latency": 54,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "adversarial-suffix",
+      "seed": 2,
+      "alarm_step": 562,
+      "detection_latency": 62,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "adversarial-suffix",
+      "seed": 3,
+      "alarm_step": 556,
+      "detection_latency": 56,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "adversarial-suffix",
+      "seed": 4,
+      "alarm_step": 557,
+      "detection_latency": 57,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "adversarial-suffix",
+      "seed": 5,
+      "alarm_step": 558,
+      "detection_latency": 58,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "adversarial-suffix",
+      "seed": 6,
+      "alarm_step": 552,
+      "detection_latency": 52,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "adversarial-suffix",
+      "seed": 7,
+      "alarm_step": 554,
+      "detection_latency": 54,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "adversarial-suffix",
+      "seed": 8,
+      "alarm_step": 555,
+      "detection_latency": 55,
+      "is_valid_detection": true
+    },
+    {
+      "classifier": "shieldgemma",
+      "shift_condition": "adversarial-suffix",
+      "seed": 9,
+      "alarm_step": 558,
+      "detection_latency": 58,
+      "is_valid_detection": true
+    }
+  ],
+  "far": {
+    "deberta": {
+      "alarms": 0,
+      "total": 10
+    },
+    "text-moderation": {
+      "alarms": 0,
+      "total": 10
+    },
+    "llama-guard": {
+      "alarms": 0,
+      "total": 10
+    },
+    "shieldgemma": {
+      "alarms": 0,
+      "total": 10
+    }
+  }
+}
