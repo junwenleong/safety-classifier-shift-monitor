@@ -268,6 +268,54 @@ def main():
         print("  ⚠ PCA experiment results not found, skipping")
 
     # ========================================================================
+    # NEW RESULTS (post-factorial additions)
+    # ========================================================================
+    print("\n" + "=" * 70)
+    print("[Post-Factorial — CS Growing-Window]")
+    cs_path = Path("results/cs_growing_window_results.json")
+    if cs_path.exists():
+        cs_data = json.load(open(cs_path))
+        cs_results = cs_data["results"]
+        cs_valid = [r for r in cs_results if r["is_valid_detection"]]
+        check("CS detection rate", 120, len(cs_valid), tol=0)
+        # FAR
+        cs_far = cs_data.get("far", {})
+        for clf in CLASSIFIERS:
+            if clf in cs_far:
+                check(f"CS FAR {clf}", 0, cs_far[clf]["alarms"], tol=0)
+    else:
+        print("  ⚠ CS results not found, skipping")
+
+    print("\n[Post-Factorial — Filtered Ablation]")
+    filt_path = Path("results/filtered_ablation_results.json")
+    if filt_path.exists():
+        filt = json.load(open(filt_path))
+        check("Filtered corpus: refusals", 47, filt["corpus_stats"]["refusals"], tol=0)
+        check("DeBERTa unfiltered mean", 38.0, filt["deberta"]["unfiltered"]["mean"], tol=0.5)
+        check("DeBERTa filtered mean", 37.8, filt["deberta"]["filtered"]["mean"], tol=0.5)
+        check("Llama Guard unfiltered mean", 66.6, filt["llama-guard"]["unfiltered"]["mean"], tol=0.5)
+        check("Llama Guard filtered mean", 60.8, filt["llama-guard"]["filtered"]["mean"], tol=0.5)
+    else:
+        print("  ⚠ Filtered ablation results not found, skipping")
+
+    print("\n[Post-Factorial — Embedding Displacement]")
+    disp_path = Path("results/embedding_displacement.json")
+    if disp_path.exists():
+        disp = json.load(open(disp_path))
+        check("Displacement overall r", -0.089, disp["correlation"]["r"], tol=0.01)
+    else:
+        print("  ⚠ Displacement results not found, skipping")
+
+    print("\n[Post-Factorial — Gradual Drift]")
+    drift_path = Path("results/gradual_drift_results.json")
+    if drift_path.exists():
+        drift = json.load(open(drift_path))
+        check("Gradual drift: abrupt detection rate", 1.0, drift["abrupt"]["detection_rate"], tol=0.01)
+        check("Gradual drift: gradual detection rate", 0.0, drift["gradual"]["detection_rate"], tol=0.01)
+    else:
+        print("  ⚠ Gradual drift results not found, skipping")
+
+    # ========================================================================
     # SUMMARY
     # ========================================================================
     print("\n" + "=" * 70)
