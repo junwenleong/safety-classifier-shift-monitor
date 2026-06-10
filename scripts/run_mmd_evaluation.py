@@ -42,18 +42,28 @@ def median_bandwidth(X: np.ndarray) -> float:
 def calibrate_mmd_threshold(ref_embeddings: np.ndarray, bandwidth: float,
                             window_size: int = WINDOW_SIZE, n_cal: int = N_CALIBRATION_WINDOWS,
                             percentile: float = 97) -> float:
-    """Calibrate MMD threshold from null distribution (reference vs reference windows)."""
+    """Calibrate MMD threshold from null distribution.
+    
+    Uses bootstrap: draw random window from reference, compare against a 
+    separate random sample from reference. Uses 50 windows with proper
+    separation between reference sample and test window.
+    """
     n = len(ref_embeddings)
     rng = np.random.default_rng(42)
     null_mmds = []
 
+    # Split reference into two halves for proper calibration
+    half = n // 2
+    ref_frozen = ref_embeddings[:half]  # "frozen reference" for comparison
+    ref_stream = ref_embeddings[half:]  # "stream" to draw null windows from
+
     for _ in range(n_cal):
-        # Random window from reference
-        start = rng.integers(0, n - window_size)
-        window = ref_embeddings[start:start + window_size]
-        # Compare against full reference (excluding the window)
-        ref_excl = np.concatenate([ref_embeddings[:start], ref_embeddings[start + window_size:]])
-        ref_sample = ref_excl[rng.choice(len(ref_excl), size=min(200, len(ref_excl)), replace=False)]
+        # Random window from stream half
+        start = rng.integers(0, len(ref_stream) - window_size)
+        window = ref_stream[start:start + window_size]
+        # Compare against frozen half (sample 200 for speed)
+        ref_sample_idx = rng.choice(len(ref_frozen), size=min(200, len(ref_frozen)), replace=False)
+        ref_sample = ref_frozen[ref_sample_idx]
         mmd = compute_mmd_squared(ref_sample, window, bandwidth)
         null_mmds.append(mmd)
 
@@ -64,11 +74,14 @@ def run_mmd_detection(embeddings: np.ndarray, is_shifted: np.ndarray,
                       bandwidth: float, threshold: float) -> dict:
     """Run sliding-window MMD detection on a stream of embeddings."""
     ref_embs = embeddings[:SHIFT_ONSET]
+    # Use first half of reference as frozen (matches calibration split)
+    frozen_ref = ref_embs[:len(ref_embs) // 2]
+    ref_sample = frozen_ref[:min(200, len(frozen_ref))]
 
     alarm_step = None
     for t in range(SHIFT_ONSET + WINDOW_SIZE, len(embeddings)):
         window = embeddings[t - WINDOW_SIZE:t]
-        mmd = compute_mmd_squared(ref_embs[:200], window, bandwidth)
+        mmd = compute_mmd_squared(ref_sample, window, bandwidth)
         if mmd > threshold and alarm_step is None:
             alarm_step = t
 
