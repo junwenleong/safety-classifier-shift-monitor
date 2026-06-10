@@ -71,7 +71,7 @@ We address three research questions:
 \subsection{System Architecture}
 \label{sec:architecture}
 
-The monitor observes a stream of classifier outputs $(x_t, s_t, \mathbf{r}_t)$: input text $x_t$, unsafe-class probability $s_t \in [0,1]$, and penultimate-layer representation $\mathbf{r}_t \in \mathbb{R}^d$. The detection channel evaluated in this paper is the KS detector on classifier scores (\S\ref{sec:ks}). The system architecture also includes an MMD detector on embeddings (\S\ref{sec:mmd}), which is implemented but was not included in the factorial evaluation; a comparison of detection channels is left to future work.
+The monitor observes a stream of classifier outputs $(x_t, s_t, \mathbf{r}_t)$: input text $x_t$, unsafe-class probability $s_t \in [0,1]$, and penultimate-layer representation $\mathbf{r}_t \in \mathbb{R}^d$. The primary detection channel in the factorial evaluation is the KS detector on classifier scores (\S\ref{sec:ks}). The system also includes an MMD detector on embeddings (\S\ref{sec:mmd}), evaluated post-factorial on a representative subset (\S\ref{sec:channel-comparison}).
 
 \subsection{Reference Window Calibration}
 \label{sec:reference}
@@ -87,14 +87,14 @@ D_w = \sup_x |\hat{F}_w(x) - \hat{F}_{\text{ref}}(x)|
 \end{equation}
 If the input distribution shifts in a way that changes how the classifier scores inputs, the empirical CDF of recent scores diverges from the reference CDF. The KS statistic measures the maximum pointwise divergence, making it sensitive to any location, scale, or shape change in the score distribution. The sliding-window KS test is a standard concept-drift detector (e.g., the KSWIN method available in common drift-detection libraries); we adopt it as a lightweight, well-understood detection channel rather than as a methodological contribution.
 
-\subsection{MMD Detector (Implemented, Not Evaluated)}
+\subsection{MMD Detector}
 \label{sec:mmd}
 
 The system includes an MMD detector that tracks whether the geometry of classifier representations has changed. It maintains a sliding window of the most recent $w$ embedding vectors and computes the unbiased MMD$^2$ between the reference embeddings and the window:
 \begin{equation}
 \widehat{\text{MMD}}^2_u(X, Y) = \frac{1}{m(m-1)} \sum_{i \neq j} k(x_i, x_j) + \frac{1}{n(n-1)} \sum_{i \neq j} k(y_i, y_j) - \frac{2}{mn} \sum_{i,j} k(x_i, y_j)
 \end{equation}
-with Gaussian kernel $k(x, y) = \exp(-\|x - y\|^2 / 2\sigma^2)$. The MMD is zero if and only if the two distributions are identical (for characteristic kernels), making it sensitive to shifts that move the embedding mass even when the score marginal is preserved. The factorial evaluation (\S\ref{sec:results}) uses the KS detector only; the MMD channel was not wired into the factorial harness. Whether MMD provides complementary detection power (catching shifts invisible to the score distribution) is an open question for future work.
+with Gaussian kernel $k(x, y) = \exp(-\|x - y\|^2 / 2\sigma^2)$. The MMD is zero if and only if the two distributions are identical (for characteristic kernels), making it sensitive to shifts that move the embedding mass even when the score marginal is preserved. The MMD threshold is calibrated via a 1000-permutation bootstrap null on the pooled reference embeddings, set at the $(1{-}\alpha)$ quantile. The factorial evaluation uses the KS detector only; the MMD channel is evaluated separately on a representative subset (\S\ref{sec:channel-comparison}).
 
 \subsection{Confidence Sequences and Alarm Logic}
 \label{sec:cs}
