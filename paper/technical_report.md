@@ -134,28 +134,44 @@ All three factors contribute substantially. A monitoring system that ignores the
 - Temporal: 20/292 reviewed, 100% genuine jailbreaks
 - Adversarial suffix: 20/22 reviewed, all score flips confirmed
 
-**Verification:** `scripts/verify_paper_numbers.py` checks 21 statistics against raw data. All pass.
+**Verification:** `scripts/verify_paper_numbers.py` checks 81 statistics against raw data. All pass.
 
 **Code:** [github.com/junwenleong/safety-classifier-shift-monitor](https://github.com/junwenleong/safety-classifier-shift-monitor)
 
 ---
 
-## 6. Limitations and Future Work
+## 6. Post-Factorial Results
+
+**CS growing-window:** 120/120 detection (100%), 0% FAR, ~2× latency vs KS. At 30% mixing: CS 97% vs KS 43% (Fisher exact p < 0.0001, non-overlapping CIs). Deployment profile: KS for speed at high mixing, CS for reliability at low mixing.
+
+**MMD on embeddings:** 120/120 detection at latency=100 (immediate), FAR 3–10%. Binary alarm with no gradation — complementary to KS's graded severity signal.
+
+**Gradual drift:** Detectable at all ramp rates (50–200 steps) when mixing ≥50%. Detection boundary at ~30% mixing. CS detects at 30% where KS fails.
+
+**Mechanistic hypothesis:** Score std vs latency r=0.97 (n=4, suggestive). Embedding displacement vs latency r=−0.09 (not significant) — detection mediated by score geometry, not embedding geometry.
+
+**Filtered ablation:** 9.4% refusals. Removing them: DeBERTa 38.0→37.8, Llama Guard 66.6→60.8. Negligible effect.
+
+**PCA generalization:** ESS reduction at dim=32 confirmed on paraphrase (Llama Guard ESS=32, ShieldGemma ESS=28).
+
+---
+
+## 7. Limitations and Future Work
 
 **Current limitations:**
-- Conformal evaluation on temporal shift only (one of five conditions)
-- Abrupt shift onset assumption (gradual drift would require CUSUM)
+- Detection boundary at ~30% mixing — below this, neither KS nor CS reliably detects
+- MMD provides no latency gradation (immediate binary alarm); Llama Guard FAR at 10% (2× target)
 - Binary classifiers only (multi-category taxonomies need different statistics)
-- Refusal contamination in paraphrase/code-switch corpora (14-30%)
-- No production deployment validation
+- Mechanistic correlation at n=4 classifiers (suggestive, not definitive)
+- PCA recovery magnitude depends on calibration split
 
 **Future directions:**
-- Dimensionality-reduced density ratio estimation for generative model embeddings
+- CUSUM/Bayesian change-point for drift below 30% mixing threshold
 - Online conformal prediction without exchangeability (Gibbs & Candès 2021)
-- CUSUM/Bayesian change-point detection for gradual drift
-- Multi-channel detection (KS + MMD jointly)
+- Non-parametric density ratio estimators for high-dimensional embeddings
+- Larger MMD reference pools for stable Llama Guard calibration
 - Production deployment with real traffic streams
 
 ---
 
-*All numbers verified against raw experimental data. Pre-registration committed before execution. Full factorial completed without error.*
+*All numbers verified against raw experimental data (81 assertions). Pre-registration committed before execution. Post-factorial additions documented in separate amendment (committed June 8, executed June 9–10).*
