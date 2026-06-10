@@ -143,6 +143,6 @@ ESS reduction at dim=32 generalizes to paraphrase shift: Llama Guard ESS=32, Shi
 
 ## Verification
 
-All numbers in this document were programmatically verified against raw experimental data using `scripts/verify_paper_numbers.py` (81 assertions, all passing). Experiment configurations in `configs/` were committed before execution (commit `be630f3`). Post-factorial additions pre-registered in `docs/pre_registration_amendment_2.md` (committed June 8, executed June 9–10).
+All numbers in this document were programmatically verified against raw experimental data using `scripts/verify_paper_numbers.py` (90 assertions, all passing). Experiment configurations in `configs/` were committed before execution (commit `be630f3`). Post-factorial additions pre-registered in `docs/pre_registration_amendment_2.md` (committed June 8, executed June 9–10).
 
 Paper: [arXiv](#) · Code and results: [github.com/junwenleong/safety-classifier-shift-monitor](https://github.com/junwenleong/safety-classifier-shift-monitor)

@@ -108,4 +108,4 @@ Detection generalizes beyond synthetic onset:
 
 [arXiv Paper](#) · [GitHub Repository](https://github.com/junwenleong/safety-classifier-shift-monitor) · [Full Results (FINDINGS.md)](https://github.com/junwenleong/safety-classifier-shift-monitor/blob/main/FINDINGS.md) · [Verification Script](https://github.com/junwenleong/safety-classifier-shift-monitor/blob/main/scripts/verify_paper_numbers.py)
 
-All reported statistics were programmatically verified against raw experimental data using `verify_paper_numbers.py` (81 assertions, all passing). Pre-registration committed before execution; post-factorial additions documented in separate amendment.
+All reported statistics were programmatically verified against raw experimental data using `verify_paper_numbers.py` (90 assertions, all passing). Pre-registration committed before execution; post-factorial additions documented in separate amendment.

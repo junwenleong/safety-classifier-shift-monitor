@@ -134,7 +134,7 @@ All three factors contribute substantially. A monitoring system that ignores the
 - Temporal: 20/292 reviewed, 100% genuine jailbreaks
 - Adversarial suffix: 20/22 reviewed, all score flips confirmed
 
-**Verification:** `scripts/verify_paper_numbers.py` checks 81 statistics against raw data. All pass.
+**Verification:** `scripts/verify_paper_numbers.py` checks 90 statistics against raw data. All pass.
 
 **Code:** [github.com/junwenleong/safety-classifier-shift-monitor](https://github.com/junwenleong/safety-classifier-shift-monitor)
 
@@ -174,4 +174,4 @@ All three factors contribute substantially. A monitoring system that ignores the
 
 ---
 
-*All numbers verified against raw experimental data (81 assertions). Pre-registration committed before execution. Post-factorial additions documented in separate amendment (committed June 8, executed June 9–10).*
+*All numbers verified against raw experimental data (90 assertions). Pre-registration committed before execution. Post-factorial additions documented in separate amendment (committed June 8, executed June 9–10).*
