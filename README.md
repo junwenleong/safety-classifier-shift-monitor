@@ -12,11 +12,11 @@ The system operates on simulated production streams across a factorial evaluatio
 
 ## Headline Findings
 
-1. **Density-ratio collapse in high-dimensional embeddings.** Weighted conformal correction fails for generative classifiers (Llama Guard, ShieldGemma) because logistic regression achieves perfect separability in 3584–4096-d embedding space, driving all density ratios to zero. PCA to ≤32 dimensions recovers +14 pp coverage for discriminative classifiers.
+1. **Density-ratio collapse in high-dimensional embeddings.** Weighted conformal correction fails for generative classifiers (Llama Guard, ShieldGemma) because logistic regression achieves perfect separability in 3584–4096-d embedding space, driving all density ratios to zero. A diagnostic PCA experiment confirms this is a dimensionality artifact: projecting to ≤32 dimensions breaks the separability and restores coverage.
 
 2. **Architectural crossover invisible to single-classifier studies.** Encoders detect paraphrase fast (28–35 steps) but adversarial suffix slow; decoders show the opposite. The classifier × shift interaction explains 18.5% of detection latency variance — monitoring must be tuned per-classifier.
 
-3. **Cross-classifier canary architecture.** GCG suffixes optimized against DeBERTa appear anomalous to Llama Guard (scores shift *toward* unsafe). A second architecturally-different classifier serves as a distributional canary — detecting evasion attacks not by classifying content, but by flagging anomalous score distributions that the targeted classifier cannot see.
+3. **Cross-classifier canary architecture.** GCG suffixes optimized against DeBERTa appear anomalous to Llama Guard (scores shift *toward* unsafe). Our results suggest that a second architecturally-different classifier may serve as a distributional canary — detecting evasion attacks not by classifying content, but by flagging anomalous score distributions that the targeted classifier cannot see. (Based on 22-example corpus; larger-scale validation needed.)
 
 ## Installation
 
