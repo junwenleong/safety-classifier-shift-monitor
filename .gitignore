@@ -43,3 +43,4 @@ logs/
 
 # Local task tracking
 todo.md
+results/cached_streams/

@@ -1,0 +1,55 @@
+{
+  "corpus_stats": {
+    "total": 500,
+    "clean": 453,
+    "refusals": 47
+  },
+  "deberta": {
+    "unfiltered": {
+      "latencies": [
+        38,
+        44,
+        30,
+        39,
+        39
+      ],
+      "mean": 38.0,
+      "detect_rate": 1.0
+    },
+    "filtered": {
+      "latencies": [
+        34,
+        49,
+        33,
+        39,
+        34
+      ],
+      "mean": 37.8,
+      "detect_rate": 1.0
+    }
+  },
+  "llama-guard": {
+    "unfiltered": {
+      "latencies": [
+        81,
+        70,
+        77,
+        46,
+        59
+      ],
+      "mean": 66.6,
+      "detect_rate": 1.0
+    },
+    "filtered": {
+      "latencies": [
+        51,
+        72,
+        58,
+        67,
+        56
+      ],
+      "mean": 60.8,
+      "detect_rate": 1.0
+    }
+  }
+}
