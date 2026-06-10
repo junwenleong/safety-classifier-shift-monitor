@@ -14,14 +14,14 @@ The system was evaluated in a pre-registered factorial design: 4 classifiers × 
 
 **Key findings:**
 - 86.6% detection rate across 800 cells (95% CI [84.1%, 88.8%])
-- Weighted conformal correction recovers 14 pp of coverage for discriminative classifiers but collapses for generative ones due to density ratio estimation failure
+- Weighted conformal correction recovers 14 pp of coverage for DeBERTa but eliminates data-driven reweighting for all other classifiers due to density-ratio estimation failure in high dimensions
 - Classifier × shift interaction explains 18.5% of detection latency variance — monitoring must be tuned per-classifier
 
 ---
 
 ## 1. Problem Statement
 
-When a safety classifier is deployed in production, the input distribution changes over time: users adapt their language, adversaries optimize attacks, new content categories emerge. The classifier's accuracy degrades, but no error signal is available without ground-truth labels. Current practice relies on periodic offline evaluation (days or weeks of delay) or assumes stationarity (no monitoring at all).
+When a safety classifier is deployed in production, the input distribution changes over time: users adapt their language, adversaries optimize attacks, new content categories emerge. The classifier's accuracy degrades, but no error signal is available without ground-truth labels. Current practice typically relies on periodic offline evaluation (days or weeks of delay) or assumes stationarity (no monitoring at all).
 
 **The operational gap:** deployers need a real-time signal that says "your classifier is no longer in-distribution" *before* accuracy has collapsed. This system provides that signal using only the classifier's own outputs.
 
@@ -77,9 +77,9 @@ Weighted correction effectiveness degrades monotonically from discriminative to 
 
 | Classifier | Dim | Coverage gap | Recovery | Mechanism |
 |---|---|---|---|---|
-| DeBERTa | 1024 | 6.5 pp | +14.0 pp | ESS = 79/300, max weight 3.34 |
-| ShieldGemma | 3584 | 22.5 pp | +6.0 pp | ESS = 300/300, all at floor (no-op) |
-| Llama Guard | 4096 | 33.5 pp | +1.5 pp | ESS = 300/300, all at floor (no-op) |
+| DeBERTa | 1024 | 6.5 pp | +14.0 pp | ESS = 88/300, max weight 3.02 |
+| ShieldGemma | 3584 | 22.5 pp | +6.0 pp | ESS = 300/300, all at floor (no reweighting) |
+| Llama Guard | 4096 | 33.5 pp | +1.5 pp | ESS = 300/300, all at floor (no reweighting) |
 
 **Root cause:** Logistic regression achieves perfect separability between calibration and target embeddings in the high-dimensional generative space. All density ratios → 0, all weights clip to 1/C = 0.1 (uniform = no reweighting). The DeBERTa recovery is statistically confirmed: weighted CI [.957, .997] does not overlap unweighted CI [.787, .892].
 
@@ -97,7 +97,7 @@ All three factors contribute substantially. A monitoring system that ignores the
 ### Robustness
 
 - **Real temporal jailbreaks (Regime B):** 85% detection (17/20 cells)
-- **Cross-classifier canary architecture (Regime C):** GCG suffixes optimized against DeBERTa shift Llama Guard's scores *toward* unsafe (detected in 14/40 cells). A second architecturally-different classifier serves as a distributional canary — detecting evasion attacks not by classifying content, but by flagging anomalous score distributions that the targeted classifier cannot see.
+- **Cross-classifier canary architecture (Regime C):** GCG suffixes optimized against DeBERTa shift Llama Guard's scores *toward* unsafe (detected in 14/40 cells). Our results suggest that a second architecturally-different classifier may serve as a distributional canary — detecting evasion attacks not by classifying content, but by flagging anomalous score distributions that the targeted classifier cannot see. (Based on 22-example corpus with a single attack pattern; larger-scale validation needed.)
 
 ---
 
@@ -109,11 +109,11 @@ All three factors contribute substantially. A monitoring system that ignores the
 
 2. **Discriminative classifiers can use weighted conformal correction.** DeBERTa-class models (fine-tuned encoders with <1000-d embeddings) benefit from density-ratio reweighting post-alarm.
 
-3. **Generative classifiers need alternative adaptation.** Llama Guard / ShieldGemma class models cannot use standard density ratio estimation. Options: PCA to safety-relevant subspace before estimation, or non-parametric estimators that don't achieve perfect separability.
+3. **Generative classifiers need alternative adaptation.** Llama Guard / ShieldGemma class models cannot use standard density ratio estimation. Dimensionality reduction before estimation is a known remedy (Stojanov et al. 2019); our diagnostic confirms that PCA to ≤32 dimensions breaks the separability in these specific embeddings. Non-parametric estimators that avoid perfect separability are an alternative.
 
 4. **Window size = 100 is preferred.** 7 steps faster detection at marginal FAR cost.
 
-5. **Deploy a second classifier as a distributional canary.** If an adversarial attack succeeds against one classifier (scores shift toward safe), an architecturally-different classifier detects the anomaly via its own score distribution shift — not by classifying content correctly, but because the attack-perturbed inputs look anomalous from a different representational vantage point. This is cheaper than running full classifiers in parallel: the canary need only produce scores, not final decisions.
+5. **Architecturally distinct classifiers may serve as distributional canaries.** Our Regime C results suggest that if an adversarial attack succeeds against one classifier (scores shift toward safe), an architecturally-different classifier may detect the anomaly via its own score distribution shift — not by classifying content correctly, but because the attack-perturbed inputs look anomalous from a different representational vantage point. This observation is based on a 22-example corpus with a single attack pattern; validation on larger, more diverse adversarial corpora is needed before operational deployment.
 
 ---
 
@@ -123,7 +123,7 @@ All three factors contribute substantially. A monitoring system that ignores the
 - BCa bootstrap CIs on means (10,000 resamples, seed 42, bias-corrected and accelerated)
 - Wilson Score intervals on rates
 - Clopper-Pearson exact intervals on coverage proportions
-- Permutation tests (10,000 permutations) for pairwise comparisons
+- Permutation tests (10,000 permutations for pairwise comparisons; 1,000 for ANOVA, sufficient given all p < 0.001)
 - Holm-Bonferroni correction on 8 highlighted comparisons (all survive at family-wise α = 0.05)
 - All reported at 95% confidence
 
@@ -152,7 +152,7 @@ All three factors contribute substantially. A monitoring system that ignores the
 
 **Filtered ablation:** 9.4% refusals. Removing them: DeBERTa 38.0→37.8, Llama Guard 66.6→60.8. Negligible effect.
 
-**PCA generalization:** ESS reduction at dim=32 confirmed on paraphrase (Llama Guard ESS=32, ShieldGemma ESS=28).
+**PCA diagnostic:** ESS reduction at dim=32 confirmed on paraphrase (Llama Guard ESS=32, ShieldGemma ESS=28), confirming the collapse is a dimensionality artifact.
 
 ---
 
@@ -163,7 +163,7 @@ All three factors contribute substantially. A monitoring system that ignores the
 - MMD provides no latency gradation (immediate binary alarm); Llama Guard FAR at 10% (2× target)
 - Binary classifiers only (multi-category taxonomies need different statistics)
 - Mechanistic correlation at n=4 classifiers (suggestive, not definitive)
-- PCA recovery magnitude depends on calibration split
+- PCA recovery magnitude depends on calibration split; dimensionality reduction for density-ratio estimation is an established technique (Stojanov et al. 2019), and our contribution is the specific diagnosis in generative safety-classifier embeddings
 
 **Future directions:**
 - CUSUM/Bayesian change-point for drift below 30% mixing threshold

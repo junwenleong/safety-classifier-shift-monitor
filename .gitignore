@@ -44,3 +44,11 @@ logs/
 # Local task tracking
 todo.md
 results/cached_streams/
+
+# Paper build artifacts (compiled outputs)
+paper/latex/*.pdf
+paper/latex/*.log
+paper/latex/*.aux
+paper/latex/*.out
+paper/latex/*.blg
+paper/arxiv_submission.tar.gz
