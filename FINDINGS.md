@@ -2,11 +2,11 @@
 
 ## Summary
 
-An online monitoring system detects distributional shift in deployed safety classifiers with 86.6% detection rate across 800 pre-registered factorial cells (4 classifiers × 5 shift conditions × 20 seeds × 2 window sizes), mean detection latency of 39.5 steps, and empirical false alarm rates of 2–10%. Upon detection, weighted conformal prediction recovers coverage for discriminative classifiers (+14 pp for DeBERTa) but collapses completely for generative classifiers (+1.5 pp for Llama Guard, +6 pp for ShieldGemma), due to density ratio estimation failure in high-dimensional general-purpose embedding spaces. Variance decomposition reveals that classifier (η² = 0.243), shift type (η² = 0.237), and their interaction (η² = 0.185) all contribute substantially to detection latency — neither factor alone determines difficulty, and per-classifier monitoring profiles are necessary.
+An online monitoring system detects distributional shift in deployed safety classifiers with 86.6% detection rate across 800 pre-registered factorial cells (4 classifiers × 5 shift conditions × 20 seeds × 2 window sizes), mean detection latency of 39.5 steps, and empirical false alarm rates of 2–10%. Upon detection, weighted conformal prediction recovers coverage for discriminative classifiers (+14 pp for DeBERTa) but collapses completely for generative classifiers (+1.5 pp for Llama Guard, +6 pp for ShieldGemma), due to density ratio estimation failure in high-dimensional general-purpose embedding spaces. Variance decomposition reveals that classifier (η² = 0.243), shift type (η² = 0.237), and their interaction (η² = 0.185) all contribute substantially to detection latency -- neither factor alone determines difficulty, and per-classifier monitoring profiles are necessary.
 
 ## The Problem
 
-Safety classifiers degrade silently under distributional shift. When the input distribution changes — through adversarial adaptation, linguistic drift, multilingual code-switching, or emerging attack patterns — classifier accuracy drops with no error signal. In production, ground-truth labels rarely arrive in real time. The monitor watches only the classifier's own outputs (scores and embeddings) and alerts deployers before accuracy collapses.
+Safety classifiers degrade silently under distributional shift. When the input distribution changes -- through adversarial adaptation, linguistic drift, multilingual code-switching, or emerging attack patterns -- classifier accuracy drops with no error signal. In production, ground-truth labels rarely arrive in real time. The monitor watches only the classifier's own outputs (scores and embeddings) and alerts deployers before accuracy collapses.
 
 ## System Design
 
@@ -78,7 +78,7 @@ Two-way ANOVA on detection latency (693 valid detections):
 | Classifier × Shift | 0.185 | — | < 0.001 |
 | Residual | 0.335 | — | — |
 
-The three systematic factors contribute roughly equally. The initial N=5 estimate inflated the interaction (0.265); at N=20 it shrinks to 0.185 while main effects grow — consistent with small-sample noise.
+The three systematic factors contribute roughly equally. The initial N=5 estimate inflated the interaction (0.265); at N=20 it shrinks to 0.185 while main effects grow -- consistent with small-sample noise.
 
 ### Robustness Across Ground-Truth Regimes
 
@@ -102,9 +102,9 @@ Manual review of samples from each corpus:
 
 **CS growing-window:** 120/120 detection (100%), 0/40 FAR (0%), ~2× latency vs KS. At 30% mixing: CS 29/30 (97%) vs KS 13/30 (43%), Fisher exact p < 0.0001, non-overlapping Wilson CIs [0.83, 0.99] vs [0.27, 0.61].
 
-**Deployment profile:** KS is preferred at high mixing (fast); CS is necessary at low mixing (reliable). Real drift is rarely 100% contamination — the CS advantage at low mixing is operationally significant.
+**Deployment profile:** KS is preferred at high mixing (fast); CS is necessary at low mixing (reliable). Real drift is rarely 100% contamination -- the CS advantage at low mixing is operationally significant.
 
-**MMD on embeddings:** 120/120 detection at latency=100 (immediate). FAR controlled: DeBERTa 3.3%, Text-Mod 3.3%, ShieldGemma 0%, Llama Guard 10%. MMD provides binary alarm with no latency gradation — KS grades severity, MMD provides guaranteed backstop.
+**MMD on embeddings:** 120/120 detection at latency=100 (immediate). FAR controlled: DeBERTa 3.3%, Text-Mod 3.3%, ShieldGemma 0%, Llama Guard 10%. MMD provides binary alarm with no latency gradation -- KS grades severity, MMD provides guaranteed backstop.
 
 ### Gradual Drift Sensitivity
 
