@@ -4,5 +4,8 @@ theme: minima
 url: "https://junwenleong.github.io"
 baseurl: "/safety-classifier-shift-monitor"
 markdown: kramdown
+exclude:
+  - pre_registration.md
+  - pre_registration_amendment_2.md
 twitter:
   card: summary_large_image
