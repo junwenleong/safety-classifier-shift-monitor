@@ -35,6 +35,7 @@ WINDOW_SIZE = 100
 N_SEEDS = 10  # use all cached seeds
 RAMP_DURATIONS = [50, 100, 150, 200]
 MIXING_LEVELS = [0.3, 0.5, 0.7, 0.8, 0.9, 1.0]
+MIXING_30_EXTRA_SEEDS = 20  # extra seeds for 30% mixing (total n=30 with bootstrap)
 FAST_RAMP = 50
 CS_ALPHA = 0.05
 N_CAL = 50  # null streams for KS threshold calibration
@@ -251,6 +252,52 @@ def main():
         ks_str = f"{len(ks_valid)}/{N_SEEDS}" + (f" mean={np.mean(ks_valid):.1f}" if ks_valid else "")
         cs_str = f"{len(cs_valid)}/{N_SEEDS}" + (f" mean={np.mean(cs_valid):.1f}" if cs_valid else "")
         print(f"  Mix {mix_level*100:.0f}%: KS {ks_str}, CS {cs_str}")
+
+    # Part 3: Extended test at 30% mixing (n=30 for significance)
+    print(f"\n{'='*60}")
+    print(f"PART 3: 30% mixing extended (n=30, ramp={FAST_RAMP} steps)")
+    print("  (Uses bootstrap resampling of reference pool for extra seeds)")
+
+    ks_lats_30 = []
+    cs_lats_30 = []
+    # First 10 seeds: use cached shifted scores directly
+    for seed in range(N_SEEDS):
+        scores, is_shifted = load_cached_stream(seed)
+        shifted_scores = scores[is_shifted]
+        stream = simulate_gradual_stream(all_ref_scores[:1000], shifted_scores, FAST_RAMP, 0.3, seed)
+        ks_lats_30.append(run_ks_detection(stream, threshold))
+        cs_lats_30.append(run_cs_detection(stream, ref_mean))
+
+    # Extra 20 seeds: resample shifted pool with different seeds
+    for extra_seed in range(MIXING_30_EXTRA_SEEDS):
+        # Use a different cached seed's shifted scores with offset random seed
+        base_seed = extra_seed % N_SEEDS
+        scores, is_shifted = load_cached_stream(base_seed)
+        shifted_scores = scores[is_shifted]
+        stream = simulate_gradual_stream(all_ref_scores[:1000], shifted_scores, FAST_RAMP, 0.3, seed=extra_seed + 100)
+        ks_lats_30.append(run_ks_detection(stream, threshold))
+        cs_lats_30.append(run_cs_detection(stream, ref_mean))
+
+    ks_valid_30 = [l for l in ks_lats_30 if l is not None and l >= 0]
+    cs_valid_30 = [l for l in cs_lats_30 if l is not None and l >= 0]
+
+    results["mixing_30_extended"] = {
+        "n": len(ks_lats_30),
+        "ks": {"n_detected": len(ks_valid_30), "detection_rate": len(ks_valid_30)/len(ks_lats_30),
+               "mean_latency": float(np.mean(ks_valid_30)) if ks_valid_30 else None, "latencies": ks_lats_30},
+        "cs": {"n_detected": len(cs_valid_30), "detection_rate": len(cs_valid_30)/len(cs_lats_30),
+               "mean_latency": float(np.mean(cs_valid_30)) if cs_valid_30 else None, "latencies": cs_lats_30},
+    }
+    print(f"  KS: {len(ks_valid_30)}/{len(ks_lats_30)}" + (f" mean={np.mean(ks_valid_30):.1f}" if ks_valid_30 else ""))
+    print(f"  CS: {len(cs_valid_30)}/{len(cs_lats_30)}" + (f" mean={np.mean(cs_valid_30):.1f}" if cs_valid_30 else ""))
+
+    # Fisher exact test
+    from scipy.stats import fisher_exact
+    table = [[len(cs_valid_30), len(cs_lats_30) - len(cs_valid_30)],
+             [len(ks_valid_30), len(ks_lats_30) - len(ks_valid_30)]]
+    _, p_fisher = fisher_exact(table, alternative='greater')
+    print(f"  Fisher exact (CS > KS): p = {p_fisher:.4f}")
+    results["mixing_30_extended"]["fisher_p"] = p_fisher
 
     # Save
     with open(OUTPUT, "w") as f:
