@@ -62,10 +62,12 @@ def simulate_gradual_stream(ref_scores, shifted_scores, ramp_duration, max_mixin
 
     stream = []
     shift_idx = 0
+    ref_idx = 0
 
     # Pre-onset: use reference scores in order
-    for i in range(min(SHIFT_ONSET, len(ref_pool))):
-        stream.append(ref_pool[i])
+    for ref_idx in range(min(SHIFT_ONSET, len(ref_pool))):
+        stream.append(ref_pool[ref_idx])
+    ref_idx += 1
 
     # Post-onset: mix according to ramp
     for t in range(300):  # up to 300 post-onset steps
@@ -75,8 +77,9 @@ def simulate_gradual_stream(ref_scores, shifted_scores, ramp_duration, max_mixin
         if rng.random() < mix_prob and shift_idx < len(shift_pool):
             stream.append(shift_pool[shift_idx])
             shift_idx += 1
-        elif i + t + 1 < len(ref_pool):
-            stream.append(ref_pool[i + t + 1])
+        elif ref_idx < len(ref_pool):
+            stream.append(ref_pool[ref_idx])
+            ref_idx += 1
         else:
             break
 
@@ -205,7 +208,8 @@ def main():
             scores, is_shifted = load_cached_stream(seed)
             ref_scores = scores[~is_shifted]
             shifted_scores = scores[is_shifted]
-            stream = simulate_gradual_stream(ref_scores, shifted_scores, ramp_dur, 0.5, seed)
+            # Use pooled reference (all seeds) for post-onset filler
+            stream = simulate_gradual_stream(all_ref_scores[:1000], shifted_scores, ramp_dur, 0.5, seed)
             ks_lats.append(run_ks_detection(stream, threshold))
             cs_lats.append(run_cs_detection(stream, ref_mean))
 
@@ -231,7 +235,8 @@ def main():
             scores, is_shifted = load_cached_stream(seed)
             ref_scores = scores[~is_shifted]
             shifted_scores = scores[is_shifted]
-            stream = simulate_gradual_stream(ref_scores, shifted_scores, FAST_RAMP, mix_level, seed)
+            # Use pooled reference for post-onset filler
+            stream = simulate_gradual_stream(all_ref_scores[:1000], shifted_scores, FAST_RAMP, mix_level, seed)
             ks_lats.append(run_ks_detection(stream, threshold))
             cs_lats.append(run_cs_detection(stream, ref_mean))
 
