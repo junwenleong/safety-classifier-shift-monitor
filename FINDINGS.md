@@ -2,11 +2,11 @@
 
 ## Summary
 
-An online monitoring system detects distributional shift in deployed safety classifiers with 86.6% detection rate across 800 pre-registered factorial cells (4 classifiers × 5 shift conditions × 20 seeds × 2 window sizes), mean detection latency of 39.5 steps, and empirical false alarm rates of 2–10%. Upon detection, weighted conformal prediction recovers coverage for discriminative classifiers (+14 pp for DeBERTa) but collapses completely for generative classifiers (+1.5 pp for Llama Guard, +6 pp for ShieldGemma), due to density ratio estimation failure in high-dimensional general-purpose embedding spaces. Variance decomposition reveals that classifier (η² = 0.243), shift type (η² = 0.237), and their interaction (η² = 0.185) all contribute substantially to detection latency — neither factor alone determines difficulty, and per-classifier monitoring profiles are necessary.
+An online monitoring system detects distributional shift in deployed safety classifiers with 86.6% detection rate across 800 pre-registered factorial cells (4 classifiers × 5 shift conditions × 20 seeds × 2 window sizes), mean detection latency of 39.5 steps, and empirical false alarm rates of 2–10%. Upon detection, weighted conformal prediction recovers coverage for discriminative classifiers (+14 pp for DeBERTa) but eliminates data-driven reweighting for generative classifiers (residual +1.5–6 pp are a formula artifact of the test-point term, not genuine adaptation), due to density ratio estimation failure in high-dimensional general-purpose embedding spaces. Variance decomposition reveals that classifier (η² = 0.243), shift type (η² = 0.237), and their interaction (η² = 0.185) all contribute substantially to detection latency — neither factor alone determines difficulty, and per-classifier monitoring profiles are necessary.
 
 ## The Problem
 
-Safety classifiers degrade silently under distributional shift. When the input distribution changes — through adversarial adaptation, linguistic drift, multilingual code-switching, or emerging attack patterns — classifier accuracy drops with no error signal. In production, ground-truth labels rarely arrive in real time. The monitor watches only the classifier's own outputs (scores and embeddings) and alerts deployers before accuracy collapses.
+Safety classifiers degrade silently under distributional shift. When the input distribution changes — through adversarial adaptation, linguistic drift, multilingual code-switching, or emerging attack patterns — classifier accuracy drops with no error signal. In production, ground-truth labels typically do not arrive in real time. The monitor watches only the classifier's own outputs (scores and embeddings) and alerts deployers before the shift accumulates further.
 
 ## System Design
 
@@ -65,7 +65,7 @@ A crossover interaction is visible: paraphrase is easy for encoders but hard for
 
 DeBERTa's recovery is statistically significant (weighted lower bound 0.957 > unweighted upper bound 0.892, non-overlapping CIs).
 
-**The density ratio collapse mechanism:** For both generative models, logistic regression achieves perfect separability between source and target embeddings. All 300 calibration weights clip to the floor (1/C = 0.1), effective sample size = 300/300 (identical uniform weights = no-op). The weighted quantile degenerates to the unweighted quantile. For DeBERTa, 91.7% of weights clip to floor but ~25 calibration examples retain non-trivial weights (max 3.34, ESS = 79/300), driving the genuine 14 pp recovery.
+**The density ratio collapse mechanism:** For both generative models, logistic regression achieves perfect separability between source and target embeddings. All 300 calibration weights clip to the floor (1/C = 0.1), eliminating data-driven reweighting. Residual recoveries (+0.02–0.10) at ESS≈300 are a mechanical artifact of the test-point contribution: the implicit weight w(X_test)=1.0 raises the effective quantile level from 90.3% to 93.3% at n_cal=300, ε=0.1 — a formula artifact, not adaptation. For DeBERTa, 92% of weights clip to floor but ~24 calibration examples retain non-trivial weights (max 3.02, ESS = 88/300), driving the genuine 14 pp recovery. (Numbers from the pooled `conformal_full.json` evaluation; an earlier single-classifier exploratory run reported ESS=79 due to a different calibration split.)
 
 ### RQ3: Variance Decomposition
 
@@ -117,9 +117,9 @@ Mixing-level sweep (50-step ramp):
 - 50%: KS 10/10, CS 10/10
 - 100%: KS 10/10 (mean 64), CS 10/10 (mean 83)
 
-### Mechanistic Hypothesis
+### Mechanistic Hypothesis (Exploratory, n=4)
 
-Null score std correlates with mean detection latency: r=0.97, p=0.032 (n=4 classifiers). Pattern is shift-specific: paraphrase/temporal/compositional show wider→slower (r=0.70–0.97); adversarial suffix reverses (r=−0.20), producing the crossover.
+Null score std correlates with mean detection latency: r=0.97, p=0.032 (n=4 classifiers). This is suggestive of a pattern — tighter score boundaries may increase sensitivity to distributional perturbation — but n=4 precludes robust confirmation. Pattern is shift-specific: paraphrase/temporal/compositional show wider→slower (r=0.70–0.97); adversarial suffix reverses (r=−0.20), producing the crossover.
 
 Embedding displacement does NOT mirror this pattern (overall r=−0.09, p=0.78). Detection is mediated by score-boundary geometry, not representation-space distance.
 
@@ -127,9 +127,9 @@ Embedding displacement does NOT mirror this pattern (overall r=−0.09, p=0.78).
 
 Refusal rate: 47/500 = 9.4% (lower than 14–20% manual estimate). Removing refusals has negligible effect: DeBERTa 38.0→37.8 steps, Llama Guard 66.6→60.8 steps. Both 5/5 detected in both conditions.
 
-### PCA Generalization
+### PCA Diagnostic
 
-ESS reduction at dim=32 generalizes to paraphrase shift: Llama Guard ESS=32, ShieldGemma ESS=28 (both breaking separability). Coverage recovery magnitude is split-dependent; primary result (temporal: +33pp Llama Guard, +20.5pp ShieldGemma) uses fresh inference with proper conformal framework.
+ESS reduction at dim=32 generalizes to paraphrase shift: Llama Guard ESS=32, ShieldGemma ESS=28 (both breaking separability). This confirms the collapse is driven by the curse of dimensionality (d ≫ n), consistent with established high-dimensional density-ratio instability (Stojanov et al. 2019; Sugiyama et al. 2011); the specific contribution is diagnosing the failure mode in generative safety-classifier embeddings. Coverage recovery magnitude is split-dependent; primary result (temporal: +33pp Llama Guard, +20.5pp ShieldGemma) uses fresh inference with proper conformal framework.
 
 ## Limitations
 
@@ -139,7 +139,7 @@ ESS reduction at dim=32 generalizes to paraphrase shift: Llama Guard ESS=32, Shi
 - **Binary classifiers only.** Multi-category safety taxonomies may exhibit category-specific shift invisible to scalar scores.
 - **Refusal contamination.** 9.4% of paraphrase corpus are LLM refusals (lower than the 14–20% manual estimate). Filtered ablation confirms negligible effect on detection.
 - **FAR asymmetry.** False alarm rates vary 5× across classifiers despite identical calibration. Llama Guard MMD FAR is 10% (2× target).
-- **PCA fix validated on temporal + paraphrase.** ESS reduction generalizes but coverage recovery magnitude depends on calibration split.
+- **PCA diagnostic validated on temporal + paraphrase.** ESS reduction generalizes but coverage recovery magnitude depends on calibration split.
 
 ## Verification
 

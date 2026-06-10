@@ -1,5 +1,5 @@
 title: "Jun Wen Leong"
-description: "86.6% online shift detection across 800 pre-registered cells — but weighted conformal correction collapses for generative models due to density ratio failure in high-dimensional embeddings."
+description: "Weighted conformal correction silently fails for 3 of 4 safety classifiers — high-dimensional density ratios collapse to floor, eliminating adaptation."
 theme: minima
 url: "https://junwenleong.github.io"
 baseurl: "/safety-classifier-shift-monitor"
