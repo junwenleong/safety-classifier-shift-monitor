@@ -8,14 +8,14 @@
 
 ## Executive Summary
 
-Safety classifiers deployed at scale degrade silently when input distributions shift. This project builds an online monitoring system that (1) detects distributional shift using sequential statistics on classifier outputs, and (2) adapts decision thresholds post-detection via conformal prediction to preserve coverage guarantees — all without requiring new labeled data.
+Safety classifiers deployed at scale degrade silently when input distributions shift. This project builds an online monitoring system that (1) detects distributional shift using sequential statistics on classifier outputs, and (2) adapts decision thresholds post-detection via conformal prediction to preserve coverage guarantees -- all without requiring new labeled data.
 
 The system was evaluated in a pre-registered factorial design: 4 classifiers × 5 shift conditions × 20 seeds × 2 window sizes = 800 experimental cells, plus three independent ground-truth regimes. Total compute: ~120 hours across two machines.
 
 **Key findings:**
 - 86.6% detection rate across 800 cells (95% CI [84.1%, 88.8%])
 - Weighted conformal correction recovers 14 pp of coverage for discriminative classifiers but collapses for generative ones due to density ratio estimation failure
-- Classifier × shift interaction explains 18.5% of detection latency variance — monitoring must be tuned per-classifier
+- Classifier × shift interaction explains 18.5% of detection latency variance -- monitoring must be tuned per-classifier
 
 ---
 
@@ -38,7 +38,7 @@ A sliding-window KS statistic compares the most recent *w* classifier scores aga
 - Alarm threshold: empirically calibrated via 50 negative control streams (97th percentile of maximum observed statistic)
 - Warmup period: *w* steps (window must fill before testing)
 
-The KS statistic detects any change in the score distribution — location, scale, or shape shifts all produce signal.
+The KS statistic detects any change in the score distribution -- location, scale, or shape shifts all produce signal.
 
 ### Adaptation Layer
 
@@ -97,7 +97,7 @@ All three factors contribute substantially. A monitoring system that ignores the
 ### Robustness
 
 - **Real temporal jailbreaks (Regime B):** 85% detection (17/20 cells)
-- **Cross-classifier canary architecture (Regime C):** GCG suffixes optimized against DeBERTa shift Llama Guard's scores *toward* unsafe (detected in 14/40 cells). A second architecturally-different classifier serves as a distributional canary — detecting evasion attacks not by classifying content, but by flagging anomalous score distributions that the targeted classifier cannot see.
+- **Cross-classifier canary architecture (Regime C):** GCG suffixes optimized against DeBERTa shift Llama Guard's scores *toward* unsafe (detected in 14/40 cells). A second architecturally-different classifier serves as a distributional canary -- detecting evasion attacks not by classifying content, but by flagging anomalous score distributions that the targeted classifier cannot see.
 
 ---
 
@@ -113,7 +113,7 @@ All three factors contribute substantially. A monitoring system that ignores the
 
 4. **Window size = 100 is preferred.** 7 steps faster detection at marginal FAR cost.
 
-5. **Deploy a second classifier as a distributional canary.** If an adversarial attack succeeds against one classifier (scores shift toward safe), an architecturally-different classifier detects the anomaly via its own score distribution shift — not by classifying content correctly, but because the attack-perturbed inputs look anomalous from a different representational vantage point. This is cheaper than running full classifiers in parallel: the canary need only produce scores, not final decisions.
+5. **Deploy a second classifier as a distributional canary.** If an adversarial attack succeeds against one classifier (scores shift toward safe), an architecturally-different classifier detects the anomaly via its own score distribution shift -- not by classifying content correctly, but because the attack-perturbed inputs look anomalous from a different representational vantage point. This is cheaper than running full classifiers in parallel: the canary need only produce scores, not final decisions.
 
 ---
 
@@ -144,11 +144,11 @@ All three factors contribute substantially. A monitoring system that ignores the
 
 **CS growing-window:** 120/120 detection (100%), 0% FAR, ~2× latency vs KS. At 30% mixing: CS 97% vs KS 43% (Fisher exact p < 0.0001, non-overlapping CIs). Deployment profile: KS for speed at high mixing, CS for reliability at low mixing.
 
-**MMD on embeddings:** 120/120 detection at latency=100 (immediate), FAR 3–10%. Binary alarm with no gradation — complementary to KS's graded severity signal.
+**MMD on embeddings:** 120/120 detection at latency=100 (immediate), FAR 3–10%. Binary alarm with no gradation -- complementary to KS's graded severity signal.
 
 **Gradual drift:** Detectable at all ramp rates (50–200 steps) when mixing ≥50%. Detection boundary at ~30% mixing. CS detects at 30% where KS fails.
 
-**Mechanistic hypothesis:** Score std vs latency r=0.97 (n=4, suggestive). Embedding displacement vs latency r=−0.09 (not significant) — detection mediated by score geometry, not embedding geometry.
+**Mechanistic hypothesis:** Score std vs latency r=0.97 (n=4, suggestive). Embedding displacement vs latency r=−0.09 (not significant) -- detection mediated by score geometry, not embedding geometry.
 
 **Filtered ablation:** 9.4% refusals. Removing them: DeBERTa 38.0→37.8, Llama Guard 66.6→60.8. Negligible effect.
 
@@ -159,7 +159,7 @@ All three factors contribute substantially. A monitoring system that ignores the
 ## 7. Limitations and Future Work
 
 **Current limitations:**
-- Detection boundary at ~30% mixing — below this, neither KS nor CS reliably detects
+- Detection boundary at ~30% mixing -- below this, neither KS nor CS reliably detects
 - MMD provides no latency gradation (immediate binary alarm); Llama Guard FAR at 10% (2× target)
 - Binary classifiers only (multi-category taxonomies need different statistics)
 - Mechanistic correlation at n=4 classifiers (suggestive, not definitive)
