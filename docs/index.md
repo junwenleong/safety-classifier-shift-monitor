@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "Safety Classifier Shift Monitor"
-image: https://junwenleong.github.io/safety-classifier-shift-monitor/assets/og-image.png
+image: https://junwenleong.github.io/safety-classifier-shift-monitor/assets/og-image-v2.png
 ---
 
 # Your safety classifier is drifting and you won't know until it's too late
