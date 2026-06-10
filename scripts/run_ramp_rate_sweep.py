@@ -31,6 +31,8 @@ from shift_detection_monitor.detection.confidence_sequence import ConfidenceSequ
 OUTPUT = Path("results/ramp_rate_sweep.json")
 RAMP_DURATIONS = [50, 100, 150, 200]
 MAX_MIXING = 0.5
+MIXING_LEVELS = [0.5, 0.7, 0.8, 0.9, 1.0]  # sweep mixing at fast ramp
+FAST_RAMP = 50  # steps for mixing-level sweep
 N_SEEDS = 20
 CS_ALPHA = 0.05
 
@@ -49,7 +51,7 @@ def run_stream_with_ramp(classifier, reference, shifted, seed, threshold, ramp_d
     return result
 
 
-def run_stream_with_cs(classifier, reference, shifted, seed, ramp_duration, ref_mean):
+def run_stream_with_cs(classifier, reference, shifted, seed, ramp_duration, ref_mean, max_mixing=MAX_MIXING):
     """Run gradual-drift stream and detect with CS growing-window."""
     import random
     from shift_detection_monitor.types import StreamRecord
@@ -70,7 +72,7 @@ def run_stream_with_cs(classifier, reference, shifted, seed, ramp_duration, ref_
             mix_prob = 0.0
         else:
             steps_since = t - SHIFT_ONSET
-            mix_prob = min(MAX_MIXING, MAX_MIXING * steps_since / ramp_duration)
+            mix_prob = min(max_mixing, max_mixing * steps_since / ramp_duration)
 
         use_shifted = (mix_prob > 0) and (rng.random() < mix_prob) and (shift_idx < len(shift_pool))
 
@@ -170,15 +172,72 @@ def main():
         print(f"    KS: {len(ks_valid)}/{N_SEEDS} detected" + (f", mean={np.mean(ks_valid):.1f}" if ks_valid else ""))
         print(f"    CS: {len(cs_valid)}/{N_SEEDS} detected" + (f", mean={np.mean(cs_valid):.1f}" if cs_valid else ""))
 
-    # Summary
+    # Summary — ramp rate
     print("\n" + "=" * 60)
-    print("RAMP-RATE THRESHOLD SUMMARY")
+    print("RAMP-RATE THRESHOLD SUMMARY (max_mixing=0.5)")
     print(f"  {'Ramp':<8} {'KS det':<12} {'KS lat':<10} {'CS det':<12} {'CS lat'}")
     for ramp_dur in RAMP_DURATIONS:
         r = results["ramp_durations"][str(ramp_dur)]
         ks_lat = f"{r['ks']['mean_latency']:.1f}" if r['ks']['mean_latency'] else "—"
         cs_lat = f"{r['cs']['mean_latency']:.1f}" if r['cs']['mean_latency'] else "—"
         print(f"  {ramp_dur:<8} {r['ks']['n_detected']}/{N_SEEDS:<9} {ks_lat:<10} {r['cs']['n_detected']}/{N_SEEDS:<9} {cs_lat}")
+
+    # === Part 2: Mixing-level sweep at fast ramp ===
+    print(f"\n{'='*60}")
+    print(f"MIXING-LEVEL SWEEP (ramp={FAST_RAMP} steps)")
+    print(f"{'='*60}")
+
+    results["mixing_levels"] = {}
+    for mix_level in MIXING_LEVELS:
+        print(f"\n  Max mixing: {mix_level*100:.0f}% (ramp over {FAST_RAMP} steps)")
+        ks_latencies = []
+        cs_latencies = []
+
+        for seed in range(N_SEEDS):
+            # KS detector
+            import scripts.run_gradual_drift as gd
+            orig_ramp = gd.RAMP_DURATION
+            orig_mix = gd.MAX_MIXING
+            gd.RAMP_DURATION = FAST_RAMP
+            gd.MAX_MIXING = mix_level
+            res_ks = run_stream(classifier, reference, shifted, seed, threshold, mode="gradual")
+            gd.RAMP_DURATION = orig_ramp
+            gd.MAX_MIXING = orig_mix
+            ks_latencies.append(res_ks["detection_latency"])
+
+            # CS detector
+            res_cs = run_stream_with_cs(classifier, reference, shifted, seed, FAST_RAMP, ref_mean, max_mixing=mix_level)
+            cs_latencies.append(res_cs["detection_latency"])
+
+        ks_valid = [l for l in ks_latencies if l is not None and l >= 0]
+        cs_valid = [l for l in cs_latencies if l is not None and l >= 0]
+
+        results["mixing_levels"][str(mix_level)] = {
+            "ks": {
+                "detection_rate": len(ks_valid) / N_SEEDS,
+                "mean_latency": float(np.mean(ks_valid)) if ks_valid else None,
+                "n_detected": len(ks_valid),
+                "latencies": ks_latencies,
+            },
+            "cs": {
+                "detection_rate": len(cs_valid) / N_SEEDS,
+                "mean_latency": float(np.mean(cs_valid)) if cs_valid else None,
+                "n_detected": len(cs_valid),
+                "latencies": cs_latencies,
+            },
+        }
+        print(f"    KS: {len(ks_valid)}/{N_SEEDS} detected" + (f", mean={np.mean(ks_valid):.1f}" if ks_valid else ""))
+        print(f"    CS: {len(cs_valid)}/{N_SEEDS} detected" + (f", mean={np.mean(cs_valid):.1f}" if cs_valid else ""))
+
+    # Summary — mixing levels
+    print(f"\n{'='*60}")
+    print(f"MIXING-LEVEL SUMMARY (ramp={FAST_RAMP} steps)")
+    print(f"  {'Mix%':<8} {'KS det':<12} {'KS lat':<10} {'CS det':<12} {'CS lat'}")
+    for mix_level in MIXING_LEVELS:
+        r = results["mixing_levels"][str(mix_level)]
+        ks_lat = f"{r['ks']['mean_latency']:.1f}" if r['ks']['mean_latency'] else "—"
+        cs_lat = f"{r['cs']['mean_latency']:.1f}" if r['cs']['mean_latency'] else "—"
+        print(f"  {mix_level*100:<8.0f} {r['ks']['n_detected']}/{N_SEEDS:<9} {ks_lat:<10} {r['cs']['n_detected']}/{N_SEEDS:<9} {cs_lat}")
 
     wall_time = time.time() - wall_start
     print(f"\n  Wall time: {wall_time/60:.1f} min")
