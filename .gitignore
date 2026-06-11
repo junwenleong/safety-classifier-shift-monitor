@@ -30,8 +30,10 @@ data/calibration/
 # Hypothesis database
 .hypothesis/
 
-# Kiro specs (local development)
+# AI tooling (local development)
 .kiro/
+.claude/
+.ai/
 
 # Environment
 .env
