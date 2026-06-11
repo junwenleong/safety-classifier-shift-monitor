@@ -1,5 +1,7 @@
 # Shift Detection Monitor
 
+**Paper:** [arXiv:2606.11949](https://arxiv.org/abs/2606.11949)
+
 Online monitoring system for distributional shift in deployed safety classifiers. Uses a sliding-window KS statistic on classifier scores with empirically calibrated alarm thresholds to detect when a classifier has moved out of distribution. The system architecture includes a growing-window confidence sequence (Waudby-Smith & Ramdas 2024) with time-uniform coverage guarantees and an MMD detector on classifier embeddings; the pre-registered factorial evaluation uses the KS channel. Upon detection, a conformal abstention layer adapts decision thresholds to preserve a target error rate.
 
 ## Overview
