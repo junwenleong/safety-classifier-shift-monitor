@@ -1,5 +1,7 @@
 """Verify all paper numbers against raw data.
 
+Paper: https://arxiv.org/abs/2606.11949
+
 Covers: Regime A (800-cell factorial), Regime B (temporal jailbreaks),
 Regime C (adversarial success), and conformal evaluation.
 

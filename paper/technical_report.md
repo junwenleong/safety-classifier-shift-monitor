@@ -2,7 +2,7 @@
 
 **Author:** Jun Wen Leong  
 **Date:** June 2026  
-**Status:** Pre-registered evaluation complete. arXiv submission pending.
+**Status:** Pre-registered evaluation complete. arXiv: [2606.11949](https://arxiv.org/abs/2606.11949)
 
 ---
 
