@@ -101,4 +101,4 @@ All three systematic factors are significant (p < 0.001, 1000 permutations). A m
 
 ## Links
 
-[arXiv Paper](https://arxiv.org/abs/XXXX.XXXXX) · [GitHub Repository](https://github.com/junwenleong/safety-classifier-shift-monitor) · [Full Results (FINDINGS.md)](https://github.com/junwenleong/safety-classifier-shift-monitor/blob/main/FINDINGS.md)
+[arXiv Paper](https://arxiv.org/abs/2606.11949) · [GitHub Repository](https://github.com/junwenleong/safety-classifier-shift-monitor) · [Full Results (FINDINGS.md)](https://github.com/junwenleong/safety-classifier-shift-monitor/blob/main/FINDINGS.md)
