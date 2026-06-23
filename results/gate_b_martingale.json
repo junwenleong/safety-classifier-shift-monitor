@@ -1,0 +1,39 @@
+{
+  "gate": "B",
+  "verdict": "GO",
+  "question": "Does conformal test martingale beat KS at low mixing with provable FAR?",
+  "answer": "Yes. Scan martingale (w=50, eps=0.3) achieves 83-100% detection vs KS 43-47% at matched difficulty, with 0/200 FAR and no calibration.",
+  "method": "Scan martingale: union of W=50 sub-martingales, each betting epsilon*p^(epsilon-1) on conformal p-values. Threshold = log(W/alpha). Ville + union bound guarantees FAR <= alpha.",
+  "results": {
+    "small_shift_30pct_mix": {
+      "ks": "14/30=47%",
+      "scan": "30/30=100%",
+      "scan_mean_latency": 95
+    },
+    "large_shift_20pct_mix": {
+      "ks": "13/30=43%",
+      "scan": "25/30=83%",
+      "scan_mean_latency": 140
+    }
+  },
+  "far": {
+    "scan_w50": "0/200 = 0.0%",
+    "guarantee": "FAR <= alpha by Ville + union bound"
+  },
+  "reference_baselines": {
+    "ks_real_30pct": "13/30=43%",
+    "cs_growing_real_30pct": "29/30=97%"
+  },
+  "next_steps": [
+    "Validate across all 4 classifiers (eliminate 5x FAR spread)",
+    "Run on actual cached inference (Mac Studio)",
+    "Compare bounded-memory scan vs unbounded CS on latency",
+    "Implement as detection/conformal_martingale.py"
+  ],
+  "parameters": {
+    "window": 50,
+    "epsilon": 0.3,
+    "alpha": 0.05,
+    "warmup": 200
+  }
+}
