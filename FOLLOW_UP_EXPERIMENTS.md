@@ -156,6 +156,37 @@ Tested the same scan martingale (w=50, ε=0.3) on 200 null streams per classifie
 
 **Spread: 0.5 pp** (vs 7.5 pp under empirical KS). All ≤ α with zero calibration. The 5× FAR asymmetry is eliminated.
 
+### B.2c AV6 — Epsilon robustness (**⚠️ PARTIAL — classifier-dependent**)
+
+At matched difficulty (KS ≈ 45% detection per classifier), (ε=0.3, w=50) works excellently for encoders (DeBERTa 100%, Text-Mod 100%) and Llama Guard (100%), but **fails on ShieldGemma (10%)** because ShieldGemma's null distribution is already widely spread (std=0.14, only 28% of scores below 0.01) — conformal p-values stay near-uniform even under shift.
+
+**Implication:** a single fixed (ε, w) is not universal. The paper must (a) acknowledge this, (b) propose a variability-based default (e.g., scale ε inversely with null-score entropy/IQR), and (c) recommend pairing the martingale with KS for wide-distribution classifiers (the hybrid architecture from AV6 review feedback).
+
+### B.2d AV5 — Exchangeability stress test (**⚠️ HONEST BOUNDARY FOUND**)
+
+| Test | Description | Alarms? |
+|---|---|---|
+| 1. Original order | Reference scores in sequential order (mild autocorrelation) | **0/4** — safe ✅ |
+| 2. Block-structured | Bottom-half then top-half of reference (simulates topic drift) | **4/4** — all alarm ⚠️ |
+| 3. Gradual drift | Mean walks +0.5×std over 800 steps (benign concept drift) | **2/4** (encoders alarm, decoders don't) |
+
+**The guarantee holds only under exchangeability.** The martingale detects *any* distributional departure — adversarial or benign. It cannot distinguish topic drift from attack. State this honestly; recommend: alarm triggers investigation, not automatic response.
+
+### B.2e AD1 — Monitor-aware adversary (**✅ CONFIRMED for ramped onset**)
+
+Against a DeBERTa small-shift adversary with ramped onset (50-step ramp to target mixing):
+
+| Mixing | KS | Scan Martingale | Gap |
+|---|---|---|---|
+| 15% | 3% | **37%** | +10 |
+| 20% | 7% | **67%** | +18 |
+| 25% | 10% | **87%** | +23 |
+| 30% | 47% | **100%** | +16 |
+
+At 20% mixing: KS is effectively blind (7%), martingale catches two-thirds. **This is the "killer chart" for the paper.**
+
+**Caveat (honest):** against a *constant low-rate* adversary (no ramp, sustained trickle at ≤12%), neither KS nor the scan martingale reliably detects. The martingale's advantage is at *ramped* onsets — the fresh sub-martingale started near the changepoint accumulates evidence during the ramp. Constant sub-threshold injection evades both methods. State this as the residual threat model.
+
 ### B.3 Full build (conditional on Gate B)
 
 1. `detection/conformal_martingale.py` — conformal p-values from the frozen reference CDF, betting martingale (reuse the `_log_wealth` ONS accumulation from `ConfidenceSequenceEngine`), alarm at wealth ≥ 1/α.
