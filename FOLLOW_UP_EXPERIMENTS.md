@@ -44,6 +44,34 @@ This document organizes *experiments*, not *submissions*. The three-track struct
 - **No pre-committing to N papers.** Packaging is decided *after* the gates land. Resist scope-sprawl: do not promote "future directions" (below) into deliverables until the core results are in.
 - **No timeline/venue pressure drives this.** Decisions are made on what the data shows, not on deadlines.
 
+#### Paper-count decision — honest considerations (revisit after gates)
+
+Whether this becomes 1, 2, or 3 papers is **downstream of the gates**, not a pre-decision. Recorded honestly so the call is made on merit, not ambition or my earlier over-correction:
+
+**Honest per-track novelty (the real content is ~1.5 papers, not 3):**
+- **Track B** — 4 confirmed results, but the scan/anytime-valid machinery is **not novel** (Howard & Ramdas; MOSUM; Vovk conformal test martingales). The contribution is *applied* ("known machinery → safety-classifier monitoring, beats calibrated KS, with honest limits"), plus the exchangeability (AV5) and ShieldGemma (AV6) bounds. Strong as an **applied/systems** paper or a section — **not** a top-tier methods paper. A methods reviewer says "the estimator isn't new."
+- **Track A** — the genuinely novel one *iff* CA6 (gibberish control) survives. Then it's standalone-worthy security. Fully contingent on a gate that can fail.
+- **Track C** — most likely collapses to "discriminative models are easier to monitor" once the family confound is exposed → section/footnote, not a standalone.
+
+**The fair case FOR three papers (don't dismiss it):**
+- Academia rewards count: three CV lines, three venues, three communities (security / ML / measurement). Salami-slicing is common and works for visibility/career capital.
+- Different audiences genuinely don't overlap; one combined paper can't reach all three rooms.
+- Each track *can* be padded to a full paper — that's how much of the literature is made.
+
+**The case FOR consolidation (one strong paper):**
+- Honest novelty is ~1.5 papers; three would mean two thin ones.
+- Thin papers risk weak reviews / desk rejects — worse than one strong paper.
+- A's canary (*what* to monitor) + B's guarantee (*how* to monitor) reinforce each other; combined is more than the sum.
+- Reputation: one excellent paper > three forgettable ones.
+
+**It depends on what you optimize for** (a genuine choice, not an objective answer):
+- Optimizing **count / breadth of visibility** → three papers is legitimate; consolidating leaves value on the table.
+- Optimizing **reputation / impact / clean work** → one strong paper wins.
+
+**The actual trap to avoid:** not "three papers," but **forcing three papers regardless of gate outcomes** — padding a confounded Track C, or claiming the martingale is novel. Three papers *if the results earn three* is fine. Three papers *by decree* costs reputation.
+
+**Most likely distribution of outcomes:** CA6 passes → ~2 papers (A standalone + B applied, C as section). CA6 fails → 1 consolidated. Three-equal-papers is the *least* likely outcome.
+
 ---
 
 ## Track A — Heterogeneous Monitoring Ensembles
