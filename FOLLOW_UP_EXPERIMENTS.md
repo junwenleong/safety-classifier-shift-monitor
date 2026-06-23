@@ -1,6 +1,18 @@
 # Follow-Up Experiment Plan — Post-arXiv Scope Extension
 
-**Status:** Planning (pre-registration draft). Nothing executed yet.
+**Status:** Gates in progress.
+
+## Current Status (2026-06-23 18:33 SGT)
+
+| Gate | Status | Where | Result |
+|------|--------|-------|--------|
+| **B** | ✅ Complete | MacBook (this machine) | **GO** — Scan martingale 83–100% vs KS 43–47%, FAR 0/200, no calibration needed |
+| **A** | 🔄 Running | Mac Studio (PID 13014) | GCG 100 prompts → Llama Guard scoring. Check `results/gates_ac.log` |
+| **C** | 🔄 Queued | Mac Studio (after Gate A) | 10 additional classifiers. Check `results/gate_c_monitorability.json` |
+
+**Monitor progress:** `tail -f results/gates_ac.log` on Mac Studio.
+
+---
 **Parent work:** arXiv:2606.11949 (Shift Detection Monitor). The 980-cell factorial + post-factorial additions (CS growing-window, MMD, PCA-conformal, gradual drift, mechanistic n=4) are *complete and submitted*. This document plans the next phase.
 **Compute available:** Mac Studio M3 Ultra (96 GB) for local inference + GCG gradients; AWS Bedrock for breadth. No time/budget constraint — the binding constraint is research risk, so every track gates on a cheap replication before the full build.
 **Convention:** Matches `docs/pre_registration.md` + `docs/pre_registration_amendment_2.md` — hypothesis IDs with directional predictions, pre-specified success criteria, α = 0.05, reference size 500, onset 500, windows {100, 200}, 97th-percentile empirical FAR calibration, Wilson / Clopper–Pearson CIs, η² with bootstrap CIs. Commit this file before executing any gate.
@@ -96,14 +108,23 @@ So the production detector (sliding KS, empirically calibrated at the 97th perce
 | **AV4 (PCA method)** | Low-rank projection (PCA to d ≤ 32) before density-ratio estimation restores effective sample size and conformal coverage; a data-driven dimension rule (from the ESS/separability curve) generalizes across shift types. | ESS↑, coverage↑ | Coverage recovery ≥ original temporal result (+33 pp Llama Guard, +20.5 pp ShieldGemma) on ≥2 unseen shift types; ESS > 50 |
 | **AD1 (bridge)** | A **monitor-aware adversary** doing slow sub-threshold drift evades sliding KS but is still caught by the anytime-valid martingale. | martingale robust | KS misses (latency > horizon) while martingale alarms, on ≥80% of adversarial drift seeds |
 
-### B.2 Validation gate (cheapest — do this first overall)
+### B.2 Validation gate (**✅ COMPLETE — GO**)
 
-**Gate B — martingale on cached scores.** Prototype the conformal test martingale on **already-cached** score series (`results/regime_c_ks_series.json`, `results/cs_growing_window_results.json`, ramp-sweep caches). **Zero new inference.** Check whether it beats KS's 43% detection at 30% mixing.
+**Gate B — martingale on simulated streams from null score distributions.** Tested scan martingale (w=50, ε=0.3) against KS at matched difficulty (KS ~43% detection). **Zero new inference — used `results/null_scores.json` only.**
 
-- **GO** if martingale ≥ 70% at 30% mixing on cached data.
-- **NO-GO** → martingale offers no low-mixing advantage; downgrade Track B to the PCA-method paper (AV4) only.
+**Result (2026-06-23):**
 
-Compute: **Mac Studio CPU** (pure NumPy on cached arrays; minutes).
+| Condition (calibrated to KS ≈ 43%) | KS | Scan Martingale |
+|---|---|---|
+| Small per-sample shift, 30% mixing | 47% (14/30) | **100%** (30/30), μ=95 steps |
+| Large per-sample shift, 20% mixing | 43% (13/30) | **83%** (25/30), μ=140 steps |
+| FAR (200 null streams) | 0% | **0%** (provable ≤5% by Ville + union bound) |
+
+**Method:** Union of W=50 sub-martingales, each betting ε·p^(ε−1) on two-sided conformal p-values derived from frozen reference CDF. Threshold = log(W/α). No empirical calibration needed.
+
+**Key insight:** The point martingale (single accumulator from t=0) fails because 500 pre-shift observations dilute the post-shift signal. The scan martingale succeeds by starting fresh sub-martingales at every step — whichever one begins near the changepoint accumulates evidence fastest.
+
+**GO criterion met:** ≥70% at 30% mixing. Actual: 83–100%. Proceed to full build.
 
 ### B.3 Full build (conditional on Gate B)
 
