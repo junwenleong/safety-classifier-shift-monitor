@@ -2,12 +2,13 @@
 
 **Status:** Gates in progress.
 
-## Current Status (2026-06-23 18:33 SGT)
+## Current Status (2026-06-23 21:09 SGT)
 
-| Gate | Status | Where | Result |
+| Gate/Test | Status | Where | Result |
 |------|--------|-------|--------|
-| **B** | ✅ Complete | MacBook (this machine) | **GO** — Scan martingale 83–100% vs KS 43–47%, FAR 0/200, no calibration needed |
-| **A** | 🔄 Running | Mac Studio (PID 13014) | GCG 100 prompts → Llama Guard scoring. Check `results/gates_ac.log` |
+| **B (Gate)** | ✅ Complete | MacBook | **GO** — Scan martingale 83–100% vs KS 43–47%, FAR 0/200 |
+| **B (AV2)** | ✅ Complete | MacBook | **Confirmed** — uniform FAR ≤0.5% across all 4 classifiers (vs 2–9.5% KS spread). Zero calibration. |
+| **A** | 🔄 Running | Mac Studio (PID 13014) | GCG 27/100 done (14 flipped, 52%). Check `wc -l data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl` |
 | **C** | 🔄 Queued | Mac Studio (after Gate A) | 10 additional classifiers. Check `results/gate_c_monitorability.json` |
 
 **Monitor progress:** `tail -f results/gates_ac.log` on Mac Studio.
@@ -141,6 +142,19 @@ So the production detector (sliding KS, empirically calibrated at the 97th perce
 **Key insight:** The point martingale (single accumulator from t=0) fails because 500 pre-shift observations dilute the post-shift signal. The scan martingale succeeds by starting fresh sub-martingales at every step — whichever one begins near the changepoint accumulates evidence fastest.
 
 **GO criterion met:** ≥70% at 30% mixing. Actual: 83–100%. Proceed to full build.
+
+### B.2b AV2 — Cross-classifier FAR uniformity (**✅ CONFIRMED**)
+
+Tested the same scan martingale (w=50, ε=0.3) on 200 null streams per classifier:
+
+| Classifier | Martingale FAR | Old KS FAR (arxiv) |
+|---|---|---|
+| DeBERTa | 0.5% (1/200) | 9.5% |
+| Text-Moderation | 0.5% (1/200) | 2.0% |
+| Llama Guard | 0.0% (0/200) | 3.0% |
+| ShieldGemma | 0.0% (0/200) | 8.5% |
+
+**Spread: 0.5 pp** (vs 7.5 pp under empirical KS). All ≤ α with zero calibration. The 5× FAR asymmetry is eliminated.
 
 ### B.3 Full build (conditional on Gate B)
 
