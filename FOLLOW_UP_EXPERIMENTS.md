@@ -22,7 +22,7 @@
 
 ## 0. Scope at a Glance
 
-Three independent deliverables, each a potential standalone paper. They do **not** belong in one paper — they tell three different stories.
+Three groups of experiments, organized by theme. **Each could in principle become a paper, but that is not the plan** (see Scope philosophy below) — they are grouped this way to organize the work, and the likely outcome is one consolidated follow-up.
 
 | Track | Working title | Builds on | Novelty ceiling | Risk |
 |---|---|---|---|---|
@@ -32,7 +32,17 @@ Three independent deliverables, each a potential standalone paper. They do **not
 
 Cross-cutting threat experiment (the **monitor-aware adversary**) bridges A and B.
 
-**Sequencing rule (from the Agentic POST_RUN playbook):** run the three validation gates first — they barely compete for resources (one GPU, one CPU-only, one Bedrock). Kill dead arms early; scope-decide A/B/C placement only after gate data is in.
+**Sequencing rule:** run the validation gates first — they barely compete for resources (one GPU, one CPU-only, one Bedrock). Kill dead arms early; scope-decide A/B/C placement only after gate data is in.
+
+### ⚠️ Scope philosophy — tracks are experiment groups, NOT paper commitments
+
+This document organizes *experiments*, not *submissions*. The three-track structure is a way to group related work, not a plan to produce three papers. Read it that way.
+
+- **The goal is a better, honest monitor + results that are true** — not maximizing publication count.
+- **Default outcome: ONE consolidated follow-up** that strengthens the arXiv work — either as new sections of its venue submission or a single companion paper. The strongest spine is Track B (provable, calibration-free monitoring), with Track A's canary as a possible headline *if the gibberish control (CA6) survives*.
+- **Track C** is a section or a footnote depending on whether the law survives the family-confounding test — not a paper to build around preemptively.
+- **No pre-committing to N papers.** Packaging is decided *after* the gates land. Resist scope-sprawl: do not promote "future directions" (below) into deliverables until the core results are in.
+- **No timeline/venue pressure drives this.** Decisions are made on what the data shows, not on deadlines.
 
 ---
 
@@ -96,8 +106,8 @@ Compute: **Mac Studio** (GCG gradients on DeBERTa-v3-large 304M are cheap; Llama
 
 This is the largest engineering item; it also feeds CA5 and is reusable by Track C.
 
-### A.5 Deliverable & scope decision
-Standalone paper: *"Heterogeneous Monitoring Ensembles."* Decision after Gate A + CA3: if cross-family generality (CA4) holds, lead with the architecture-diversity principle; if only GCG+DeBERTa↔Llama-Guard holds, frame as a focused case study (mirroring the original paper's careful "22-example, larger-scale validation needed" framing).
+### A.5 What this becomes
+If Gate A passes *and* the gibberish control (CA6) survives, the cross-architecture divergence result is the most novel thing in the whole extension and the natural headline of the consolidated follow-up (or, only if it's clearly strong enough on its own, a standalone). If only GCG+DeBERTa↔Llama-Guard holds, it's a focused case-study section (mirroring the original paper's careful "22-example, larger-scale validation needed" framing). Decided after the gate — not before.
 
 ---
 
@@ -198,8 +208,8 @@ At 20% mixing: KS is effectively blind (7%), martingale catches two-thirds. **Th
 7. PCA-conformal as a *method*, not a diagnostic (AV4): formalize dimension selection from the ESS-vs-d curve; extend `run_pca_conformal_sweep.py` to emit the rule and validate on held-out shift types.
 8. Monitor-aware adversary (AD1, also a Track-A bridge): an attacker that ramps mixing to stay under the calibrated KS threshold; new `scripts/run_monitor_evasion.py`.
 
-### B.4 Deliverable
-Methods paper: *"Anytime-valid monitoring of safety classifiers."* Strongest rigor story; closes two named limitations with theory already owned. AV4 is a guaranteed-positive sub-result even if AV1 fails.
+### B.4 What this becomes
+The strongest, most-proven part of the extension (already 4 confirmed results). The likely spine of the consolidated follow-up — it converts the arXiv work's weakest point (empirical calibration, 5× FAR spread) into a provable, calibration-free method. AV4 (PCA-conformal) is a guaranteed-positive sub-result even if AV1 fails. Whether this is "new sections of the existing paper's venue submission" or "one companion paper" is decided later.
 
 ---
 
@@ -238,8 +248,8 @@ Compute: **Mac Studio** (local fine-tuned encoders + HF safety heads, mostly for
 ### C.3 Full build (conditional on Gate C)
 Add classifier adapters (reuse the `ClassifierInterface` Protocol), cache null scores into `results/null_scores.json` (already keyed by classifier), extend `mechanistic_analysis.py` to fit ML2's regression with LOOCV. Pre-register the feature set before fitting.
 
-### C.4 Deliverable
-Focused paper: *"A monitorability law for safety classifiers"* (or the honest negative). Highest variance in outcome; cheapest gate, so resolve early.
+### C.4 What this becomes
+A section of the consolidated follow-up if the law holds; a footnote/honest-negative if it doesn't. Highest variance in outcome; cheapest gate, so resolve early. *If* the correlation survives the family-confounding test (ML1b), the zero-cost framing upgrade is to **name the one-feature version as a proposed "monitorability" metric** for standardized reporting (alongside accuracy/robustness) — value is in the naming, not a complex model.
 
 ---
 
@@ -266,7 +276,7 @@ GCG/attack optimization is gradient-bound → never on Bedrock. Bedrock is the *
 
 **Phase 1 — Full builds** on whichever gates pass. Dead arms get written up as honest negatives (per the Agentic dead-arm protocol), not silently dropped.
 
-**Phase 2 — Scope decisions** (§A.5, §B.4, §C.4): how many papers, and how each finding is framed.
+**Phase 2 — Consolidation** (§A.5, §B.4, §C.4): assemble the surviving results into the strongest single artifact (default: one consolidated follow-up or new sections of the existing paper). Not a paper-count exercise — decide framing from what the data shows.
 
 ---
 
@@ -287,3 +297,14 @@ The Agentic project's qwq non-replication traced to **unlogged engine/host state
 - **Track B:** anytime-valid guarantees hold for the **growing/martingale** construction; the sliding window remains per-window only. State the memory/guarantee trade-off explicitly (AV3).
 - **Track C:** r=0.97 at n=4 is a *hint*, not a result. The pre-registered bar is r>0.6 at N≥15. A null result is a deliverable, not a failure.
 - **Multi-category:** scalar-invisible category shift is a *new phenomenon claim* — require ≥1 concrete category where the vector channel alarms and the scalar does not, with FAR controlled.
+
+---
+
+## Future Directions (parked — NOT committed, do not build before core results land)
+
+Good ideas that are deliberately *not* in the deliverable structure. They become relevant only after the core extension is done, and only if there's appetite. Listing them so they aren't lost — and so they don't quietly become scope.
+
+- **Adaptive / context-aware betting (Track B v2).** The exchangeability limitation (AV5) is real: the martingale fires on benign drift. A natural fix is to scale the bet by a semantic "surprise" signal (e.g., perplexity under a general LM) — suppress bets on merely-novel topics, amplify on structurally anomalous inputs. This upgrades "detects any departure" → "detects adversarial departures." Strictly a *follow-up*; it adds a model dependency that undercuts the clean calibration-free story of the first result.
+- **Named monitorability metric (Track C).** If the law holds, propose a one-number, offline-computable "monitorability" score for standardized reporting. Zero-cost framing add; not a separate effort.
+- **Combined systems artifact.** Track A (what to monitor) + Track B (how to monitor, with guarantees) = a complete deployable monitoring layer. Only worth packaging *after* both stand on their own; a tool/release, not a forced merge.
+- **Cross-project unification (Sentry × Agentic).** The cross-architecture canary here and the Agentic "distributional canary" are the same idea in two domains. A unifying view is interesting but speculative; revisit only if Track A's divergence result is strong and there's a clear bridging experiment, not as a planned deliverable.
