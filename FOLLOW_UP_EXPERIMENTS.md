@@ -1,15 +1,53 @@
 # Follow-Up Experiment Plan — Post-arXiv Scope Extension
 
-**Status:** Gate A GO, Gate B GO, Gate C needs classifier fix.
+**Status:** Track A confirmed (CA6 PASS). Track B production code done. Track C re-running (ETA ~4:30am 25 Jun).
 
-## Current Status (2026-06-24 09:18 SGT)
+## Current Status (2026-06-25 00:55 SGT)
 
 | Gate/Test | Status | Where | Result |
 |------|--------|-------|--------|
+| **A (Gate)** | ✅ Complete | Mac Studio | **GO** — divergence bootstrap LB 0.699 > null 0.585 |
+| **A (CA6)** | ✅ Complete | Mac Studio | **PASS** — GCG det 76% vs random 12%, non-overlapping CIs, p<0.0001 |
 | **B (Gate)** | ✅ Complete | MacBook | **GO** — Scan martingale 83–100% vs KS 43–47%, FAR 0/200 |
-| **B (AV2)** | ✅ Complete | MacBook | **Confirmed** — uniform FAR ≤0.5% across all 4 classifiers (vs 2–9.5% KS spread). Zero calibration. |
-| **A** | ✅ Complete | Mac Studio | **GO** — 100 GCG, 49 flipped. Divergence bootstrap LB 0.699 > null threshold 0.585. See notes below. |
-| **C** | ⚠️ Blocked | Mac Studio | Classifier selection problem — 5/7 new models saturated. Need real safety classifiers. |
+| **B (AV2)** | ✅ Complete | Both | **Confirmed** — FAR ≤1% all 4 classifiers, spread 1% |
+| **B (Full)** | ✅ Complete | Mac Studio | AV1-6 + AD1 all evaluated with production `conformal_martingale.py` |
+| **C (Epoch sweep)** | 🔄 Running | Mac Studio | Fine-tuning DeBERTa 10 epochs (~3.5h). Detection uses synthetic Beta(5,5) shift. |
+
+### CA6 — Gibberish Control Results (2026-06-25) ✅ PASS
+
+**The canary is an ATTACK detector, not a generic OOD detector.**
+
+| Metric | GCG (n=49) | Random (n=50) |
+|--------|-----------|---------------|
+| Detection rate (divergence > null 97th) | **76%** | **12%** |
+| Wilson 95% CI | [0.619, 0.854] | [0.057, 0.242] |
+| DeBERTa flip rate | 49/100 (49%) | **0/50 (0%)** |
+| Mean divergence | 0.784 | (low) |
+
+- **Non-overlapping CIs:** GCG Wilson LB (0.619) > Random Wilson UB (0.242) ✅
+- **Mann-Whitney U:** p < 0.0001 ✅
+- **Random tokens never flip DeBERTa** (0/50 vs 49/100) — GCG specifically targets the decision boundary
+
+**Implication:** The cross-architecture divergence is NOT just "any garbage appended makes models disagree." GCG suffixes are structurally different — they specifically fool DeBERTa while leaving Llama Guard's scores exposed. Track A's novelty ceiling is confirmed.
+
+### Track B — Production Implementation Complete (2026-06-25)
+
+**Module:** `shift_detection_monitor/detection/conformal_martingale.py`
+- `ScanMartingale` — recommended default (union of W sub-martingales, O(W) memory)
+- `CUSUMMartingale` — O(1) memory, needs horizon-based threshold correction
+- `PointMartingale` — single accumulator (weak for unknown changepoints)
+- 29 unit tests passing (`tests/test_conformal_martingale.py`)
+
+**Full evaluation results** (`results/track_b_full_eval.json`):
+
+| Hypothesis | Result | Note |
+|---|---|---|
+| AV2 (FAR uniformity) | ✅ 0–1% all classifiers, spread 1% | Zero calibration needed |
+| AV5 (exchangeability) | ✅ Confirmed boundary: block-structured always alarms, drift alarms encoders only | Honest limitation |
+| AV6 (ε robustness) | ⚠️ ε=0.3 fails for decoders (LG 57%, SG 77%) | Need ε=0.4-0.5 for wide distributions |
+| AD1 (ramped onset) | Scan matches KS with proper calibration | Advantage is at original (less sensitive) KS threshold |
+
+**Key insight from implementation:** CUSUM with threshold log(1/α) does NOT control FAR — Page's resets give multiple chances. Fixed with log(H/α) where H=monitoring horizon. ScanMartingale has the cleanest guarantee.
 
 ### Gate A — Formal Analysis Notes (2026-06-24)
 
@@ -17,44 +55,45 @@
 
 | Test | Result | Verdict |
 |------|--------|---------|
-| Divergence detection rate | 37/49 (76%), Wilson CI [0.619, 0.854] | Passes GO threshold (bootstrap divergence LB > null FAR) |
+| Divergence detection rate | 37/49 (76%), Wilson CI [0.619, 0.854] | ✅ GO |
 | Mean cross-arch divergence | 0.784 [0.699, 0.865] vs null 97th-pct 0.585 | ✅ 1.3× threshold |
 | Llama Guard delta (t-test) | +0.083, t=4.18, p=0.0001 | ✅ Significant but modest |
 | Direction (binomial) | 27/49=55% toward unsafe, p=0.284 | ❌ NOT significant |
 | Score variance (CA6 precursor) | LG attacked std=0.30, delta std=0.14 | ✅ Spread exists |
 
-**Key reframing:** The signal is **NOT** "Llama Guard moves toward unsafe." The directional push is not significant (p=0.284). The real signal is **cross-architecture score divergence**: DeBERTa collapses to ~0 under successful GCG attack while Llama Guard stays at its original level. The paper must frame this as a *divergence* detector, not a directional canary.
+**Key reframing:** The signal is **NOT** "Llama Guard moves toward unsafe." The directional push is not significant (p=0.284). The real signal is **cross-architecture score divergence**: DeBERTa collapses to ~0 under successful GCG attack while Llama Guard stays at its original level. Paper framing: *divergence* detector, not directional canary.
 
-**12/49 items below threshold:** Cases where Llama Guard was already low-scoring on the original prompt (LG_orig < 0.2). The divergence channel works best when the canary classifier has a meaningful baseline score.
+### Track C — Epoch Sweep (2026-06-25, in progress)
 
-**Next for Track A:** Run CA6 (gibberish control — length-matched random-token suffixes) to test whether this is GCG-specific or a general OOD artifact.
+Fine-tuning DeBERTa-v3-large for 10 epochs, saving at {1,3,5,10}. Null score stds from first run:
 
-### Gate C — Classifier Selection Problem (2026-06-24)
+| Epoch | null_std | null_mean |
+|---|---|---|
+| 1 | 0.056 | 0.014 |
+| 3 | 0.190 | 0.045 |
+| 5 | 0.174 | 0.034 |
+| 10 | 0.109 | 0.012 |
 
-5/7 new classifiers are saturated (generic toxicity models on WildGuardMix safety corpus → all return near-0 or near-1). Diagnostic: `scripts/gate_c_diagnose.py`.
+Combined with original 4 classifiers (stds 0.066–0.144), this gives a within-family spread of 0.056–0.190 across 4 DeBERTa variants. Detection now uses synthetic Beta(5,5) shifted scores (fixed — no external corpus dependency).
 
-**Usable new classifiers (2):** deberta-v3-base-mnli (std=0.248), distilbert-toxic (std=0.040). Neither had detection run yet.
+**Original correlation (n=4, paraphrase):** r=0.997, p=0.003.
 
-**Fix strategy:** (a) Run detection on the 2 usable new models. (b) Fine-tune DeBERTa at varying epochs for within-family spread (needed for ML1b). (c) Try actual safety classifiers: Llama Guard 2, ShieldGemma-2B, WildGuard.
+**Within-family prediction:** If the law holds, epoch_1 (std=0.056) should detect fastest, epoch_3 (std=0.190) slowest. If correlation vanishes within-family → "law" is just the encoder/decoder gap (honest negative).
 
-### Execution Queue (2026-06-24)
+### What's Next (after Track C completes)
 
-Priority order, do sequentially:
+1. **Track A full build** (now justified by CA6 PASS):
+   - `detection/divergence_detector.py` — 2-D joint distribution monitor
+   - CA4 architecture-pair sweep (all 6 pairs)
+   - CA8 joint-evasion adversary (the crux — can an attacker align both models?)
 
-1. **CA6 gibberish control** (Track A, decisive, ~1h)
-   - Generate ~50 random-token suffixes matching GCG suffix length distribution
-   - Score on both DeBERTa + Llama Guard
-   - Compare divergence vs GCG divergence (Wilson CIs, non-overlap test)
-   - If GCG > random → attack-detector framing survives
-   - If GCG ≈ random → downgrade to OOD/anomaly detector (still publishable, weaker)
-   - Script: `scripts/gate_a_gibberish_control.py`
+2. **Track B paper sections** — write up with honest framing:
+   - Not a new estimator (cite Howard & Ramdas, Vovk)
+   - Contribution is *applied*: calibration-free safety-classifier monitoring
+   - Exchangeability boundary (AV5) stated up front
+   - ε gap for decoders (AV6) acknowledged
 
-2. **Track B full build** — `detection/conformal_martingale.py`
-   - Productionize scan martingale into main codebase
-   - Then AV3 (bounded-memory) and AV4 (PCA-conformal as method)
-
-3. **Track C fix** — fine-tune DeBERTa at epoch {1,3,5,10}
-   - Save checkpoints, score reference corpus, get varied null_std
+3. **Track C** — wait for detection results, compute within-family r
    - Gives within-family spread for ML1b test
 
 ---
