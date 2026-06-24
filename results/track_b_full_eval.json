@@ -1,0 +1,210 @@
+{
+  "av1|deberta|0.15": {
+    "clf": "deberta",
+    "mixing": 0.15,
+    "scan_det": 0.4,
+    "ks_det": 0.8333333333333334
+  },
+  "av1|deberta|0.2": {
+    "clf": "deberta",
+    "mixing": 0.2,
+    "scan_det": 0.8,
+    "ks_det": 1.0
+  },
+  "av1|deberta|0.3": {
+    "clf": "deberta",
+    "mixing": 0.3,
+    "scan_det": 1.0,
+    "ks_det": 1.0
+  },
+  "av1|deberta|0.5": {
+    "clf": "deberta",
+    "mixing": 0.5,
+    "scan_det": 1.0,
+    "ks_det": 1.0
+  },
+  "av1|deberta|1.0": {
+    "clf": "deberta",
+    "mixing": 1.0,
+    "scan_det": 1.0,
+    "ks_det": 1.0
+  },
+  "av1|text-moderation|0.15": {
+    "clf": "text-moderation",
+    "mixing": 0.15,
+    "scan_det": 0.7666666666666667,
+    "ks_det": 0.8666666666666667
+  },
+  "av1|text-moderation|0.2": {
+    "clf": "text-moderation",
+    "mixing": 0.2,
+    "scan_det": 1.0,
+    "ks_det": 1.0
+  },
+  "av1|text-moderation|0.3": {
+    "clf": "text-moderation",
+    "mixing": 0.3,
+    "scan_det": 1.0,
+    "ks_det": 1.0
+  },
+  "av1|text-moderation|0.5": {
+    "clf": "text-moderation",
+    "mixing": 0.5,
+    "scan_det": 1.0,
+    "ks_det": 1.0
+  },
+  "av1|text-moderation|1.0": {
+    "clf": "text-moderation",
+    "mixing": 1.0,
+    "scan_det": 1.0,
+    "ks_det": 1.0
+  },
+  "av1|llama-guard|0.15": {
+    "clf": "llama-guard",
+    "mixing": 0.15,
+    "scan_det": 0.0,
+    "ks_det": 0.7333333333333333
+  },
+  "av1|llama-guard|0.2": {
+    "clf": "llama-guard",
+    "mixing": 0.2,
+    "scan_det": 0.13333333333333333,
+    "ks_det": 0.9666666666666667
+  },
+  "av1|llama-guard|0.3": {
+    "clf": "llama-guard",
+    "mixing": 0.3,
+    "scan_det": 0.5666666666666667,
+    "ks_det": 1.0
+  },
+  "av1|llama-guard|0.5": {
+    "clf": "llama-guard",
+    "mixing": 0.5,
+    "scan_det": 1.0,
+    "ks_det": 1.0
+  },
+  "av1|llama-guard|1.0": {
+    "clf": "llama-guard",
+    "mixing": 1.0,
+    "scan_det": 1.0,
+    "ks_det": 1.0
+  },
+  "av1|shieldgemma|0.15": {
+    "clf": "shieldgemma",
+    "mixing": 0.15,
+    "scan_det": 0.06666666666666667,
+    "ks_det": 0.6666666666666666
+  },
+  "av1|shieldgemma|0.2": {
+    "clf": "shieldgemma",
+    "mixing": 0.2,
+    "scan_det": 0.3,
+    "ks_det": 1.0
+  },
+  "av1|shieldgemma|0.3": {
+    "clf": "shieldgemma",
+    "mixing": 0.3,
+    "scan_det": 0.7666666666666667,
+    "ks_det": 1.0
+  },
+  "av1|shieldgemma|0.5": {
+    "clf": "shieldgemma",
+    "mixing": 0.5,
+    "scan_det": 1.0,
+    "ks_det": 1.0
+  },
+  "av1|shieldgemma|1.0": {
+    "clf": "shieldgemma",
+    "mixing": 1.0,
+    "scan_det": 1.0,
+    "ks_det": 1.0
+  },
+  "av2": {
+    "deberta": {
+      "far": 0.005,
+      "wilson_lo": 0.0008831687156009797,
+      "wilson_hi": 0.027773704397892937
+    },
+    "text-moderation": {
+      "far": 0.005,
+      "wilson_lo": 0.0008831687156009797,
+      "wilson_hi": 0.027773704397892937
+    },
+    "llama-guard": {
+      "far": 0.01,
+      "wilson_lo": 0.0027466581335444384,
+      "wilson_hi": 0.03572176171617682
+    },
+    "shieldgemma": {
+      "far": 0.0,
+      "wilson_lo": 0.0,
+      "wilson_hi": 0.01884532637726658
+    }
+  },
+  "ad1": {
+    "0.15": {
+      "scan": 0.4,
+      "ks": 0.8333333333333334
+    },
+    "0.2": {
+      "scan": 0.8,
+      "ks": 1.0
+    },
+    "0.25": {
+      "scan": 1.0,
+      "ks": 1.0
+    },
+    "0.3": {
+      "scan": 1.0,
+      "ks": 1.0
+    }
+  },
+  "av5": {
+    "deberta": {
+      "block_alarm": true,
+      "drift_alarm": true
+    },
+    "text-moderation": {
+      "block_alarm": true,
+      "drift_alarm": true
+    },
+    "llama-guard": {
+      "block_alarm": true,
+      "drift_alarm": false
+    },
+    "shieldgemma": {
+      "block_alarm": true,
+      "drift_alarm": false
+    }
+  },
+  "av6": {
+    "deberta": {
+      "0.1": 0.36666666666666664,
+      "0.2": 0.9666666666666667,
+      "0.3": 1.0,
+      "0.4": 0.9666666666666667,
+      "0.5": 0.9666666666666667
+    },
+    "text-moderation": {
+      "0.1": 0.9333333333333333,
+      "0.2": 1.0,
+      "0.3": 1.0,
+      "0.4": 1.0,
+      "0.5": 1.0
+    },
+    "llama-guard": {
+      "0.1": 0.0,
+      "0.2": 0.1,
+      "0.3": 0.5666666666666667,
+      "0.4": 0.9,
+      "0.5": 0.9333333333333333
+    },
+    "shieldgemma": {
+      "0.1": 0.0,
+      "0.2": 0.3,
+      "0.3": 0.7666666666666667,
+      "0.4": 1.0,
+      "0.5": 1.0
+    }
+  }
+}
