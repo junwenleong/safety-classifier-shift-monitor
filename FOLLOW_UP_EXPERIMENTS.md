@@ -1,17 +1,61 @@
 # Follow-Up Experiment Plan — Post-arXiv Scope Extension
 
-**Status:** Gates in progress.
+**Status:** Gate A GO, Gate B GO, Gate C needs classifier fix.
 
-## Current Status (2026-06-23 21:09 SGT)
+## Current Status (2026-06-24 09:18 SGT)
 
 | Gate/Test | Status | Where | Result |
 |------|--------|-------|--------|
 | **B (Gate)** | ✅ Complete | MacBook | **GO** — Scan martingale 83–100% vs KS 43–47%, FAR 0/200 |
 | **B (AV2)** | ✅ Complete | MacBook | **Confirmed** — uniform FAR ≤0.5% across all 4 classifiers (vs 2–9.5% KS spread). Zero calibration. |
-| **A** | 🔄 Running | Mac Studio (PID 13014) | GCG 27/100 done (14 flipped, 52%). Check `wc -l data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl` |
-| **C** | 🔄 Queued | Mac Studio (after Gate A) | 10 additional classifiers. Check `results/gate_c_monitorability.json` |
+| **A** | ✅ Complete | Mac Studio | **GO** — 100 GCG, 49 flipped. Divergence bootstrap LB 0.699 > null threshold 0.585. See notes below. |
+| **C** | ⚠️ Blocked | Mac Studio | Classifier selection problem — 5/7 new models saturated. Need real safety classifiers. |
 
-**Monitor progress:** `tail -f results/gates_ac.log` on Mac Studio.
+### Gate A — Formal Analysis Notes (2026-06-24)
+
+**Raw results:** 100 GCG attacks on DeBERTa, 49 flipped (49%). All 49 scored on Llama Guard.
+
+| Test | Result | Verdict |
+|------|--------|---------|
+| Divergence detection rate | 37/49 (76%), Wilson CI [0.619, 0.854] | Passes GO threshold (bootstrap divergence LB > null FAR) |
+| Mean cross-arch divergence | 0.784 [0.699, 0.865] vs null 97th-pct 0.585 | ✅ 1.3× threshold |
+| Llama Guard delta (t-test) | +0.083, t=4.18, p=0.0001 | ✅ Significant but modest |
+| Direction (binomial) | 27/49=55% toward unsafe, p=0.284 | ❌ NOT significant |
+| Score variance (CA6 precursor) | LG attacked std=0.30, delta std=0.14 | ✅ Spread exists |
+
+**Key reframing:** The signal is **NOT** "Llama Guard moves toward unsafe." The directional push is not significant (p=0.284). The real signal is **cross-architecture score divergence**: DeBERTa collapses to ~0 under successful GCG attack while Llama Guard stays at its original level. The paper must frame this as a *divergence* detector, not a directional canary.
+
+**12/49 items below threshold:** Cases where Llama Guard was already low-scoring on the original prompt (LG_orig < 0.2). The divergence channel works best when the canary classifier has a meaningful baseline score.
+
+**Next for Track A:** Run CA6 (gibberish control — length-matched random-token suffixes) to test whether this is GCG-specific or a general OOD artifact.
+
+### Gate C — Classifier Selection Problem (2026-06-24)
+
+5/7 new classifiers are saturated (generic toxicity models on WildGuardMix safety corpus → all return near-0 or near-1). Diagnostic: `scripts/gate_c_diagnose.py`.
+
+**Usable new classifiers (2):** deberta-v3-base-mnli (std=0.248), distilbert-toxic (std=0.040). Neither had detection run yet.
+
+**Fix strategy:** (a) Run detection on the 2 usable new models. (b) Fine-tune DeBERTa at varying epochs for within-family spread (needed for ML1b). (c) Try actual safety classifiers: Llama Guard 2, ShieldGemma-2B, WildGuard.
+
+### Execution Queue (2026-06-24)
+
+Priority order, do sequentially:
+
+1. **CA6 gibberish control** (Track A, decisive, ~1h)
+   - Generate ~50 random-token suffixes matching GCG suffix length distribution
+   - Score on both DeBERTa + Llama Guard
+   - Compare divergence vs GCG divergence (Wilson CIs, non-overlap test)
+   - If GCG > random → attack-detector framing survives
+   - If GCG ≈ random → downgrade to OOD/anomaly detector (still publishable, weaker)
+   - Script: `scripts/gate_a_gibberish_control.py`
+
+2. **Track B full build** — `detection/conformal_martingale.py`
+   - Productionize scan martingale into main codebase
+   - Then AV3 (bounded-memory) and AV4 (PCA-conformal as method)
+
+3. **Track C fix** — fine-tune DeBERTa at epoch {1,3,5,10}
+   - Save checkpoints, score reference corpus, get varied null_std
+   - Gives within-family spread for ML1b test
 
 ---
 **Parent work:** arXiv:2606.11949 (Shift Detection Monitor). The 980-cell factorial + post-factorial additions (CS growing-window, MMD, PCA-conformal, gradual drift, mechanistic n=4) are *complete and submitted*. This document plans the next phase.
