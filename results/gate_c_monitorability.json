@@ -1,0 +1,93 @@
+{
+  "gate": "C",
+  "verdict": "INSUFFICIENT_DATA",
+  "n_classifiers": 0,
+  "pearson_r": null,
+  "pearson_p": null,
+  "go_threshold": "r > 0.6 and p < 0.05 at n >= 6",
+  "classifier_data": {
+    "deberta": {
+      "null_std": 0.08688582644141582,
+      "null_mean": 0.014752015237798332,
+      "source": "existing"
+    },
+    "text-moderation": {
+      "null_std": 0.06583611238991557,
+      "null_mean": 0.007709455946431263,
+      "source": "existing"
+    },
+    "llama-guard": {
+      "null_std": 0.1444829607017331,
+      "null_mean": 0.05025118541717529,
+      "source": "existing"
+    },
+    "shieldgemma": {
+      "null_std": 0.14121104060136327,
+      "null_mean": 0.09645070838928223,
+      "source": "existing"
+    },
+    "deberta-v3-base-orig": {
+      "null_std": 0.0017547987494558083,
+      "null_mean": 0.5024681819677352,
+      "detection_rate": 0.0,
+      "mean_latency": null,
+      "n_valid": 0,
+      "source": "gate_c",
+      "model_id": "microsoft/deberta-v3-base"
+    },
+    "toxigen-roberta": {
+      "null_std": 0.01723827522918418,
+      "null_mean": 0.9968648535013199,
+      "detection_rate": 0.0,
+      "mean_latency": null,
+      "n_valid": 0,
+      "source": "gate_c",
+      "model_id": "tomh/toxigen_roberta"
+    },
+    "toxic-bert": {
+      "null_std": 0.02377188814727524,
+      "null_mean": 0.004585461235139519,
+      "detection_rate": 0.0,
+      "mean_latency": null,
+      "n_valid": 0,
+      "source": "gate_c",
+      "model_id": "unitary/toxic-bert"
+    },
+    "distilbert-toxic": {
+      "null_std": 0.04043156989544887,
+      "null_mean": 0.005154960989952087,
+      "detection_rate": 0.0,
+      "mean_latency": null,
+      "n_valid": 0,
+      "source": "gate_c",
+      "model_id": "martin-ha/toxic-comment-model"
+    },
+    "openai-moderation": {
+      "null_std": 0.03652445154945278,
+      "null_mean": 0.987199402987957,
+      "detection_rate": 0.0,
+      "mean_latency": null,
+      "n_valid": 0,
+      "source": "gate_c",
+      "model_id": "KoalaAI/Text-Moderation"
+    },
+    "roberta-hate-speech": {
+      "null_std": 0.028371083697739396,
+      "null_mean": 0.9944272464513779,
+      "detection_rate": 0.0,
+      "mean_latency": null,
+      "n_valid": 0,
+      "source": "gate_c",
+      "model_id": "facebook/roberta-hate-speech-dynabench-r4-target"
+    },
+    "deberta-v3-base-mnli": {
+      "null_std": 0.2480544879137853,
+      "null_mean": 0.8937785210609436,
+      "detection_rate": 0.0,
+      "mean_latency": null,
+      "n_valid": 0,
+      "source": "gate_c",
+      "model_id": "cross-encoder/nli-deberta-v3-base"
+    }
+  }
+}
