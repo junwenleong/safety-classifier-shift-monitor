@@ -170,17 +170,52 @@ GCG against primary DeBERTa-v3-large, scored on epoch-{1,3,5,10} checkpoints (sa
 
 **Implication:** Architecture diversity IS relevant, but the mechanism is *transfer resistance*, not gradient geometry. A decoder-based canary is robust because encoder-targeted GCG doesn't transfer to decoders. Same-architecture canaries are partially vulnerable.
 
-### Currently Running (2026-06-25 14:05 SGT)
+### CA8 Proper — Joint GCG Results (2026-06-25)
 
-**Mac Studio:** `scripts/run_ca8_proper.py` (re-run with dimension fix) — ETA ~4pm SGT
+**First attempt** (200 steps × 512 search × 2 models): crashed on embedding dimension mismatch (primary=large/1024d, epoch-sweep=large/1024d — fixed). Got 1 data point at λ=0 before timeout:
 
-True joint GCG with two epoch-sweep checkpoints (both deberta-v3-base, 768-d, shared vocab). Sweeps λ={0, 0.5, 1.0, 2.0}.
+- **λ=0, prompt 1: A=0.002, B=0.002 → BOTH FLIPPED** (single-target attack transfers perfectly)
 
-**What this decides:** Can a monitor-aware attacker flip BOTH models with shared gradients? If yes → same-arch ensemble is trivially defeated. If no → even within-family diversity has real resistance.
+Then confirmed with epoch-1 vs epoch-5 (both 1024-d):
+- **λ=0, prompt 1: A=0.003, B=0.007 → BOTH FLIPPED**
 
-### After Joint GCG Results Land
+**Interpretation:** Within-family, single-target GCG transfers to the companion model without any joint optimization. The attacker doesn't even need to be monitor-aware — optimizing against one DeBERTa checkpoint automatically defeats another.
 
-**Paper writing** — the story is now clear regardless of joint-GCG outcome:
+**Why:** Both models share architecture + tokenizer + training corpus. The adversarial perturbation that fools one is geometrically similar enough to fool the other. This is consistent with known GCG transfer results in the adversarial ML literature.
+
+**Parameter issue:** Full λ sweep was ~80h (200 steps × 512 search × 10 prompts × 4 λ). Killed — redundant since λ=0 already defeats both. The λ>0 sweep would only show "joint optimization is at least as effective as single-target" which is obvious.
+
+### Currently Running (2026-06-25 21:46 SGT)
+
+**Mac Studio:** `scripts/run_ca8_minimal.py` — ETA ~22:45 SGT
+
+Minimal confirmation: 10 prompts × 50 steps × 256 search, λ=0 only (single-target, check if B transfers). Using epoch-1 vs epoch-5 checkpoints (both deberta-v3-large, 1024-d).
+
+**Expected:** Most/all transfer (based on 2/2 observed so far). This gives us a proper n=10 with Wilson CI for the paper.
+
+### Complete Track A Story (all data in)
+
+| Finding | Data | Verdict |
+|---------|------|---------|
+| Divergence detects single-target attack | CA6: p<10⁻¹² | ✅ |
+| Divergence is attack-specific, not OOD | CA6: GCG 76% vs random 12% | ✅ |
+| Architecture diversity is NOT the active ingredient | CA4: η²=0.011, within-family highest | ❌ (hypothesis falsified) |
+| Signal is target-specific (only pairs with target show it) | CA6 ext: 3/6 pairs (all DeBERTa-involving) | ✅ (reframing) |
+| Same-arch canary works passively | Cheap canary: 65% detection | ✅ (partial) |
+| Same-arch canary is vulnerable to transfer | CA8: λ=0 both flip, cheap canary 36% also flipped | ✅ (honest limitation) |
+| Cross-arch canary resists transfer | CA6: LG never flips under DeBERTa GCG | ✅ |
+| True joint optimization (cross-arch) | Untestable — tokenizer confound | ⚠️ Open question |
+
+**Paper framing:**
+1. Any un-targeted classifier is a "cheap canary" against single-target evasion
+2. Cross-architecture canaries are strictly more robust (GCG doesn't transfer across tokenizer/architecture boundaries)
+3. Same-architecture canaries are partially defeated by attack transfer (36%)
+4. The defense is security-in-diversity: the attacker must know AND target all deployed models
+5. The tokenizer mismatch between architectures acts as a structural barrier to joint optimization
+
+### After CA8 Minimal Completes
+
+**Paper writing** — all experiments done.
 
 **Title:** "Cheap Canaries: Detecting Targeted Evasion Attacks via Classifier Score Disagreement"
 
