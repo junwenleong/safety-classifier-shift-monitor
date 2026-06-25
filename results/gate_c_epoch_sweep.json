@@ -1,0 +1,46 @@
+{
+  "1": {
+    "epoch": 1,
+    "step": 1000,
+    "null_std": 0.13957894867835852,
+    "null_mean": 0.03547381066065282,
+    "detection_rate": 1.0,
+    "mean_latency": 21.0
+  },
+  "3": {
+    "epoch": 3,
+    "step": 3000,
+    "null_std": 0.1437894536754851,
+    "null_mean": 0.02441112245223485,
+    "detection_rate": 1.0,
+    "mean_latency": 13.0
+  },
+  "5": {
+    "epoch": 5,
+    "step": 5000,
+    "null_std": 0.15332725865601168,
+    "null_mean": 0.024863863503618633,
+    "detection_rate": 1.0,
+    "mean_latency": 24.0
+  },
+  "10": {
+    "epoch": 10,
+    "step": 8000,
+    "null_std": 0.1087015966374434,
+    "null_mean": 0.011989217758558424,
+    "detection_rate": 1.0,
+    "mean_latency": 23.0
+  },
+  "orig-deberta": {
+    "null_std": 0.08688582644141582,
+    "mean_latency": 25.352941176470587,
+    "detection_rate": 1.0,
+    "epoch": "original"
+  },
+  "orig-text-moderation": {
+    "null_std": 0.06583611238991557,
+    "mean_latency": 11.842105263157896,
+    "detection_rate": 1.0,
+    "epoch": "original"
+  }
+}
