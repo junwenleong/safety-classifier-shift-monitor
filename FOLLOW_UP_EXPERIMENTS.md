@@ -148,34 +148,52 @@ Additionally, cross-architecture joint GCG is confounded by tokenizer mismatch (
 
 **What's actually true:**
 1. Any un-targeted classifier produces detectable score divergence when the targeted classifier is under attack (CA6 PASS, p<10⁻¹²)
-2. This is NOT about architecture diversity — same-family pairs work equally (DeBERTa↔TM has highest divergence)
-3. The signal is attack-specific, not OOD (CA6: random tokens produce far less divergence for target-involving pairs)
-4. The defense is "security by not targeting all models" — its robustness against monitor-aware attackers is UNKNOWN (CA8 probe was flawed)
+2. The signal is target-specific, not architecture-specific (CA6 extended: only pairs involving the target show GCG > random)
+3. The signal is attack-specific, not OOD (random tokens produce far less divergence)
+4. **Attack transfer is the key variable** (cheap canary finding): cross-architecture canaries resist GCG transfer (76% detection), same-architecture canaries are vulnerable to transfer (36% also flip → detection fails)
 
-### Currently Running (2026-06-25 12:05 SGT)
+### Cheap Canary Results (2026-06-25 13:40 SGT) ✅
 
-**Mac Studio:** `scripts/run_ca8_proper.py` — ETA ~2-3pm SGT
+GCG against primary DeBERTa-v3-large, scored on epoch-{1,3,5,10} checkpoints (same architecture, different training state).
 
-**Experiments (fixes the flawed CA8):**
+| Canary epoch | Mean divergence | Detection (>0.5) | Canary also flipped |
+|---|---|---|---|
+| 1 | 0.498 | 44% | high transfer |
+| 3 | 0.555 | 56% | moderate |
+| 5 | 0.758 | 78% | low transfer |
+| 10 | 0.715 | 78% | low transfer |
+| **Overall** | **0.631** | **64%** | **36% flipped** |
 
-1. **Cheap canary** — GCG against primary DeBERTa, score on epoch-{1,3,5,10} checkpoints. Tests: does a same-architecture copy work as canary? (Expected: yes, confirms "any un-targeted model" story.)
+**Comparison:** Cross-arch canary (DeBERTa→LG): mean div=0.784, det=76%, LG never flips.
 
-2. **True joint GCG** — BOTH DeBERTa models in gradient loop (shared vocab, no tokenizer confound). Sweeps λ={0, 0.5, 1.0, 2.0}. Tests: can a monitor-aware attacker flip both models simultaneously?
+**Critical finding:** When the same-architecture canary also gets flipped by the GCG suffix (36% of cases), divergence drops to 0.08 — useless. When it resists, divergence is 0.94 — excellent. The variable is **attack transfer**: GCG transfers within-architecture 36% of the time.
 
-**Why within-family:** Same tokenizer eliminates the discrete-vocab confound that makes cross-architecture joint GCG uninterpretable. If joint evasion is easy even within-family (same vocab), then cross-family would be at least as hard (additional tokenizer barrier). If it's hard within-family → ensemble resistance is real.
+**Implication:** Architecture diversity IS relevant, but the mechanism is *transfer resistance*, not gradient geometry. A decoder-based canary is robust because encoder-targeted GCG doesn't transfer to decoders. Same-architecture canaries are partially vulnerable.
 
-**Possible outcomes and paper framing:**
-- λ=0 shows canary + λ>0 both flip easily → "Cheap Canaries: Detecting Evasion via Score Disagreement" (practical, honest limits stated)
-- λ>0 is significantly harder/fewer flips → "Ensemble resistance is real even within-family" (stronger claim)
-- λ>0 succeeds but requires 2-5× more steps → "Ensembles raise attack cost by Nx" (quantifiable)
+### Currently Running (2026-06-25 14:05 SGT)
 
-### After CA8 Proper Results Land
+**Mac Studio:** `scripts/run_ca8_proper.py` (re-run with dimension fix) — ETA ~4pm SGT
 
-**Paper writing** — one consolidated follow-up. Working title depends on CA8 outcome:
-- If easy: "Cheap Canaries: Detecting Targeted Evasion by Monitoring Classifier Disagreement"
-- If hard: "The Cost of Joint Evasion: Why Monitoring Multiple Classifiers Raises Attack Budgets"
+True joint GCG with two epoch-sweep checkpoints (both deberta-v3-base, 768-d, shared vocab). Sweeps λ={0, 0.5, 1.0, 2.0}.
 
-Structure:
+**What this decides:** Can a monitor-aware attacker flip BOTH models with shared gradients? If yes → same-arch ensemble is trivially defeated. If no → even within-family diversity has real resistance.
+
+### After Joint GCG Results Land
+
+**Paper writing** — the story is now clear regardless of joint-GCG outcome:
+
+**Title:** "Cheap Canaries: Detecting Targeted Evasion Attacks via Classifier Score Disagreement"
+
+**Core claims (supported by data):**
+1. Any un-targeted classifier detects single-target evasion (p<10⁻¹², CA6)
+2. Cross-architecture canaries are more robust than same-architecture (36% transfer failure rate, cheap canary)
+3. The defense is practical: deploy a second classifier, monitor disagreement
+4. Joint-GCG results will bound the attacker's cost to defeat the ensemble
+
+**Structure:**
+- Track A: target-vs-non-target divergence + transfer resistance + joint-evasion cost
+- Track B: calibration-free monitoring (operational simplicity framing)
+- Track C: 1 paragraph honest negative
 - Track A: target-vs-non-target divergence as evasion detector + joint-evasion cost analysis
 - Track B: calibration-free monitoring (operational simplicity framing, NOT "beats KS")
 - Track C: 1 paragraph honest negative (monitorability law was encoder/decoder gap)
