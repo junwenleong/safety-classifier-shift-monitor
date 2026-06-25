@@ -193,86 +193,121 @@ Then confirmed with epoch-1 vs epoch-5 (both 1024-d):
 - Also: transfer only occurs when canary's baseline confidence is low (<0.99). High-confidence canaries resist passive transfer.
 - **Status:** awaiting full 10/10 results to confirm.
 
-### Currently Running (2026-06-25 23:06 SGT)
+### CA8 Minimal Results (2026-06-25 23:30 SGT) ✅ COMPLETE
 
-**Mac Studio:** `scripts/run_ca8_minimal.py` — ETA ~23:30 SGT
+**Single-target GCG (50 steps), epoch-1 vs epoch-5 (both DeBERTa-v3-large):**
 
-Minimal confirmation: 10 prompts × 50 steps × 256 search, λ=0 only (single-target, check if B transfers). Using epoch-1 vs epoch-5 checkpoints (both deberta-v3-large, 1024-d).
+| Metric | Value |
+|---|---|
+| A flipped | 8/10 |
+| B also flipped (transfer) | 3/10 (30%) |
+| Transfer among A-flipped | 3/8 (37.5%) |
 
-**Expected:** Most/all transfer (based on 2/2 observed so far). This gives us a proper n=10 with Wilson CI for the paper.
+**Statistically significant confidence-gating (p=0.016):**
+- Transferred: B_orig mean = 0.335 (low confidence)
+- Resisted: B_orig mean = 1.000 (high confidence)
 
-### Complete Track A Story (all data in)
+**Key finding:** Transfer is NOT automatic — it depends on the canary's baseline confidence. High-confidence canaries (B_orig ≈ 1.0) resist transfer perfectly at 50 steps. Budget-dependent: earlier CA8-proper (200 steps) showed near-total transfer.
+
+### Complete Track A Story (all experiments)
 
 | Finding | Data | Verdict |
 |---------|------|---------|
 | Divergence detects single-target attack | CA6: p<10⁻¹² | ✅ |
 | Divergence is attack-specific, not OOD | CA6: GCG 76% vs random 12% | ✅ |
-| Architecture diversity is NOT the active ingredient | CA4: η²=0.011, within-family highest | ❌ (hypothesis falsified) |
-| Signal is target-specific (only pairs with target show it) | CA6 ext: 3/6 pairs (all DeBERTa-involving) | ✅ (reframing) |
+| Architecture diversity is NOT the active ingredient | CA4: η²=0.011, within-family highest | ❌ (falsified) |
+| Signal is target-specific | CA6 ext: 3/6 pairs (only DeBERTa-involving) | ✅ |
 | Same-arch canary works passively | Cheap canary: 65% detection | ✅ (partial) |
-| Same-arch canary is vulnerable to transfer | CA8: λ=0 both flip, cheap canary 36% also flipped | ✅ (honest limitation) |
-| Cross-arch canary resists transfer | CA6: LG never flips under DeBERTa GCG | ✅ |
-| True joint optimization (cross-arch) | Untestable — tokenizer confound | ⚠️ Open question |
+| Transfer is budget-dependent | 30% at 50 steps vs ~100% at 200 steps | ✅ |
+| Transfer is confidence-gated | B_orig=1.0 resists, B_orig<0.99 vulnerable (p=0.016) | ✅ |
+| Cross-arch canary resists transfer | LG never flips under DeBERTa GCG | ✅ |
+| k=2 (within+cross) optimal | 98% detection, covers transfer gap | ✅ |
+| True joint optimization (cross-arch) | Untestable — tokenizer confound | ⚠️ Open |
 
-**Paper framing:**
-1. Any un-targeted classifier is a "cheap canary" against single-target evasion
-2. Cross-architecture canaries are strictly more robust (GCG doesn't transfer across tokenizer/architecture boundaries)
-3. Same-architecture canaries are partially defeated by attack transfer (36%)
-4. The defense is security-in-diversity: the attacker must know AND target all deployed models
-5. The tokenizer mismatch between architectures acts as a structural barrier to joint optimization
-
-### K-Classifier Scaling (2026-06-25, from CA4 data)
+### K-Classifier Scaling (from CA4 data)
 
 | Ensemble (target=DeBERTa) | Detection rate | Note |
 |---|---|---|
-| k=1: Text-Mod only (within-family) | **94%** | Best single canary — but vulnerable to transfer |
+| k=1: Text-Mod (within-family) | **94%** | Best single canary — but vulnerable to transfer |
 | k=1: Llama Guard (cross-family) | 76% | Robust to transfer, lower baseline detection |
 | k=1: ShieldGemma (cross-family) | 55% | Wide null distribution reduces sensitivity |
 | k=2: Text-Mod + Llama Guard | **98%** | Best pair — covers transfer gap |
-| k=2: Text-Mod + ShieldGemma | 96% | — |
 | k=3: All three | 98% | No improvement over k=2 |
 
-**Takeaway:** A single within-family canary (Text-Mod) is best against monitor-ignorant attackers (94%). Adding one cross-family canary (LG) reaches 98% and closes the transfer vulnerability. Beyond k=2, returns diminish.
+### K-Canary Stopping Time (from simulation)
+
+- TM alone: 97% detection, mean latency **5 steps** (fast but transfer-vulnerable)
+- LG alone: 100% detection, mean latency 14.5 steps (robust but slower)
+- Combined k=2: 97% detection, mean latency 5 steps (speed of TM + robustness of LG)
+- **Conclusion:** k=2 value is ROBUSTNESS against transfer, not speed improvement.
 
 ### Formalized Threat Model
 
-| Tier | Attacker knowledge | Attack type | Defense status |
-|------|-------------------|-------------|----------------|
-| **1: Monitor-ignorant** | Knows target, unaware of canary | Single-target GCG/AutoDAN | ✅ Detected (94-98% depending on ensemble) |
-| **2: Architecture-aware** | Knows target + canary's family | Single-target, relies on transfer | ⚠️ Within-family: 36% transfer defeats canary. Cross-family: robust (0% transfer to LG) |
-| **3: Monitor-aware, single-target** | Knows both models, optimizes one | GCG against target, hopes canary misses | ✅ Cross-family canary holds (CA6). Within-family partially vulnerable. |
-| **4: Joint optimizer** | White-box access to both, joint loss | Joint GCG (λ>0) | ❌ Within-family: trivially defeated (λ=0 transfers perfectly). Cross-family: structurally bounded by tokenizer mismatch (untested, open question). |
+| Tier | Attacker knowledge | Defense status |
+|------|-------------------|----------------|
+| **1: Monitor-ignorant** | Unaware of canary | ✅ Detected 94-98% |
+| **2: Architecture-aware** | Knows canary's family | ⚠️ Within-family: 30-36% transfer. Cross-family: 0% transfer |
+| **3: Monitor-aware, single** | Optimizes against target only | ✅ Cross-family canary holds. Within-family: confidence-gated |
+| **4: Joint optimizer** | Both models in loss | Running tonight — within-family result incoming |
 
-**Deployment recommendation by threat level:**
-- Low-threat (Tier 1-2): Deploy any second classifier. Within-family is cheapest and catches 94%.
-- Medium-threat (Tier 3): Deploy cross-family canary (different architecture + tokenizer). Blocks transfer.
-- High-threat (Tier 4): Cross-family ensemble + canary rotation (keep canary identity secret). Accept best-effort.
+### Currently Running (2026-06-26 00:04 SGT)
 
-### After CA8 Minimal Completes
+**Mac Studio overnight run** — ETA ~8am SGT
 
-**Paper writing** — all experiments done.
+```bash
+nohup bash -c 'autodan → joint_50step → joint_200step' > results/overnight_run.log 2>&1 &
+```
+
+| Order | Script | What it decides | ~Time |
+|---|---|---|---|
+| 1 | `run_autodan_canary.py` | Does canary effect hold for readable/semantic attacks? + tokenizer fragmentation | ~2-3h |
+| 2 | `run_ca8_joint.py` | Joint GCG (0.5*L_A + 0.5*L_B), 50 steps — compare with single-target (30% transfer) | ~1h |
+| 3 | `run_ca8_joint_extended.py` | Joint GCG 200 steps with budget trajectory curve (at steps 10/25/50/100/150/200) | ~3-4h |
+
+**What these produce (the complete budget-vs-transfer table for the paper):**
+
+| Condition | Steps | Search | Expected transfer |
+|---|---|---|---|
+| Single-target (measured) | 50 | 256 | 30% |
+| Joint (running) | 50 | 256 | ??? (likely higher) |
+| Joint extended (running) | 200 | 512 | ??? (likely near 100%) |
+
+**AutoDAN outcomes:**
+- Templates flip DeBERTa + canary detects → generalizes beyond GCG (strongest)
+- Templates don't flip DeBERTa → DeBERTa robust to templates (different finding, still useful)
+
+**Tokenizer fragmentation** (bundled with AutoDAN, 30s):
+- LG/DB token ratio → mechanistic explanation for cross-arch transfer resistance
+
+### Paper Plan (write after overnight results land)
 
 **Title:** "Cheap Canaries: Detecting Targeted Evasion Attacks via Classifier Score Disagreement"
 
-**Core claims (supported by data):**
-1. Any un-targeted classifier detects single-target evasion (p<10⁻¹², CA6)
-2. Within-family canary: 94% detection but vulnerable to transfer (36%)
-3. Cross-family canary: 76% detection but robust to transfer (0%)
-4. Optimal ensemble (k=2, one within + one cross): 98% detection across threat tiers
-5. Formalized threat model mapping findings to attacker capabilities
+**Core claims:**
+1. Any un-targeted classifier detects single-target evasion (CA6, p<10⁻¹²)
+2. Detection is confidence-gated: canaries resist transfer when confident (p=0.016)
+3. k=2 (within + cross-family) is optimal: 98% detection across Tier 1-3
+4. Transfer is budget-dependent: 30% at 50 steps, scaling with compute
+5. Joint optimization (true Tier 4 adversary) — bounded by data from overnight run
+6. Formalized 4-tier threat model with prescriptive deployment recommendations
 
-**Remaining compute (nice-to-have):**
-- AutoDAN attack family (~4-6h) — confirms findings aren't GCG-specific
-- Canary rotation simulation — demonstrates defense against Tier 3+
+**Paper structure:**
+- §1 Introduction: safety classifiers under attack, the canary idea
+- §2 Background: GCG, safety classifiers, monitoring
+- §3 Threat model (4 tiers)
+- §4 The canary effect: detection via score divergence (CA6, k-scaling)
+- §5 Transfer and robustness: confidence-gating, budget dependence, joint evasion
+- §6 Calibration-free monitoring: scan martingale (Track B)
+- §7 Discussion: deployment recommendations, tokenizer moat, limitations
+- §8 Conclusion
+- Appendix: Track C honest negative (monitorability law)
 
-**Structure:**
-- Track A: target-vs-non-target divergence + transfer resistance + joint-evasion cost
-- Track B: calibration-free monitoring (operational simplicity framing)
-- Track C: 1 paragraph honest negative
-- Track A: target-vs-non-target divergence as evasion detector + joint-evasion cost analysis
-- Track B: calibration-free monitoring (operational simplicity framing, NOT "beats KS")
-- Track C: 1 paragraph honest negative (monitorability law was encoder/decoder gap)
-   - Do NOT claim "scan beats KS" — claim "scan requires no calibration"
+**Venue target:** AISec / SaTML / NeurIPS SafeGenAI workshop (if results are strong enough: USENIX Security)
+
+**What would upgrade venue:**
+- AutoDAN confirms generality → removes "GCG-only" objection
+- Joint GCG shows measurable cost increase → quantifiable security property
+- Game-theory / decision matrix framing → transforms from measurement study to framework
 
 ---
 **Parent work:** arXiv:2606.11949 (Shift Detection Monitor). The 980-cell factorial + post-factorial additions (CS growing-window, MMD, PCA-conformal, gradual drift, mechanistic n=4) are *complete and submitted*. This document plans the next phase.
