@@ -1,0 +1,16 @@
+{
+  "finding": "No stopping-time benefit from combining streams. TM alone detects in 5 steps. LG adds robustness (100% vs 97%) not speed.",
+  "single_tm": {
+    "det_rate": 0.97,
+    "mean_latency": 5.0
+  },
+  "single_lg": {
+    "det_rate": 1.0,
+    "mean_latency": 14.5
+  },
+  "combined_min": {
+    "det_rate": 0.97,
+    "mean_latency": 5.0
+  },
+  "interpretation": "k=2 benefit is robustness against transfer, not speed. TM catches fast but fails under transfer (36%). LG is immune to transfer but slower. Combined = speed of TM + robustness of LG."
+}
