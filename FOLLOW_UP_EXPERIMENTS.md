@@ -1,100 +1,114 @@
 # Follow-Up Experiment Plan — Post-arXiv Scope Extension
 
-**Status:** Track A confirmed (CA6 PASS). Track B production code done. Track C re-running (ETA ~4:30am 25 Jun).
+**Status:** All gates complete. Track A PASS, Track B PASS (reframed), Track C FAIL (honest negative).
 
-## Current Status (2026-06-25 00:55 SGT)
+## Final Results (2026-06-25 09:20 SGT, independently audited)
 
-| Gate/Test | Status | Where | Result |
-|------|--------|-------|--------|
-| **A (Gate)** | ✅ Complete | Mac Studio | **GO** — divergence bootstrap LB 0.699 > null 0.585 |
-| **A (CA6)** | ✅ Complete | Mac Studio | **PASS** — GCG det 76% vs random 12%, non-overlapping CIs, p<0.0001 |
-| **B (Gate)** | ✅ Complete | MacBook | **GO** — Scan martingale 83–100% vs KS 43–47%, FAR 0/200 |
-| **B (AV2)** | ✅ Complete | Both | **Confirmed** — FAR ≤1% all 4 classifiers, spread 1% |
-| **B (Full)** | ✅ Complete | Mac Studio | AV1-6 + AD1 all evaluated with production `conformal_martingale.py` |
-| **C (Epoch sweep)** | 🔄 Running | Mac Studio | Fine-tuning DeBERTa 10 epochs (~3.5h). Detection uses synthetic Beta(5,5) shift. |
-
-### CA6 — Gibberish Control Results (2026-06-25) ✅ PASS
-
-**The canary is an ATTACK detector, not a generic OOD detector.**
-
-| Metric | GCG (n=49) | Random (n=50) |
-|--------|-----------|---------------|
-| Detection rate (divergence > null 97th) | **76%** | **12%** |
-| Wilson 95% CI | [0.619, 0.854] | [0.057, 0.242] |
-| DeBERTa flip rate | 49/100 (49%) | **0/50 (0%)** |
-| Mean divergence | 0.784 | (low) |
-
-- **Non-overlapping CIs:** GCG Wilson LB (0.619) > Random Wilson UB (0.242) ✅
-- **Mann-Whitney U:** p < 0.0001 ✅
-- **Random tokens never flip DeBERTa** (0/50 vs 49/100) — GCG specifically targets the decision boundary
-
-**Implication:** The cross-architecture divergence is NOT just "any garbage appended makes models disagree." GCG suffixes are structurally different — they specifically fool DeBERTa while leaving Llama Guard's scores exposed. Track A's novelty ceiling is confirmed.
-
-### Track B — Production Implementation Complete (2026-06-25)
-
-**Module:** `shift_detection_monitor/detection/conformal_martingale.py`
-- `ScanMartingale` — recommended default (union of W sub-martingales, O(W) memory)
-- `CUSUMMartingale` — O(1) memory, needs horizon-based threshold correction
-- `PointMartingale` — single accumulator (weak for unknown changepoints)
-- 29 unit tests passing (`tests/test_conformal_martingale.py`)
-
-**Full evaluation results** (`results/track_b_full_eval.json`):
-
-| Hypothesis | Result | Note |
+| Track | Verdict | Paper role |
 |---|---|---|
-| AV2 (FAR uniformity) | ✅ 0–1% all classifiers, spread 1% | Zero calibration needed |
-| AV5 (exchangeability) | ✅ Confirmed boundary: block-structured always alarms, drift alarms encoders only | Honest limitation |
-| AV6 (ε robustness) | ⚠️ ε=0.3 fails for decoders (LG 57%, SG 77%) | Need ε=0.4-0.5 for wide distributions |
-| AD1 (ramped onset) | Scan matches KS with proper calibration | Advantage is at original (less sensitive) KS threshold |
+| **A** | ✅ PASS | Headline: cross-arch divergence detects evasion attacks |
+| **B** | ✅ PASS (reframed) | Spine: calibration-free FAR control (not "beats KS") |
+| **C** | ❌ FAIL | Honest negative: 1 paragraph (n=4 law was encoder/decoder gap) |
 
-**Key insight from implementation:** CUSUM with threshold log(1/α) does NOT control FAR — Page's resets give multiple chances. Fixed with log(H/α) where H=monitoring horizon. ScanMartingale has the cleanest guarantee.
+---
 
-### Gate A — Formal Analysis Notes (2026-06-24)
+### Track A — Cross-Architecture Divergence ✅ PASS
 
-**Raw results:** 100 GCG attacks on DeBERTa, 49 flipped (49%). All 49 scored on Llama Guard.
+**Gate A (n=100 GCG, 49 flipped):**
 
 | Test | Result | Verdict |
 |------|--------|---------|
-| Divergence detection rate | 37/49 (76%), Wilson CI [0.619, 0.854] | ✅ GO |
-| Mean cross-arch divergence | 0.784 [0.699, 0.865] vs null 97th-pct 0.585 | ✅ 1.3× threshold |
-| Llama Guard delta (t-test) | +0.083, t=4.18, p=0.0001 | ✅ Significant but modest |
-| Direction (binomial) | 27/49=55% toward unsafe, p=0.284 | ❌ NOT significant |
-| Score variance (CA6 precursor) | LG attacked std=0.30, delta std=0.14 | ✅ Spread exists |
+| Cross-arch divergence | mean 0.784 [0.699, 0.865] vs null 97th-pct 0.585 | ✅ 1.3× threshold |
+| Delta t-test | +0.083, t=4.18, p=0.0001 | ✅ Significant |
+| Direction (binomial) | 27/49=55% toward unsafe, p=0.57 | ❌ NOT significant |
 
-**Key reframing:** The signal is **NOT** "Llama Guard moves toward unsafe." The directional push is not significant (p=0.284). The real signal is **cross-architecture score divergence**: DeBERTa collapses to ~0 under successful GCG attack while Llama Guard stays at its original level. Paper framing: *divergence* detector, not directional canary.
+**CA6 — Gibberish Control (decisive):**
 
-### Track C — Epoch Sweep (2026-06-25, in progress)
+| Metric | GCG (n=49) | Random (n=50) |
+|--------|-----------|---------------|
+| Detection rate | **76%** | **12%** |
+| Wilson 95% CI | [0.619, 0.854] | [0.057, 0.242] |
+| DeBERTa flip rate | 49/100 (49%) | **0/50 (0%)** |
 
-Fine-tuning DeBERTa-v3-large for 10 epochs, saving at {1,3,5,10}. Null score stds from first run:
+- Non-overlapping CIs: GCG LB 0.619 > Random UB 0.242 ✅
+- Mann-Whitney: p = 2.4×10⁻¹² ✅
+- Random tokens never flip DeBERTa (0/50) — GCG is structurally different
 
-| Epoch | null_std | null_mean |
+**Honest framing for paper:** The signal is *score divergence* (DeBERTa collapses to ~0 while Llama Guard holds), NOT "Llama Guard moves toward unsafe" (direction test fails, p=0.57). The divergence is attack-specific — random gibberish produces far less divergence and never flips DeBERTa.
+
+---
+
+### Track B — Conformal Test Martingale ✅ PASS (reframed)
+
+**Production module:** `detection/conformal_martingale.py` (29 tests passing)
+
+| Hypothesis | Result |
+|---|---|
+| AV2 (FAR uniformity) | ✅ 0–1% all classifiers, spread 1%, zero calibration |
+| AV5 (exchangeability) | Boundary found: block-structured always alarms, gradual drift alarms encoders only |
+| AV6 (ε robustness) | ε=0.3 works for encoders (100%), fails decoders (LG 57%, SG 77%) |
+| AD1 (scan vs KS) | ❌ Scan never outperforms properly-calibrated KS at any mixing level |
+
+**Critical reframing (from audit):** With per-condition calibrated KS (97th-percentile threshold), KS dominates scan at every tested mixing level:
+
+| Mixing | Scan (DeBERTa) | KS (DeBERTa) |
+|--------|---------------|--------------|
+| 15% | 40% | 83% |
+| 20% | 80% | 100% |
+| 25% | 100% | 100% |
+| 30% | 100% | 100% |
+
+The Gate B validation (scan 83–100% vs KS 43–47%) used the *factorial's* KS threshold, which was calibrated across all shift types and was less sensitive. With proper per-condition calibration, KS is better.
+
+**What the paper can honestly claim:** The scan martingale provides *calibration-free* FAR control ≤α with zero per-classifier tuning. Its value is **operational simplicity** (deploy once, guaranteed FAR across all classifiers), not superior detection power. If you invest in per-classifier calibration, KS matches or beats it.
+
+**Implementation notes:**
+- CUSUM with threshold log(1/α) inflates FAR (Page's resets give multiple chances). Fixed with log(H/α).
+- ScanMartingale has the cleanest anytime-valid guarantee (union bound over W sub-martingales).
+- ε=0.3 is not universal — decoders with wide null distributions need ε=0.4-0.5.
+
+---
+
+### Track C — Monitorability Law ❌ FAIL
+
+**Epoch sweep results** (DeBERTa-v3-large at epoch {1,3,5,10} + 2 original encoders):
+
+| Classifier | null_std | mean_latency |
 |---|---|---|
-| 1 | 0.056 | 0.014 |
-| 3 | 0.190 | 0.045 |
-| 5 | 0.174 | 0.034 |
-| 10 | 0.109 | 0.012 |
+| orig-text-moderation | 0.066 | 11.8 |
+| orig-deberta | 0.087 | 25.4 |
+| deberta-epoch-10 | 0.109 | 23.0 |
+| deberta-epoch-1 | 0.140 | 21.0 |
+| deberta-epoch-3 | 0.144 | 13.0 |
+| deberta-epoch-5 | 0.153 | 24.0 |
 
-Combined with original 4 classifiers (stds 0.066–0.144), this gives a within-family spread of 0.056–0.190 across 4 DeBERTa variants. Detection now uses synthetic Beta(5,5) shifted scores (fixed — no external corpus dependency).
+**Correlations:**
 
-**Original correlation (n=4, paraphrase):** r=0.997, p=0.003.
+| Test | r | p | n | Criterion met? |
+|---|---|---|---|---|
+| DeBERTa epoch sweep only | −0.22 | 0.78 | 4 | ❌ |
+| Within-family (all encoders) | +0.21 | 0.70 | 6 | ❌ |
+| Full (+ decoders, n=8) | +0.42 | 0.30 | 8 | ❌ (need r>0.6, p<0.05) |
 
-**Within-family prediction:** If the law holds, epoch_1 (std=0.056) should detect fastest, epoch_3 (std=0.190) slowest. If correlation vanishes within-family → "law" is just the encoder/decoder gap (honest negative).
+**Diagnosis:** The original r=0.997 (n=4) was the encoder/decoder gap in disguise. Decoders (std ~0.14, latency ~60-85) vs encoders (std ~0.07-0.09, latency ~12-25) create a 2-cluster correlation. Within the encoder family, null_std has no relationship to detection latency (epoch 3 has std=0.144 and latency 13; epoch 5 has std=0.153 and latency 24 — non-monotonic, no pattern).
 
-### What's Next (after Track C completes)
+**Conclusion:** Monitorability is not an intrinsic, predictable scalar property of a classifier's score distribution geometry. The pre-registration correctly anticipated this (§C.2): "a clean, publishable negative that corrects an over-strong reading of the n=4 result."
 
-1. **Track A full build** (now justified by CA6 PASS):
-   - `detection/divergence_detector.py` — 2-D joint distribution monitor
-   - CA4 architecture-pair sweep (all 6 pairs)
-   - CA8 joint-evasion adversary (the crux — can an attacker align both models?)
+---
 
-2. **Track B paper sections** — write up with honest framing:
-   - Not a new estimator (cite Howard & Ramdas, Vovk)
-   - Contribution is *applied*: calibration-free safety-classifier monitoring
-   - Exchangeability boundary (AV5) stated up front
-   - ε gap for decoders (AV6) acknowledged
+### What's Next
 
-3. **Track C** — wait for detection results, compute within-family r
-   - Gives within-family spread for ML1b test
+1. **Track A full build** (justified by CA6 PASS):
+   - `detection/divergence_detector.py` — 2-D joint distribution monitor on (score_T, score_C)
+   - CA4: architecture-pair sweep (all 6 pairs from {DeBERTa, Text-Mod, LG, SG})
+   - CA8: joint-evasion adversary — the crux (can an attacker align both models?)
+   - If CA8 shows joint evasion is hard → that IS the headline
+
+2. **Paper writing** — one consolidated follow-up:
+   - Track A: cross-architecture divergence as evasion detector
+   - Track B: calibration-free monitoring (operational simplicity framing)
+   - Track C: 1 paragraph honest negative
+   - Do NOT claim "scan beats KS" — claim "scan requires no calibration"
 
 ---
 **Parent work:** arXiv:2606.11949 (Shift Detection Monitor). The 980-cell factorial + post-factorial additions (CS growing-window, MMD, PCA-conformal, gradual drift, mechanistic n=4) are *complete and submitted*. This document plans the next phase.
