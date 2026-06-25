@@ -88,6 +88,34 @@ def main():
     log("TEMPLATE-BASED JAILBREAK CANARY TEST")
     log("=" * 60)
 
+    # --- Tokenizer fragmentation analysis (30s, CPU) ---
+    log("\n--- TOKENIZER FRAGMENTATION ANALYSIS ---")
+    from transformers import AutoTokenizer
+    tok_db = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base")
+    tok_lg = AutoTokenizer.from_pretrained("meta-llama/Llama-Guard-3-8B")
+
+    rng_tok = np.random.default_rng(42)
+    SUFFIX_LEN_TOK = 20
+    N_TOK = 100
+    ratios = []
+    for _ in range(N_TOK):
+        db_ids = rng_tok.integers(0, tok_db.vocab_size, size=SUFFIX_LEN_TOK).tolist()
+        suffix_text = tok_db.decode(db_ids, skip_special_tokens=True)
+        db_reenc = tok_db.encode(suffix_text, add_special_tokens=False)
+        lg_enc = tok_lg.encode(suffix_text, add_special_tokens=False)
+        ratios.append(len(lg_enc) / max(len(db_reenc), 1))
+
+    log(f"  100 random DeBERTa suffixes (20 tokens each):")
+    log(f"  LG/DB token ratio: mean={np.mean(ratios):.2f}, std={np.std(ratios):.2f}")
+    log(f"  LG uses {np.mean(ratios):.1f}x tokens → coordinates don't align")
+    tok_result = {"mean_ratio": float(np.mean(ratios)), "std_ratio": float(np.std(ratios)), "n": N_TOK}
+    json.dump(tok_result, open(RESULTS_DIR / "track_a_tokenizer_fragmentation.json", "w"), indent=2)
+    log(f"  Saved: results/track_a_tokenizer_fragmentation.json")
+    del tok_db, tok_lg
+
+    # --- Main template attack test ---
+    log("\n--- TEMPLATE ATTACK CANARY TEST ---")
+
     # Load harmful prompts (same as GCG targets)
     if GCG_FILE.exists():
         raw = [json.loads(l) for l in open(GCG_FILE) if l.strip()]
