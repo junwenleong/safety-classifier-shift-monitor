@@ -98,30 +98,87 @@ The Gate B validation (scan 83–100% vs KS 43–47%) used the *factorial's* KS 
 
 ### What's Next
 
-### Currently Running (2026-06-25 10:06 SGT)
+### Track A Full Build Results (2026-06-25 11:51 SGT)
 
-**Mac Studio:** `scripts/run_track_a_full.py` — ETA ~4-6pm SGT (6-8h total)
+Completed in 1.8h. **Original hypothesis falsified, but a cleaner finding emerged.**
 
-Monitor: `tail -f results/track_a_full.log`
+#### CA4 — Architecture-pair divergence: ❌ FAIL
 
-| # | Experiment | What it decides | ~Time |
-|---|---|---|---|
-| 1 | CA4 (6-pair divergence) | Is divergence general across all cross-family pairs? η² > 0.10? | ~3h |
-| 2 | CA6 extended (all-pair gibberish) | Is GCG > random for ALL 6 pairs? | ~1h |
-| 3 | Natural-shift baselines | How much divergence is "normal"? (paper context) | ~1min |
-| 4 | **CA8 probe** (joint evasion) | Can an attacker align DeBERTa + LG simultaneously? THE CRUX. | ~2-4h |
+| Pair | Type | Mean divergence |
+|------|------|----------------|
+| DeBERTa ↔ Text-Moderation | within-family | **0.899** (highest!) |
+| DeBERTa ↔ Llama Guard | cross-family | 0.784 |
+| DeBERTa ↔ ShieldGemma | cross-family | 0.566 |
+| Text-Mod ↔ ShieldGemma | cross-family | 0.393 |
+| Llama Guard ↔ ShieldGemma | within-family | 0.253 |
+| Text-Mod ↔ Llama Guard | cross-family | 0.231 |
 
-**CA8 outcomes:**
-- Joint evasion fails → headline: "architectures fundamentally resist alignment"
-- Joint evasion works but is expensive → "best-effort defense, raises attack cost"
-- Joint evasion works cheaply → canary is breakable, reframe paper accordingly
+- η² = 0.011 (criterion was >0.10) → **FAIL**
+- Cross-family mean (0.493) < within-family mean (0.576) → **opposite direction**
+- The highest divergence is within-family (DeBERTa↔TM) because DeBERTa is the TARGET — its score collapses to ~0 while TM (same corpus, same sensitivity) stays high.
 
-### After Track A Results Land
+**Key insight:** The active ingredient is NOT architecture diversity. It's "targeted model vs any un-targeted model." DeBERTa↔TM diverges most because TM is maximally sensitive to the same content while not being attacked.
 
-1. **Paper writing** — one consolidated follow-up:
-   - Track A: cross-architecture divergence as evasion detector
-   - Track B: calibration-free monitoring (operational simplicity framing)
-   - Track C: 1 paragraph honest negative
+#### CA6 Extended — GCG vs random per pair: TARGET-SPECIFIC
+
+| Pair | GCG mean | Random mean | MW p | Sig? |
+|------|----------|-------------|------|------|
+| DeBERTa ↔ LG | 0.784 | 0.214 | <0.0001 | ✅ |
+| DeBERTa ↔ SG | 0.566 | 0.415 | 0.002 | ✅ |
+| DeBERTa ↔ TM | 0.899 | 0.014 | <0.0001 | ✅ |
+| TM ↔ LG | 0.231 | 0.214 | 0.320 | ❌ |
+| TM ↔ SG | 0.393 | 0.415 | 0.715 | ❌ |
+| LG ↔ SG | 0.253 | 0.282 | 0.862 | ❌ |
+
+**Pattern:** GCG > random ONLY for pairs involving DeBERTa (the target). Pairs not involving the targeted model show zero GCG-specific divergence. This confirms: the signal is "target collapses, non-targets hold" — not a general cross-architecture property.
+
+#### CA8 Probe — Joint evasion: METHODOLOGICALLY FLAWED
+
+Raw result: 8/10 "joint evasion" (DeBERTa flipped + LG stable <0.1 divergence).
+
+**BUT** the script only optimized against DeBERTa (GCG gradients) and *checked* LG passively every 20 steps. It did NOT put LG in the gradient loop. So "joint evasion" here means "single-target GCG happens not to disturb LG" — expected when LG is saturated (4/8 successes had LG_orig > 0.9).
+
+Additionally, cross-architecture joint GCG is confounded by tokenizer mismatch (DeBERTa SentencePiece vs Llama tokenizer — same suffix tokens have different meanings). Cannot cleanly interpret.
+
+**This CA8 probe result is NOT valid for claims about joint evasion difficulty.**
+
+#### Corrected Interpretation of Track A
+
+~~"Cross-architecture divergence is an attack detector"~~ → Partially wrong.
+
+**What's actually true:**
+1. Any un-targeted classifier produces detectable score divergence when the targeted classifier is under attack (CA6 PASS, p<10⁻¹²)
+2. This is NOT about architecture diversity — same-family pairs work equally (DeBERTa↔TM has highest divergence)
+3. The signal is attack-specific, not OOD (CA6: random tokens produce far less divergence for target-involving pairs)
+4. The defense is "security by not targeting all models" — its robustness against monitor-aware attackers is UNKNOWN (CA8 probe was flawed)
+
+### Currently Running (2026-06-25 12:05 SGT)
+
+**Mac Studio:** `scripts/run_ca8_proper.py` — ETA ~2-3pm SGT
+
+**Experiments (fixes the flawed CA8):**
+
+1. **Cheap canary** — GCG against primary DeBERTa, score on epoch-{1,3,5,10} checkpoints. Tests: does a same-architecture copy work as canary? (Expected: yes, confirms "any un-targeted model" story.)
+
+2. **True joint GCG** — BOTH DeBERTa models in gradient loop (shared vocab, no tokenizer confound). Sweeps λ={0, 0.5, 1.0, 2.0}. Tests: can a monitor-aware attacker flip both models simultaneously?
+
+**Why within-family:** Same tokenizer eliminates the discrete-vocab confound that makes cross-architecture joint GCG uninterpretable. If joint evasion is easy even within-family (same vocab), then cross-family would be at least as hard (additional tokenizer barrier). If it's hard within-family → ensemble resistance is real.
+
+**Possible outcomes and paper framing:**
+- λ=0 shows canary + λ>0 both flip easily → "Cheap Canaries: Detecting Evasion via Score Disagreement" (practical, honest limits stated)
+- λ>0 is significantly harder/fewer flips → "Ensemble resistance is real even within-family" (stronger claim)
+- λ>0 succeeds but requires 2-5× more steps → "Ensembles raise attack cost by Nx" (quantifiable)
+
+### After CA8 Proper Results Land
+
+**Paper writing** — one consolidated follow-up. Working title depends on CA8 outcome:
+- If easy: "Cheap Canaries: Detecting Targeted Evasion by Monitoring Classifier Disagreement"
+- If hard: "The Cost of Joint Evasion: Why Monitoring Multiple Classifiers Raises Attack Budgets"
+
+Structure:
+- Track A: target-vs-non-target divergence as evasion detector + joint-evasion cost analysis
+- Track B: calibration-free monitoring (operational simplicity framing, NOT "beats KS")
+- Track C: 1 paragraph honest negative (monitorability law was encoder/decoder gap)
    - Do NOT claim "scan beats KS" — claim "scan requires no calibration"
 
 ---
