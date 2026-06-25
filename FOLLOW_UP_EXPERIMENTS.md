@@ -185,9 +185,17 @@ Then confirmed with epoch-1 vs epoch-5 (both 1024-d):
 
 **Parameter issue:** Full λ sweep was ~80h (200 steps × 512 search × 10 prompts × 4 λ). Killed — redundant since λ=0 already defeats both. The λ>0 sweep would only show "joint optimization is at least as effective as single-target" which is obvious.
 
-### Currently Running (2026-06-25 21:46 SGT)
+**⚠️ EMERGING (TBC): Attack-budget dependence on transfer rate.**
+- `run_ca8_proper.py` (200 steps, 512 search): 1/1 prompts → both flip. Suggested near-total transfer.
+- `run_ca8_minimal.py` (50 steps, 256 search): 7/10 in progress, 2/7 transfer so far (~29%).
+- Hypothesis: transfer is budget-dependent. At 50 steps (standard GCG), the suffix is optimized just enough to fool Model A but not extreme enough to passively transfer to B (unless B is low-confidence). At 200 steps, the suffix is so over-optimized that it accidentally fools same-architecture companions.
+- If confirmed: "cheap canaries provide a time-window of protection that degrades as attacker invests more compute." Quantifiable as transfer-rate-vs-steps curve.
+- Also: transfer only occurs when canary's baseline confidence is low (<0.99). High-confidence canaries resist passive transfer.
+- **Status:** awaiting full 10/10 results to confirm.
 
-**Mac Studio:** `scripts/run_ca8_minimal.py` — ETA ~22:45 SGT
+### Currently Running (2026-06-25 23:06 SGT)
+
+**Mac Studio:** `scripts/run_ca8_minimal.py` — ETA ~23:30 SGT
 
 Minimal confirmation: 10 prompts × 50 steps × 256 search, λ=0 only (single-target, check if B transfers). Using epoch-1 vs epoch-5 checkpoints (both deberta-v3-large, 1024-d).
 
