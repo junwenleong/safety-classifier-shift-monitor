@@ -311,28 +311,43 @@ def run_true_joint_evasion():
     tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base")
     prompts = load_prompts()
 
-    # Model A = primary (fine-tuned DeBERTa, the "production" classifier)
-    model_a = AutoModelForSequenceClassification.from_pretrained(PRIMARY_CKPT, num_labels=2).to(device)
-    model_a.eval()
+    # Both models must have same embedding dim. Use two epoch-sweep checkpoints
+    # (both trained from deberta-v3-large OR both from deberta-v3-base — whatever
+    # the epoch sweep produced). Model A = early epoch, Model B = late epoch.
+    ckpt_a = find_epoch_checkpoint(1)
+    ckpt_b = find_epoch_checkpoint(5)
 
-    # Model B = epoch-3 checkpoint (same architecture, different training state = "canary")
-    ckpt_b = find_epoch_checkpoint(3)
-    if ckpt_b is None:
-        # Fallback: use the primary with a different random init wouldn't work.
-        # Use epoch-5 or epoch-10 if available
-        for ep in [5, 10, 1]:
+    # Fallback: if epoch checkpoints don't exist, use primary for A and an epoch for B
+    if ckpt_a is None or ckpt_b is None:
+        log("  Not enough epoch checkpoints. Trying primary + epoch...")
+        ckpt_a = PRIMARY_CKPT
+        for ep in [3, 5, 10, 1]:
             ckpt_b = find_epoch_checkpoint(ep)
             if ckpt_b:
                 break
-    if ckpt_b is None:
-        log("  No epoch checkpoints found. Cannot run joint GCG.")
-        return
+        if ckpt_b is None:
+            log("  No checkpoints found. Cannot run joint GCG.")
+            return
 
-    log(f"  Model A (target): {PRIMARY_CKPT}")
-    log(f"  Model B (canary): {ckpt_b}")
+    log(f"  Model A: {ckpt_a}")
+    log(f"  Model B: {ckpt_b}")
 
+    # Verify same embedding size before loading both
+    model_a = AutoModelForSequenceClassification.from_pretrained(ckpt_a, num_labels=2).to(device)
+    model_a.eval()
     model_b = AutoModelForSequenceClassification.from_pretrained(ckpt_b, num_labels=2).to(device)
     model_b.eval()
+
+    dim_a = model_a.deberta.embeddings.word_embeddings.weight.shape[1]
+    dim_b = model_b.deberta.embeddings.word_embeddings.weight.shape[1]
+    log(f"  Embedding dims: A={dim_a}, B={dim_b}")
+
+    if dim_a != dim_b:
+        log(f"  ❌ Dimension mismatch ({dim_a} vs {dim_b}). Cannot do joint GCG.")
+        log(f"     Need two checkpoints from same base model.")
+        del model_a, model_b
+        torch.mps.empty_cache() if hasattr(torch.mps, 'empty_cache') else None
+        return
 
     # Also run single-target baseline for cost comparison
     LAMBDAS = [0.0, 0.5, 1.0, 2.0]  # 0.0 = single-target (A only)
