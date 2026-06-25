@@ -98,13 +98,27 @@ The Gate B validation (scan 83–100% vs KS 43–47%) used the *factorial's* KS 
 
 ### What's Next
 
-1. **Track A full build** (justified by CA6 PASS):
-   - `detection/divergence_detector.py` — 2-D joint distribution monitor on (score_T, score_C)
-   - CA4: architecture-pair sweep (all 6 pairs from {DeBERTa, Text-Mod, LG, SG})
-   - CA8: joint-evasion adversary — the crux (can an attacker align both models?)
-   - If CA8 shows joint evasion is hard → that IS the headline
+### Currently Running (2026-06-25 10:06 SGT)
 
-2. **Paper writing** — one consolidated follow-up:
+**Mac Studio:** `scripts/run_track_a_full.py` — ETA ~4-6pm SGT (6-8h total)
+
+Monitor: `tail -f results/track_a_full.log`
+
+| # | Experiment | What it decides | ~Time |
+|---|---|---|---|
+| 1 | CA4 (6-pair divergence) | Is divergence general across all cross-family pairs? η² > 0.10? | ~3h |
+| 2 | CA6 extended (all-pair gibberish) | Is GCG > random for ALL 6 pairs? | ~1h |
+| 3 | Natural-shift baselines | How much divergence is "normal"? (paper context) | ~1min |
+| 4 | **CA8 probe** (joint evasion) | Can an attacker align DeBERTa + LG simultaneously? THE CRUX. | ~2-4h |
+
+**CA8 outcomes:**
+- Joint evasion fails → headline: "architectures fundamentally resist alignment"
+- Joint evasion works but is expensive → "best-effort defense, raises attack cost"
+- Joint evasion works cheaply → canary is breakable, reframe paper accordingly
+
+### After Track A Results Land
+
+1. **Paper writing** — one consolidated follow-up:
    - Track A: cross-architecture divergence as evasion detector
    - Track B: calibration-free monitoring (operational simplicity framing)
    - Track C: 1 paragraph honest negative
