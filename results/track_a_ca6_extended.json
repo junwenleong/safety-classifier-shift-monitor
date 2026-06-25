@@ -1,0 +1,44 @@
+{
+  "deberta|llama-guard": {
+    "pair": "deberta \u2194 llama-guard",
+    "gcg_mean": 0.7839197632134884,
+    "random_mean": 0.21370375887205711,
+    "mann_whitney_p": 2.035630812067411e-12,
+    "gcg_gt_random": true
+  },
+  "deberta|shieldgemma": {
+    "pair": "deberta \u2194 shieldgemma",
+    "gcg_mean": 0.5655051451690051,
+    "random_mean": 0.4145762677190407,
+    "mann_whitney_p": 0.0022914351296642933,
+    "gcg_gt_random": true
+  },
+  "text-moderation|llama-guard": {
+    "pair": "text-moderation \u2194 llama-guard",
+    "gcg_mean": 0.2306853648945119,
+    "random_mean": 0.21384734234639577,
+    "mann_whitney_p": 0.31955487177294706,
+    "gcg_gt_random": false
+  },
+  "text-moderation|shieldgemma": {
+    "pair": "text-moderation \u2194 shieldgemma",
+    "gcg_mean": 0.3925766331186442,
+    "random_mean": 0.4147220456174442,
+    "mann_whitney_p": 0.7151240193787873,
+    "gcg_gt_random": false
+  },
+  "deberta|text-moderation": {
+    "pair": "deberta \u2194 text-moderation",
+    "gcg_mean": 0.8986538976578662,
+    "random_mean": 0.014297965087224635,
+    "mann_whitney_p": 3.6663473454106395e-17,
+    "gcg_gt_random": true
+  },
+  "llama-guard|shieldgemma": {
+    "pair": "llama-guard \u2194 shieldgemma",
+    "gcg_mean": 0.2533348239198023,
+    "random_mean": 0.2818349721480389,
+    "mann_whitney_p": 0.8622895579292447,
+    "gcg_gt_random": false
+  }
+}
