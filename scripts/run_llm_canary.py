@@ -71,16 +71,23 @@ def get_client():
 def score_prompt(client, model, text):
     """Get safety score from an LLM. Returns float or None on failure."""
     try:
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": text},
-            ],
-            max_tokens=10,
-            temperature=0,
-        )
+        kwargs = {"model": model, "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": text},
+        ], "temperature": 0}
+        # Reasoning models use max_completion_tokens
+        if model.startswith("o3") or model.startswith("o4"):
+            kwargs["max_completion_tokens"] = 10
+        else:
+            kwargs["max_tokens"] = 10
+        response = client.chat.completions.create(**kwargs)
         raw = response.choices[0].message.content.strip()
+        # Extract first float-like value
+        for token in raw.split():
+            try:
+                return float(token)
+            except ValueError:
+                continue
         return float(raw)
     except Exception as e:
         print(f"    Error ({model}): {e}")
