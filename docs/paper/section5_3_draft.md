@@ -103,6 +103,26 @@ The phase transition directly yields a deployment rule:
 This is not a limitation — it is a **measurable, input-time security indicator**
 that tells the deployer exactly which inputs are protected and which are not.
 
+
+## Temporal dynamics: the coefficient inversion is directly observable
+
+Step-level trajectory data (from 200-step joint GCG, n=3 before OOM) reveals
+three distinct pacing patterns:
+
+1. **Immediate flip** (prompt 1): both models converge to ~0 by step 50. Attack
+   succeeds fast; gap stays near 0 throughout. No detection window.
+2. **Delayed flip** (prompt 2): B resists for 50 steps (gap=0.87 at step 50),
+   then collapses by step 100 (gap=0.02). Detection window: first 50-100 steps.
+3. **Active rejection** (prompt 3): A drifts UPWARD over steps
+   (0.847→0.898→0.907). The coefficient inversion is directly visible — the
+   combined loss pushes A back toward "unsafe" once the gap exceeds the 1/(2λ)
+   threshold. The defense literally reverses the attack.
+
+The third pattern is the strongest evidence for the gradient-conflict mechanism:
+the optimizer does not merely "fail to converge" — it actively undoes its own
+progress, confirming that beyond the critical gap, reducing f_A is penalized
+more than it is rewarded.
+
 ## Honest limitations
 
 - n=10 per pair, one λ value. Small sample (but theory match is quantitative).
