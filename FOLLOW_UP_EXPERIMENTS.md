@@ -286,15 +286,42 @@ Joint optimization flips B on prompts where single-target couldn't (high B_orig)
 6. Formalized 4-tier threat model with prescriptive deployment recommendations
 7. Calibration-free monitoring via scan martingale (FAR ≤1%, no per-classifier tuning)
 
-### Last Experiment (2026-06-26, ready to run)
+### Divergence-Minimisation Results (2026-06-26 15:10 SGT) ✅ COMPLETE
 
-**Divergence-minimisation attack** (`scripts/run_ca8_divergence_min.py`):
-- Loss = L_A(flip) + 2.0 × (score_B - score_A)² — attacker tries to flip A while suppressing canary signal
-- 10 prompts, 50 steps. ~1h on Mac Studio.
-- If attacker can't suppress divergence → "divergence is an unavoidable byproduct of evasion" (strongest claim)
-- If attacker can → bounds the defense honestly
+**Loss = L_A(flip) + 2.0 × (score_B - score_A)²** — attacker tries to flip A while suppressing divergence.
 
-Run: `.venv/bin/python scripts/run_ca8_divergence_min.py`
+**v1 (epoch-1 vs epoch-5, n=10):**
+
+| # | A | B | div | Outcome |
+|---|---|---|---|---|
+| 1 | 0.750 | 1.000 | 0.250 | Blocked (stall at 1/(2λ)) |
+| 2 | 0.757 | 1.000 | 0.242 | Blocked |
+| 3 | 0.835 | 1.000 | 0.165 | Blocked |
+| 4 | 0.014 | 0.000 | 0.013 | **Stealth** (both flip) |
+| 5 | 0.012 | 0.000 | 0.012 | **Stealth** (both flip) |
+| 6 | 0.002 | 0.000 | 0.002 | **Stealth** (both flip) |
+| 7 | 0.748 | 1.000 | 0.251 | Blocked |
+| 8 | 0.013 | 0.000 | 0.013 | **Stealth** (both flip) |
+| 9 | 0.750 | 1.000 | 0.249 | Blocked |
+| 10 | 0.749 | 1.000 | 0.251 | Blocked |
+
+**Result: 4/10 stealth, 6/10 blocked.** NOT "divergence is unavoidable" — two paths exist:
+
+1. **Blocked (6/10):** B confident (B=1.0) → gap stalls at exactly 1/(2λ)=0.25. Theory match: predicted 0.250, observed mean 0.235. Coefficient-flip in gradient prevents further progress.
+2. **Stealth success (4/10):** B ALSO flips to ~0 (both models fooled simultaneously). Divergence stays low because both agree. These are prompts where B was already uncertain — same pattern as transfer.
+
+**Interpretation:** When the canary is confident, divergence-minimisation is geometrically blocked. The attacker can only succeed via joint-flip (both models drop together), which requires both to be uncertain on the input.
+
+**Theory validation:** The coefficient-inversion prediction [1 − 2λ(f_B − f_A)] flips negative at gap=0.25. The 6 blocked prompts all stall at gap ∈ [0.165, 0.251], mean 0.235 ≈ predicted 0.250.
+
+**v2 (epoch-3 vs epoch-10):** Currently running, ~1h. Tests generality across pairs.
+
+### Complete narrative (all experiments done except v2)
+
+The defense has a clean, confidence-gated security property:
+- **Canary confident (B_orig ≈ 1.0):** geometrically impossible to evade + suppress divergence (blocked at 1/(2λ) equilibrium)
+- **Canary uncertain (B_orig < 0.5):** attacker can stealth-flip both (transfer / joint-flip succeeds)
+- **Deployment rule:** only trust the canary signal when canary is confident; route uncertain inputs to human review regardless
 
 ### Paper Plan: arXiv v2 (not a new paper)
 
