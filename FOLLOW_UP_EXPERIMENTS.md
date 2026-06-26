@@ -314,7 +314,7 @@ Joint optimization flips B on prompts where single-target couldn't (high B_orig)
 
 **Theory validation:** The coefficient-inversion prediction [1 − 2λ(f_B − f_A)] flips negative at gap=0.25. The 6 blocked prompts all stall at gap ∈ [0.165, 0.251], mean 0.235 ≈ predicted 0.250.
 
-**v2 (epoch-3 vs epoch-10):** Currently running, ~1h. Tests generality across pairs.
+**v2 (epoch-3 vs epoch-10):** ✅ Complete. 7/10 stealth, 3/10 blocked. Blocked gaps: {0.250, 0.250, 0.242}, mean 0.247 ≈ predicted 0.250. Confirms confidence-gating: v2's canary less confident → more stealth. Theory replicates.
 
 ### Complete narrative (all experiments done except v2)
 
