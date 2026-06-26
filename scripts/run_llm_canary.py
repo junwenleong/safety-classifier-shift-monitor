@@ -81,7 +81,12 @@ def score_prompt(client, model, text):
         else:
             kwargs["max_tokens"] = 10
         response = client.chat.completions.create(**kwargs)
-        raw = response.choices[0].message.content.strip()
+        content = response.choices[0].message.content
+        if content is None:
+            # Model refused or returned empty — treat as "unsafe" (1.0)
+            # since refusal implies the model detected harmful content
+            return 1.0
+        raw = content.strip()
         # Extract first float-like value
         for token in raw.split():
             try:
