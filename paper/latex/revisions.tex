@@ -1,0 +1,74 @@
+% =============================================================================
+% REVISIONS TO EXISTING SECTIONS — arXiv v2
+% Apply these edits to paper/latex/paper.tex at the indicated locations
+% =============================================================================
+
+% --- ABSTRACT: Replace lines 29-33 with this ---
+% (Keep the original factorial description, append new findings)
+
+% ADD after "...per-classifier monitoring profiles are necessary.":
+Additionally, we address the adversarial robustness of score-disagreement monitoring as a canary for gradient-based evasion. We empirically falsify three common assumptions: (1)~architectural diversity is the mechanism for divergence detection---false ($\eta^2 = 0.011$); (2)~the divergence signal is generic out-of-distribution detection---false ($p < 10^{-12}$, GCG-specific); and (3)~an adaptive attacker can suppress the disagreement signal---partially false (blocked when the canary is confident, succeeding only via joint-flip when uncertain). We characterise the exact security boundary via a confidence-gated phase transition (stall at gap $= 1/(2\lambda)$, validated within 95\% CI) and provide a calibration-free scan martingale achieving FAR${\leq}1\%$ uniformly across all classifiers without per-model threshold tuning.
+
+
+% --- §1 INTRO: Add before §2 (after the three RQs, line ~51) ---
+
+Beyond drift detection, deployed classifiers face a second threat: gradient-based evasion~\citep{zou2023universal}. Fine-tuned safety classifiers are robust to template-based jailbreaks (1\% success rate in our evaluation; see \S\ref{sec:template}), making gradient attacks the remaining operational threat class. We extend the monitoring framework with two contributions:
+
+\paragraph{RQ4 (Canary Detection).} Under what conditions does score disagreement between a targeted and un-targeted classifier detect gradient-based evasion, and when does it fail?
+
+\paragraph{RQ5 (Adversarial Robustness).} Can an adaptive, monitor-aware attacker suppress the disagreement signal while evading the target classifier?
+
+
+% --- §3.7 NEW SUBSECTION: Scan Martingale (insert after §3.6) ---
+
+\subsection{Scan Martingale}
+\label{sec:martingale}
+
+The empirical FAR calibration of \S\ref{sec:far-calibration} produces a $5\times$ spread across classifiers (Text-Moderation 2.0\% vs DeBERTa 9.5\%). We replace this with a conformal test martingale that provides anytime-valid FAR control without per-classifier threshold tuning.
+
+For each incoming score $s_t$, we compute a two-sided conformal $p$-value against the frozen reference CDF: $p_t = 2 \min(F_{\text{ref}}^+(s_t), F_{\text{ref}}^-(s_t))$. Conformal $p$-values are clipped at $\delta = 1/(n_{\text{ref}}+1)$ to prevent log-wealth divergence under discrete score distributions where the test point may fall outside all reference values. The betting function uses the power method:
+\begin{equation}
+\log W_t = \log W_{t-1} + \log \varepsilon + (\varepsilon - 1) \log p_t
+\end{equation}
+where $\varepsilon = 0.3$ is the betting parameter. We maintain $W = 50$ concurrent sub-martingales (one started per timestep), each tested at threshold $\log(W/\alpha)$ (union bound). An alarm fires when any sub-martingale exceeds this threshold.
+
+By Ville's inequality and union-bound correction, $P(\exists t: \text{alarm} \mid H_0) \leq \alpha$, providing time-uniform FAR control. Empirically, the scan martingale achieves FAR $\leq 1\%$ across all four classifiers with zero calibration (vs.\ 2--10\% under empirical KS calibration).
+
+While the martingale guarantees uniform FAR without per-model calibration, detection power depends on $\varepsilon$ and $W$: these design choices trade Type~I guarantee for Type~II detection delay. $\varepsilon = 0.3$ achieves 100\% detection for encoders but 57--77\% for decoders with wide null distributions. A practitioner may increase $\varepsilon$ for decoder-heavy deployments at the cost of slower detection.
+
+For long-horizon deployments where benign drift may violate exchangeability, we recommend a rolling reference window (our AV5 stress test characterises this boundary: gradual drift triggers alarms on encoders but not decoders; block-structured violations always trigger).
+
+
+% --- §6.4 MECHANISTIC: Replace the correlation paragraph (line ~406) ---
+% REPLACE the paragraph starting "Across four classifiers, null score
+% standard deviation correlates..." with:
+
+Across four classifiers, null score standard deviation correlates with mean detection latency ($r = 0.97$, $p = 0.032$, $n = 4$). However, subsequent within-family evaluation using DeBERTa checkpoints at varying training epochs ($n = 6$ encoder variants, null-score $\sigma$ range 0.056--0.190) reveals $r = 0.21$, $p = 0.70$ --- the original correlation was an artifact of the encoder/decoder architectural gap, not an intrinsic monitorability property. Null-score geometry does not predict detection difficulty within an architecture family. See Appendix~\ref{app:monitorability} for the full falsification.
+
+
+% --- §6.5 LIMITATIONS: Remove the FAR bullet, add new bullets ---
+% REMOVE: "FAR calibration asymmetry..." bullet
+% ADD these bullets:
+
+\item \textbf{Canary analysis scope.} The adversarial robustness characterisation (\S\ref{sec:adversarial}) uses $n = 49$ GCG attacks on a single target (DeBERTa). Cross-target generalisation is untested.
+\item \textbf{Joint-optimisation sample size.} Joint GCG results (\S\ref{sec:joint}) use $n = 10$ prompts at a single $\lambda$. Larger-scale sweeps may reveal additional failure modes.
+\item \textbf{Phase-transition derivation.} The stall condition (Appendix~\ref{app:derivation}) uses a continuous relaxation; GCG operates on discrete tokens. The match is empirical (within 95\% CI, bootstrapped over $n = 6$ blocked prompts), not a formal convergence proof.
+
+
+% --- §6.6 FUTURE WORK: Replace CUSUM line, add new ---
+% REMOVE: "CUSUM or Bayesian online change-point detection..."
+% ADD:
+
+The phase-transition boundary (gap $= 1/(2\lambda)$) predicts a $\lambda$-dependent security frontier; a sweep across $\lambda$ values would confirm whether the stall point tracks the theory continuously. Cross-family joint optimisation (shared-tokeniser setting) remains untested due to the discrete-vocabulary incompatibility documented in \S\ref{sec:tokeniser}. Larger-scale adversarial evaluations ($n > 100$ prompts, multiple target classifiers) are needed to confirm the confidence-gating threshold and divergence-minimisation results.
+
+
+% --- APPENDIX B (NEW): Monitorability Falsification ---
+
+\section{Monitorability Law Falsification}
+\label{app:monitorability}
+
+The mechanistic hypothesis of \S\ref{sec:mechanistic} reported $r = 0.97$ ($p = 0.032$, $n = 4$) between null-score standard deviation and mean detection latency. We test whether this correlation holds within a single architecture family by fine-tuning DeBERTa-v3-large at training epochs \{1, 3, 5, 10\}, producing four encoder variants with null-score $\sigma \in [0.109, 0.153]$.
+
+Combined with the two original encoders (DeBERTa $\sigma = 0.087$, Text-Moderation $\sigma = 0.066$), we obtain $n = 6$ within-family data points. The Pearson correlation is $r = 0.21$ ($p = 0.70$). Including the two decoders ($n = 8$ total): $r = 0.42$ ($p = 0.30$). Neither meets the pre-registered threshold of $r > 0.6$, $p < 0.05$ at $n \geq 6$.
+
+\paragraph{Diagnosis.} The original $r = 0.97$ was driven by a two-cluster structure: decoders (high $\sigma \approx 0.14$, high latency $\approx 60$--85) vs.\ encoders (low $\sigma \approx 0.07$--0.09, low latency $\approx 12$--25). Within-family, no relationship exists (epoch~3 has $\sigma = 0.144$ and latency 13; epoch~5 has $\sigma = 0.153$ and latency 24). Monitorability is not an intrinsic scalar property of score-distribution geometry.

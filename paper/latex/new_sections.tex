@@ -1,0 +1,201 @@
+% =============================================================================
+% NEW SECTIONS FOR arXiv v2 — Insert before Conclusion
+% =============================================================================
+
+%==============================================================================
+\section{Canary Detection: Score Disagreement Under Targeted Evasion}
+\label{sec:canary}
+%==============================================================================
+
+We expand the 22-example canary observation from \S\ref{sec:regime-c} into a full characterisation of score-disagreement monitoring. The target is DeBERTa-v3-large (the most effective encoder in our factorial evaluation); the canary classifiers are Text-Moderation, Llama Guard~3, and ShieldGemma. We evaluate on $n=100$ GCG-optimised prompts, of which 49 successfully flip DeBERTa below 0.5.
+
+\paragraph{Note on terminology.} ``Steps'' in this section refer to GCG discrete token-search iterations on a single prompt (the attacker's optimisation budget), not production-stream timesteps monitored by the martingale (\S\ref{sec:cs}).
+
+\subsection{Setup and Scoring Protocol}
+\label{sec:canary-setup}
+
+For each of the 49 successful GCG attacks against DeBERTa, we score the adversarial input on all four classifiers. We define \emph{divergence} for a classifier pair $(A, B)$ as $|f_B(x_{\text{adv}}) - f_A(x_{\text{adv}})|$, where $A$ is the target and $B$ is the canary. A canary \emph{detects} the attack when the divergence exceeds a null threshold calibrated at the 95th percentile of divergence under clean inputs.
+
+Both GCG suffixes and random-token controls use exactly 20 tokens (\texttt{SUFFIX\_LEN=20}), controlling for perturbation magnitude. The divergence difference reported below is attributable to the optimisation structure of GCG, not to perturbation size.
+
+\subsection{Attack-Specificity (CA6)}
+\label{sec:ca6}
+
+Score disagreement is not a generic out-of-distribution signal. We compare GCG-optimised suffixes against random-token suffixes of identical length (20 tokens) appended to the same prompts.
+
+\paragraph{Result.} GCG attacks produce a detection rate of 75.5\% (37/49, Wilson 95\% CI [0.619, 0.854]) on the DeBERTa$\leftrightarrow$Llama Guard pair, versus 12.2\% (6/49, Wilson 95\% CI [0.057, 0.242]) for random-token controls. The mean divergence under GCG is 0.784 versus 0.213 under random tokens (Mann--Whitney $U$, $p = 2.37 \times 10^{-12}$).
+
+The signal is attack-specific: gradient-optimised perturbations produce qualitatively different score-disagreement signatures than random noise of the same magnitude. This directly addresses the alert-fatigue problem --- the canary is silent under gibberish and triggers only under directed optimisation.
+
+\subsection{Target-Specificity}
+\label{sec:target-specificity}
+
+We evaluate all 6 classifier pairs to test whether the divergence signal is specific to pairs involving the targeted classifier.
+
+\paragraph{Result.} Three of six pairs show statistically significant GCG-vs-random differences: DeBERTa$\leftrightarrow$Text-Moderation ($p = 3.67 \times 10^{-17}$), DeBERTa$\leftrightarrow$Llama Guard ($p = 2.04 \times 10^{-12}$), and DeBERTa$\leftrightarrow$ShieldGemma ($p = 0.0023$). The three non-significant pairs (Text-Moderation$\leftrightarrow$Llama Guard, $p = 0.320$; Text-Moderation$\leftrightarrow$ShieldGemma, $p = 0.715$; Llama Guard$\leftrightarrow$ShieldGemma, $p = 0.862$) all exclude the target classifier. The canary effect is target-specific: it manifests in pairs that include the attacked model.
+
+\subsection{Architecture Is Not the Mechanism (CA4)}
+\label{sec:ca4}
+
+The prevailing assumption in multi-model defence literature is that architectural diversity fortifies ensembles against evasion. We test this by comparing within-family and cross-family divergence.
+
+\paragraph{Result.} A one-way ANOVA on divergence with architecture type (within-family vs.\ cross-family) as the factor yields $\eta^2 = 0.011$, $F = 3.30$, $p = 0.070$. Architecture type explains 1.1\% of divergence variance. The highest mean divergence in our evaluation (0.899) occurs \emph{within}-family (DeBERTa$\leftrightarrow$Text-Moderation), not cross-family.
+
+The mechanism is not architectural heterogeneity but weight-configuration divergence: any un-targeted classifier --- even a same-family checkpoint --- generates a robust divergence signature under single-target optimisation. Architecture diversity \emph{is} relevant for transfer robustness (\S\ref{sec:transfer}), but not for passive detection signal strength.
+
+\subsection{$k$-Classifier Scaling}
+\label{sec:k-scaling}
+
+We evaluate detection rate as a function of the number of canary classifiers $k \in \{1, 2, 3\}$, using an OR rule (alarm if any canary detects).
+
+\paragraph{Result.} The best single canary (Text-Moderation) achieves 93.9\% (46/49). The best $k{=}2$ combination (Text-Moderation + Llama Guard) achieves 98.0\% (48/49). Adding a third canary ($k{=}3$: all three) provides no additional detections (48/49 = 98.0\%). We recommend $k{=}2$ as the practical choice within our evaluated range $k \in \{1, 2, 3\}$: it achieves 98\% detection with no improvement from $k{=}3$.
+
+\subsection{Template Attacks (AutoDAN)}
+\label{sec:autodan}
+
+Fine-tuned classifiers are robust to template-based jailbreaks. In our evaluation, AutoDAN-style template attacks achieve a 1\% flip rate against DeBERTa (the classifier has seen similar patterns during WildGuardMix training). This makes gradient-optimised attacks (GCG) the remaining operational threat class for fine-tuned safety classifiers.
+
+\subsection{Tokeniser Fragmentation}
+\label{sec:tokeniser}
+
+Cross-family classifier pairs (encoder $\leftrightarrow$ decoder) use different tokenisers. We measure the tokenisation ratio: the number of tokens produced by the canary's tokeniser divided by the number produced by the target's tokeniser, for the same adversarial suffix.
+
+\paragraph{Result.} The mean tokenisation ratio is $1.729 \pm 0.161$ ($n = 100$). A 20-token suffix optimised for DeBERTa's tokeniser maps to approximately 35 tokens under Llama Guard's tokeniser. This fragmentation explains why cross-family transfer is structurally suppressed: a single token substitution in the target's vocabulary shifts downstream subword boundaries in the canary's tokenisation, desynchronising the discrete search space (\S\ref{sec:cross-family-barrier}).
+
+%==============================================================================
+\section{Adversarial Robustness of Score-Disagreement Monitoring}
+\label{sec:adversarial-robustness}
+%==============================================================================
+
+Having established that score disagreement detects single-target attacks (\S\ref{sec:canary}), we now ask: can an adaptive attacker suppress the disagreement signal? We characterise the security boundary across a 4-tier threat model.
+
+\subsection{Threat Model}
+\label{sec:threat-model}
+
+\begin{table}[t]
+\caption{Threat model tiers for score-disagreement monitoring. Detection rate is for the DeBERTa (target) + Text-Moderation/Llama Guard (canary) configuration.}
+\label{tab:threat-tiers}
+\centering
+\small
+\begin{tabular}{llcl}
+\toprule
+\textbf{Tier} & \textbf{Attacker knowledge} & \textbf{Detection rate} & \textbf{Deployment guidance} \\
+\midrule
+1 & Monitor-ignorant (single-target GCG) & 98\% (48/49) & $k{=}2$ canaries sufficient \\
+2 & Knows canary exists (hopes for transfer) & 93\% (46/49) & Monitor canary confidence \\
+3 & Has canary weights (joint optimisation) & 30\% (3/10) & Cross-family canary \\
+4 & Stealth-aware (divergence minimisation) & 60\% (6/10) & Confidence gating \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Tier~1 is the baseline from \S\ref{sec:canary}. Tiers~2--4 represent progressively stronger adversaries. We evaluate Tiers~2--4 below.
+
+\subsection{Transfer Analysis and Confidence Gating}
+\label{sec:transfer}
+
+A Tier~2 attacker optimises against the target alone but hopes the adversarial suffix accidentally fools the canary (passive transfer). We evaluate this on $n = 40$ prompts scored on same-family canaries (DeBERTa $\rightarrow$ Text-Moderation).
+
+\paragraph{Confidence gating.} Transfer rate depends sharply on the canary's baseline confidence. When the canary's original score $f_B(x_{\text{orig}}) \geq 0.99$, the transfer rate is 4.3\% (1/23). When $f_B(x_{\text{orig}}) < 0.99$, the transfer rate is 76.5\% (13/17). The difference is significant (Mann--Whitney $p = 6.61 \times 10^{-7}$, $n = 40$).
+
+\paragraph{Interpretation.} The detection threshold ($f_B \geq 0.5$) is an empirical operating point for the binary transfer/no-transfer decision. The gradient-paralysis mechanism (\S\ref{sec:divergence-min}) requires deeper saturation ($f_B \approx 1.0$, where $\|\nabla f_B\| \to 0$). These are distinct properties: detection relies on the canary holding its score above 0.5; gradient paralysis relies on the canary being in a flat, high-confidence basin.
+
+\subsection{Joint Optimisation (Within-Family)}
+\label{sec:joint-gcg}
+
+A Tier~3 attacker has white-box access to both the target and the canary and optimises a combined loss $L = 0.5 \cdot L_A + 0.5 \cdot L_B$ using GCG with search width 256 and 50 steps.
+
+\paragraph{Result.} Of 10 prompts evaluated, 7 achieve joint flip (both classifiers below 0.5), compared to 3/10 that transfer passively under single-target optimisation on these same prompts. Joint optimisation substantially improves the attacker's success rate within-family ($70\%$ vs.\ $30\%$ passive transfer).
+
+\paragraph{Failure cases.} In 3/10 prompts, joint optimisation fails despite having white-box access to both models. Two of these (prompts 3 and 9: $f_A = 0.873$, $f_B = 0.998$ and $f_A = 0.916$, $f_B = 1.0$) exhibit gradient interference --- the combined gradient cannot simultaneously reduce both scores within the 50-step budget. One additional case (prompt 9) shows the canary holding at $f_B = 1.0$ while the target is stuck at $f_A = 0.916$, consistent with the confidence-gating mechanism.
+
+\paragraph{Cross-family barrier.} The 1.73$\times$ tokeniser fragmentation ratio (\S\ref{sec:tokeniser}) structurally disrupts coordinate alignment for discrete token search. Because a single character substitution shifts downstream subword boundaries in Model~B (but not Model~A), the discrete search space becomes desynchronised --- a step that improves the joint loss for Model~A's tokenisation may worsen it for Model~B's. Cross-family joint optimisation remains structurally untested due to this discrete-vocabulary incompatibility.
+\label{sec:cross-family-barrier}
+
+\subsection{Divergence Minimisation: The Phase Transition}
+\label{sec:divergence-min}
+
+A Tier~4 attacker explicitly minimises score disagreement while attacking the target. We formalise this as:
+\begin{equation}
+\label{eq:div-min-loss}
+L(\delta) = f_A(x + \delta) + \lambda \cdot (f_B(x + \delta) - f_A(x + \delta))^2
+\end{equation}
+where $\lambda = 2.0$ controls stealth pressure and Model~A is the target (DeBERTa epoch-1), Model~B is the canary (DeBERTa epoch-5).
+
+\paragraph{Empirical result.} Of 10 prompts evaluated: 4 achieve stealth evasion (both models flip, divergence $< 0.5$) and 6 are blocked (Model~A remains above 0.5). In all 6 blocked cases, the canary is highly confident ($f_B \geq 0.987$). In 2 of 4 stealth cases, at least one model was originally uncertain ($f_B < 0.02$ or $f_A < 0.50$ at baseline); the remaining 2 stealth cases both have $f_B = 1.0$ at baseline, indicating that high canary confidence is necessary but not sufficient for blocking --- the target's loss landscape also contributes.
+
+\paragraph{The stall condition.} The combined gradient of Eq.~\ref{eq:div-min-loss} is:
+\begin{equation}
+\label{eq:combined-gradient}
+\nabla L = [1 - 2\lambda(f_B - f_A)] \cdot \nabla f_A + 2\lambda(f_B - f_A) \cdot \nabla f_B
+\end{equation}
+
+The coefficient $[1 - 2\lambda(f_B - f_A)]$ inverts sign when the gap $g = f_B - f_A$ exceeds $1/(2\lambda)$. At $\lambda = 2.0$, the critical gap is $1/(2 \times 2) = 0.250$. Beyond this point, the optimiser is driven to \emph{increase} $f_A$ --- the defence co-opts the attacker's gradient.
+
+\paragraph{Empirical validation.} The 6 blocked cases stall at gap values $\{0.165, 0.242, 0.249, 0.250, 0.251, 0.251\}$, with mean 0.235 and bootstrap 95\% CI $[0.207, 0.251]$. The predicted critical value $0.250$ falls within this confidence interval. Five of six cases cluster at $0.242$--$0.251$; one outlier at $0.165$ (a prompt where Model~A's baseline was already lower) pulls the mean down.
+
+\paragraph{Gradient-norm effect.} When the canary is deep in its confident basin ($f_B \approx 1.0$), $\|\nabla f_B\| \to 0$. The condition for a descent step to reduce $f_A$ requires (see Appendix~\ref{app:derivation}):
+\begin{equation}
+\cos(\theta) \geq \left(1 - \frac{1}{2\lambda(f_B - f_A)}\right) \cdot \frac{\|\nabla f_A\|}{\|\nabla f_B\|}
+\end{equation}
+As $\|\nabla f_B\| \to 0$, the right-hand side diverges. No angle $\theta$ satisfies the inequality --- the optimiser is completely paralysed. The defence is strongest precisely when the canary is most confident.
+
+\paragraph{Active rejection.} In 3 of the 6 blocked cases, Model~A's score drifts \emph{upward} during optimisation (\eg, $0.924 \to 0.834 \to$ stall at $0.750$ does not occur; instead $0.476 \to 0.748 \to 0.758$ --- the model moves toward ``unsafe''). This active rejection is the coefficient inversion made visible: once $g > 1/(2\lambda)$, the combined loss penalises further reduction of $f_A$ more than it rewards it, reversing the attack's progress.
+
+\paragraph{Caveat.} This analysis uses a continuous relaxation. GCG operates on discrete tokens; the stall is empirical (within the 95\% CI of the predicted value), not a formal proof of impossibility. Higher $\lambda$ would block more aggressively but also constraints the attacker's loss landscape in ways that may prevent meaningful optimisation entirely.
+
+\subsection{Deployment Recommendations}
+\label{sec:deployment-recs}
+
+The phase transition directly yields a measurable, input-time security indicator:
+
+\begin{itemize}
+\item \textbf{Confident canary} ($f_B \geq 0.99$): Trust the divergence signal. Transfer rate is 4.3\% and divergence-minimisation stalls at the predicted equilibrium. The input is protected.
+\item \textbf{Uncertain canary} ($f_B < 0.5$): The divergence signal is unreliable. The attacker can succeed via joint-flip (70\% within-family). Route to human review regardless of observed divergence.
+\item \textbf{$k = 2$ classifiers:} Deploy one same-family canary (highest detection sensitivity, 93.9\%) and one cross-family canary (structural transfer barrier via tokeniser fragmentation). This provides both sensitivity and robustness against adaptive attackers.
+\end{itemize}
+
+We do not claim this defence is absolute. A Tier~3 attacker with white-box access to a same-family canary succeeds 70\% of the time via joint optimisation (\S\ref{sec:joint-gcg}). The contribution is not an unbreakable defence but a quantitative characterisation of the exact security boundary --- where the defence holds, where it fails, and what measurable property ($f_B$) predicts which regime applies.
+
+
+% =============================================================================
+% APPENDIX C — Insert in Appendix section
+% =============================================================================
+
+\section*{Appendix C: Derivation of the Stall Condition}
+\label{app:derivation}
+
+\paragraph{Setup.} Consider the divergence-minimisation loss from Eq.~\ref{eq:div-min-loss}:
+\[
+L(\delta) = f_A(x + \delta) + \lambda \cdot (f_B(x + \delta) - f_A(x + \delta))^2
+\]
+
+Let $g = f_B - f_A$ denote the score gap. Expanding the gradient with respect to the perturbation $\delta$:
+\begin{align}
+\nabla_\delta L &= \nabla f_A + 2\lambda g \cdot (\nabla f_B - \nabla f_A) \nonumber \\
+&= \nabla f_A + 2\lambda g \cdot \nabla f_B - 2\lambda g \cdot \nabla f_A \nonumber \\
+&= (1 - 2\lambda g) \cdot \nabla f_A + 2\lambda g \cdot \nabla f_B
+\label{eq:full-gradient}
+\end{align}
+
+\paragraph{Coefficient inversion.} The coefficient on $\nabla f_A$ is $(1 - 2\lambda g)$. This is positive when $g < 1/(2\lambda)$ and negative when $g > 1/(2\lambda)$. In the negative regime, a descent step on $L$ moves \emph{against} $\nabla f_A$ --- that is, it increases $f_A$ rather than decreasing it.
+
+At $\lambda = 2.0$: the critical gap is $g^* = 1/(2 \times 2) = 0.250$.
+
+\paragraph{Gradient-norm condition.} For a descent step $-\nabla L$ to reduce $f_A$, we need $\nabla L \cdot \nabla f_A \geq 0$ (so that moving against $\nabla L$ moves against $\nabla f_A$, reducing $f_A$). Equivalently, for the attack to succeed, we need:
+\begin{align}
+\nabla L \cdot \nabla f_A &= (1 - 2\lambda g)\|\nabla f_A\|^2 + 2\lambda g \cdot \nabla f_B \cdot \nabla f_A \geq 0
+\end{align}
+
+Let $\theta$ be the angle between $\nabla f_A$ and $\nabla f_B$. When $g > 1/(2\lambda)$:
+\begin{align}
+2\lambda g \cdot \|\nabla f_B\| \cdot \|\nabla f_A\| \cdot \cos\theta &\geq (2\lambda g - 1) \cdot \|\nabla f_A\|^2 \nonumber \\
+\cos\theta &\geq \frac{2\lambda g - 1}{2\lambda g} \cdot \frac{\|\nabla f_A\|}{\|\nabla f_B\|}
+\label{eq:cos-condition}
+\end{align}
+
+\paragraph{Paralysis in the confident basin.} When the canary is confident ($f_B \approx 1.0$), it sits in a flat region of its loss landscape: $\|\nabla f_B\| \to 0$. The right-hand side of Eq.~\ref{eq:cos-condition} diverges to $+\infty$. Since $\cos\theta \leq 1$, no solution exists. The optimiser cannot reduce $f_A$ regardless of step direction --- it is geometrically blocked.
+
+\paragraph{Empirical validation.} At $\lambda = 2.0$, the predicted stall gap is $g^* = 0.250$. In 6 blocked cases (where the canary held $f_B \geq 0.987$), the observed stall gaps are $\{0.165, 0.242, 0.249, 0.250, 0.251, 0.251\}$, mean $= 0.235$, bootstrap 95\% CI $[0.207, 0.251]$. The prediction $0.250$ lies within this interval.
+
+\paragraph{Limitations.} This derivation assumes continuous differentiability. GCG operates on discrete tokens via coordinate-wise search; the ``gradient'' is an approximation via first-order token-embedding differences. The empirical match (within 95\% CI) supports the continuous relaxation as a useful predictor of discrete behaviour, but it is not a formal impossibility result. An attacker with access to qualitatively different optimisation methods (second-order, evolutionary, or RL-based search) might circumvent the stall in ways that first-order analysis does not predict.
