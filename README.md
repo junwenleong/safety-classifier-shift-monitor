@@ -18,7 +18,9 @@ The system operates on simulated production streams across a factorial evaluatio
 
 2. **Architectural crossover invisible to single-classifier studies.** Encoders detect paraphrase fast (28–35 steps) but adversarial suffix slow; decoders show the opposite. The classifier × shift interaction explains 18.5% of detection latency variance — monitoring must be tuned per-classifier.
 
-3. **Cross-classifier canary architecture.** GCG suffixes optimized against DeBERTa appear anomalous to Llama Guard (scores shift *toward* unsafe). Our results suggest that a second architecturally-different classifier may serve as a distributional canary — detecting evasion attacks not by classifying content, but by flagging anomalous score distributions that the targeted classifier cannot see. (Based on 22-example corpus; larger-scale validation needed.)
+3. **Score-disagreement monitoring detects gradient-based evasion.** Any un-targeted classifier detects when the primary is under GCG attack (p<10⁻¹², n=49). The divergence is attack-specific (not generic OOD) and confidence-gated: when the canary is confident, a divergence-minimising attacker stalls at a predicted equilibrium (gap=1/(2λ), validated within 95% CI). Architecture diversity is not required for detection (η²=0.011) but provides transfer robustness (0% cross-family transfer vs 30% within-family).
+
+4. **Calibration-free monitoring via scan martingale.** A conformal test martingale replaces empirical threshold tuning, achieving FAR≤1% uniformly across all 4 classifiers with no per-model calibration (vs 2–9.5% spread under empirical KS calibration).
 
 ## Installation
 

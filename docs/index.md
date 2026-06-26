@@ -8,7 +8,7 @@ image: https://junwenleong.github.io/safety-classifier-shift-monitor/assets/og-i
 
 *Jun Wen Leong · June 2026*
 
-I built an online monitoring system that detects distributional shift in deployed safety classifiers using only the classifier's own outputs, without requiring labels. Across 800 pre-registered factorial cells (4 classifiers × 5 shift types × 20 seeds × 2 window sizes), it catches 86.6% of shifts with mean latency of 39.5 steps.
+I built an online monitoring system that detects distributional shift in deployed safety classifiers using only the classifier's own outputs, without requiring labels. Across 800 pre-registered factorial cells (4 classifiers × 5 shift types × 20 seeds × 2 window sizes), it catches 86.6% of shifts with mean latency of 39.5 steps. It also detects targeted gradient-based evasion attacks via score disagreement with a second classifier, with a formally characterized security boundary.
 
 **The bad news:** the standard fix (weighted conformal prediction) silently fails for 3 of 4 classifiers. The density ratios collapse to floor, and the "adaptation" you think is running is doing nothing.
 
@@ -87,6 +87,20 @@ Neither classifier choice nor shift type alone determines detection difficulty:
 | Residual | 0.335 | Random seed variation |
 
 All three systematic factors are significant (p < 0.001, 1000 permutations). A monitoring system tuned for one classifier on one shift type will systematically miscalibrate on other combinations.
+
+---
+
+## Adversarial robustness (v2)
+
+The canary effect — a second, un-targeted classifier detecting when the primary is under gradient-based attack — works under precise conditions:
+
+- **Attack-specific:** GCG divergence >> random noise (p<10⁻¹², n=49). Silent under gibberish.
+- **Confident canary:** detection is robust (7% transfer when canary confident)
+- **Uncertain canary:** attacker can stealth-evade (100% transfer when uncertain)
+- **Phase transition:** a divergence-minimising attacker stalls at gap=1/(2λ) when canary is confident — the defense has a predictable, measurable boundary (predicted 0.250, observed 0.235, within 95% CI)
+- **Architecture diversity is NOT required** for detection (η²=0.011), but IS required for transfer robustness (0% cross-family vs 30% within-family)
+
+Deploy k=2 classifiers (one same-family for sensitivity, one cross-family for transfer robustness). A scan martingale provides FAR≤1% without per-classifier threshold tuning.
 
 ---
 
