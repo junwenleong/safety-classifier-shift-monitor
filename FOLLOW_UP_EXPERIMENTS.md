@@ -344,7 +344,52 @@ Run: `.venv/bin/python scripts/run_ca8_divergence_min.py`
 3. Confidence-gating scatter (B_orig vs transfer outcome)
 4. K-scaling bar chart (k=1,2,3 with threat-tier overlay)
 
-**Venue:** Submit complete v2 to AISec/SaTML. arXiv update + LinkedIn/GitHub auto-update.
+### Venue Strategy
+
+**Primary target: SaTML 2026** (IEEE Conference on Secure and Trustworthy Machine Learning)
+- Full conference (published proceedings), acceptance ~25-30%
+- Perfect scope: ML security + trustworthiness, adversarial evaluation of defenses
+- Our strengths: factorial scale, threat model, honest self-correction, practical guidance
+
+**Backup: AISec @ CCS 2025** (workshop, ~65-75% acceptance)
+
+**Why SaTML over ICML/USENIX:**
+- ICML: no new method (martingale is known, canary is "run two classifiers")
+- USENIX: needs production-scale (hundreds of attacks, deployed system)
+- SaTML: values rigorous adversarial evaluation + quantified failure modes
+
+### Critical Framing (reviewer risk mitigation)
+
+**Main reviewer objection to anticipate:** "The defense is just running two classifiers."
+
+**The reframe that makes it a system contribution (not observation):**
+
+> "We present a principled framework for deploying safety classifier ensembles with provable monitoring guarantees. Our contributions are: (a) a confidence-gated canary protocol with a formal threshold criterion, (b) a calibration-free sequential detector with anytime-valid FAR control, and (c) the first adversarial evaluation of score-disagreement monitoring against adaptive attackers across 4 threat tiers."
+
+**Key writing principles:**
+- The threat model isn't post-hoc analysis — it's the *specification*
+- The confidence threshold (B_orig ≥ 0.5) isn't a finding — it's a *deployment parameter*
+- The k=2 recommendation isn't a result — it's a *design decision backed by data*
+- Present as a **designed monitoring protocol**, not a series of experiments that happened
+- The paper's contribution is the *characterization* (when it works, when it fails, at what cost to attacker), not the idea of "run two classifiers"
+
+**Language discipline:**
+- ~~"We observed that..."~~ → "Our protocol requires..."
+- ~~"We found that k=2 is optimal"~~ → "We specify k=2 based on..."
+- ~~"structurally blocked"~~ → "exponentially penalised"
+- ~~"calibration-free"~~ → "requires only ε, invariant to classifier choice for encoders"
+- ~~"DeBERTa is immune to templates"~~ → "Template attacks optimised for decoders exhibit <1% transfer to encoder classifiers"
+
+### Remaining Action Items
+
+1. ⏳ Run `run_ca8_divergence_min.py` on Mac Studio (~1h) — LAST EXPERIMENT
+2. Write §7 + §8 (new sections) — 2-3 days
+3. Revise existing sections per v2 plan — 1 day
+4. Make 4 key figures — 1 day
+5. Push arXiv v2
+6. Submit to SaTML (check deadline)
+
+**Venue:** Submit complete v2 to SaTML 2026. arXiv update + LinkedIn/GitHub auto-update.
 
 ---
 **Parent work:** arXiv:2606.11949 (Shift Detection Monitor). The 980-cell factorial + post-factorial additions (CS growing-window, MMD, PCA-conformal, gradual drift, mechanistic n=4) are *complete and submitted*. This document plans the next phase.
