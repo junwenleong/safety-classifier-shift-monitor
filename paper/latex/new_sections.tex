@@ -144,6 +144,8 @@ As $\|\nabla f_B\| \to 0$, the right-hand side diverges. No angle $\theta$ satis
 
 \paragraph{Caveat.} This analysis uses a continuous relaxation. GCG operates on discrete tokens; the stall is empirical (within the 95\% CI of the predicted value), not a formal proof of impossibility. Higher $\lambda$ would block more aggressively but also constrain the attacker's loss landscape in ways that may prevent meaningful optimisation entirely.
 
+\paragraph{Generality (second pair).} A replication on a different checkpoint pair (epoch-3 as target, epoch-10 as canary) yields 7/10 stealth and 3/10 blocked --- a higher stealth rate than v1 (4/10), confirming the confidence-gating mechanism: v2's canary is less confident on more prompts, pushing more inputs into the vulnerable regime. The 3 blocked cases stall at gaps $\{0.250, 0.250, 0.242\}$, mean $0.247$ --- even closer to the predicted $1/(2\lambda) = 0.250$ than v1 (mean $0.235$). The phase-transition boundary replicates across pairs.
+
 \subsection{Deployment Recommendations}
 \label{sec:deployment-recs}
 
