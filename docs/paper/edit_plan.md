@@ -205,3 +205,98 @@ Replace `[PENDING]` with actual numbers when they land (~5 min task).
 4. `docs/index.md` (10 min)
 5. `FOLLOW_UP_EXPERIMENTS.md` final v2 numbers (5 min)
 6. Compile PDF, verify, push arXiv v2
+
+---
+
+## Reviewer-Proofing Fixes (from adversarial self-review)
+
+These are specific sentences/changes that prevent known reviewer attacks.
+Apply during drafting. Total: ~9 sentences + 1 appendix page.
+
+### §3.7 (Scan Martingale) — add 3 sentences:
+
+1. p-clipping: "Conformal p-values are clipped at δ = 1/(n_ref+1) to prevent
+   log-wealth divergence under discrete score distributions where the test
+   point may fall outside all reference values."
+
+2. Long-horizon drift: "For long-horizon deployments where benign drift may
+   violate exchangeability, we recommend a rolling reference window (our AV5
+   stress test in §6 characterizes this boundary: gradual drift triggers
+   alarms on encoders but not decoders)."
+
+3. Type II trade-off: "The scan window W=50 and betting parameter ε=0.3 are
+   design choices that trade FAR guarantee (Type I) against detection delay
+   (Type II). ε=0.3 achieves 100% detection for encoders but 57-77% for
+   decoders with wide null distributions (see §6, AV6). A practitioner may
+   increase ε for decoder-heavy deployments at the cost of slower detection."
+
+### §7.2 (CA6) — add 1 sentence:
+
+"Both GCG suffixes and random-token controls use exactly 20 tokens
+(SUFFIX_LEN=20), controlling for perturbation magnitude. The divergence
+difference is attributable to the optimization structure of GCG, not to
+perturbation size."
+
+### §7.5 (k-scaling) — add 1 sentence:
+
+"k=3 provides no additional detections over k=2 (both 48/49 = 98%). We
+recommend k=2 as the practical optimum within our evaluated range k∈{1,2,3}."
+
+### §8 (top of section) — disambiguation sentence:
+
+"Note on terminology: 'steps' in this section refer to GCG discrete
+token-search iterations on a single prompt (the attacker's optimization
+budget), not production-stream timesteps monitored by the martingale (§3.7)."
+
+### §8.2 (confidence-gating) — threshold clarification:
+
+"The detection threshold (B_orig ≥ 0.5) is an empirical operating point for
+the binary transfer/no-transfer decision. The gradient-paralysis mechanism
+(§8.4) requires deeper saturation (B_orig ≈ 1.0, where ‖∇f_B‖→0). These are
+distinct properties: detection relies on the canary holding its score above
+0.5; gradient paralysis relies on the canary being in a flat, high-confidence
+basin."
+
+### §8.4 (divergence-min) — v2 framing (fill when data lands):
+
+"For v2 (epoch-3 vs epoch-10), divergence-minimisation achieves stealth in
+[X]/10 cases, compared to 4/10 in v1. This does NOT invalidate the phase
+transition — it validates the confidence-gating mechanism: v2's canary is
+less confident across more prompts, pushing more inputs into the vulnerable
+regime. When B is confident (the remaining [Y]/10), the stall at 1/(2λ)
+holds."
+
+### §8.5 (tokenizer barrier) — language fix:
+
+Change "exponentially penalises" → "structurally disrupts coordinate
+alignment for discrete token search. Because a single character substitution
+shifts downstream subword boundaries in Model B (but not Model A), the
+discrete search space becomes desynchronized — a step that improves the joint
+loss for Model A's tokenization may worsen it for Model B's."
+
+### Appendix C (NEW): Derivation of the Stall Condition (~0.5 page)
+
+Content (already drafted in section5_3_draft.md, formalize in LaTeX):
+1. Loss: L(δ) = f_A(x+δ) + λ·(f_B(x+δ) - f_A(x+δ))²
+2. Gradient: ∇L = [1 - 2λ(f_B - f_A)]·∇f_A + 2λ(f_B - f_A)·∇f_B
+3. Coefficient inversion: when (f_B - f_A) > 1/(2λ), the coefficient on
+   ∇f_A turns negative → optimizer is driven to increase f_A.
+4. Gradient-norm condition: ∇L·∇f_A ≥ 0 requires
+   cos(θ) ≥ (1 - 1/[2λ(f_B-f_A)]) · ‖∇f_A‖/‖∇f_B‖
+   As ‖∇f_B‖→0 (confident canary), RHS→∞ → no solution exists.
+5. Empirical validation: predicted 0.250, observed 0.235 [0.207, 0.251] CI.
+6. Caveat: "This analysis uses a continuous relaxation. GCG operates on
+   discrete tokens; the stall is empirical (within CI), not a formal proof
+   of impossibility."
+
+---
+
+## Language discipline checklist (apply everywhere)
+
+- ~~"exponentially penalises"~~ → "structurally disrupts"
+- ~~"calibration-free"~~ → "requires no per-classifier threshold tuning"
+- ~~"architecturally-different"~~ → "any un-targeted"
+- ~~"impossible"~~ → "geometrically blocked under continuous relaxation"
+- ~~"proves"~~ → "empirically validates" (unless it's CA6's p-value)
+- ~~"optimal"~~ → "recommended within k∈{1,2,3}"
+- ~~"sufficient condition"~~ → "stall condition (empirical, not theorem)"
