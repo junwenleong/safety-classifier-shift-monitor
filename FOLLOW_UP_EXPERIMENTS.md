@@ -323,6 +323,16 @@ The defense has a clean, confidence-gated security property:
 - **Canary uncertain (B_orig < 0.5):** attacker can stealth-flip both (transfer / joint-flip succeeds)
 - **Deployment rule:** only trust the canary signal when canary is confident; route uncertain inputs to human review regardless
 
+### Currently Running (2026-06-26 18:05 SGT)
+
+**LLM-as-judge canary experiment** (`scripts/run_llm_canary.py`) — scoring 20 GCG adversarial + 20 clean prompts on 34 frontier API models (GPT-5.x, Gemini 3.x, Claude Opus 4.x). Tests whether API-based LLMs also detect attacks that fool DeBERTa. ~15 min, <$2.
+
+**Pending after LLM canary completes:**
+- Merge `paper/latex/new_sections.tex` + `paper/latex/revisions.tex` into `paper/latex/paper.tex`
+- Add LLM canary results as a subsection if positive
+- Compile PDF
+- Push arXiv v2
+
 ### Paper Plan: arXiv v2 (not a new paper)
 
 **Decision:** Update arXiv:2606.11949 as v2. The canary was already in v1 (headline #3). Track B replaces v1's weakest section. Track C corrects a v1 claim. One stronger paper, same arXiv ID.
