@@ -1,0 +1,10 @@
+{
+  "n_total": 40,
+  "n_transferred": 14,
+  "n_resisted": 26,
+  "mean_orig_transferred": 0.2558331000533534,
+  "mean_orig_resisted": 0.9868748600666339,
+  "mann_whitney_p": 6.61324803619885e-07,
+  "transfer_rate_above_0.99": 0.043478260869565216,
+  "transfer_rate_below_0.99": 0.7647058823529411
+}
