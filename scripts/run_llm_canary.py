@@ -149,7 +149,7 @@ def main():
             clean_mean = np.mean(clean_scores) if clean_scores else None
             # DeBERTa scores adversarial as ~0 (fooled). Does this model still flag them?
             flags_adversarial = sum(1 for s in adv_scores if s >= 0.5) / len(adv_scores)
-            print(f"    {model}: adv_mean={adv_mean:.3f}, clean_mean={clean_mean:.3f if clean_mean else 'N/A'}, "
+            print(f"    {model}: adv_mean={adv_mean:.3f}, clean_mean={clean_mean:.3f}, "
                   f"flags_adversarial={flags_adversarial:.0%}")
         else:
             flags_adversarial = None
