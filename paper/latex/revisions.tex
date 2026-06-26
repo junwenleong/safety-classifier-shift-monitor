@@ -26,17 +26,17 @@ Beyond drift detection, deployed classifiers face a second threat: gradient-base
 
 The empirical FAR calibration of \S\ref{sec:far-calibration} produces a $5\times$ spread across classifiers (Text-Moderation 2.0\% vs DeBERTa 9.5\%). We replace this with a conformal test martingale that provides anytime-valid FAR control without per-classifier threshold tuning.
 
-For each incoming score $s_t$, we compute a two-sided conformal $p$-value against the frozen reference CDF: $p_t = 2 \min(F_{\text{ref}}^+(s_t), F_{\text{ref}}^-(s_t))$. Conformal $p$-values are clipped at $\delta = 1/(n_{\text{ref}}+1)$ to prevent log-wealth divergence under discrete score distributions where the test point may fall outside all reference values. The betting function uses the power method:
+For each incoming score $s_t$, we compute a two-sided conformal $p$-value against the frozen reference CDF: $p_t = 2 \min(F_{\text{ref}}^+(s_t), F_{\text{ref}}^-(s_t))$. Conformal $p$-values are clipped at $\delta = 1/(n_{\text{ref}}+1)$ to prevent log-wealth divergence under discrete score distributions where the test point may fall outside all reference values. The reference CDF is constructed from a held-out calibration set of 500 benign prompts, disjoint from the test prompts used for FAR evaluation; all thresholds are fixed before test-set evaluation. The betting function uses the power method:
 \begin{equation}
 \log W_t = \log W_{t-1} + \log \varepsilon + (\varepsilon - 1) \log p_t
 \end{equation}
-where $\varepsilon = 0.3$ is the betting parameter. We maintain $W = 50$ concurrent sub-martingales (one started per timestep), each tested at threshold $\log(W/\alpha)$ (union bound). An alarm fires when any sub-martingale exceeds this threshold.
+where $\varepsilon = 0.3$ is the betting parameter. We maintain $M = 50$ concurrent sub-martingales (one started per timestep), each tested at threshold $\log(M/\alpha)$ (union bound). An alarm fires when any sub-martingale exceeds this threshold.
 
 By Ville's inequality and union-bound correction, $P(\exists t: \text{alarm} \mid H_0) \leq \alpha$, providing time-uniform FAR control. Empirically, the scan martingale achieves FAR $\leq 1\%$ across all four classifiers with zero calibration (vs.\ 2--10\% under empirical KS calibration).
 
 While the martingale guarantees uniform FAR without per-model calibration, detection power depends on $\varepsilon$ and $W$: these design choices trade Type~I guarantee for Type~II detection delay. $\varepsilon = 0.3$ achieves 100\% detection for encoders but 57--77\% for decoders with wide null distributions. A practitioner may increase $\varepsilon$ for decoder-heavy deployments at the cost of slower detection.
 
-For long-horizon deployments where benign drift may violate exchangeability, we recommend a rolling reference window (our AV5 stress test characterises this boundary: gradual drift triggers alarms on encoders but not decoders; block-structured violations always trigger).
+For long-horizon deployments where benign drift may violate exchangeability, we recommend a rolling reference window (our exchangeability stress test in \S\ref{sec:channel-comparison} characterises this boundary: gradual drift triggers alarms on encoders but not decoders; block-structured violations always trigger).
 
 
 % --- §6.4 MECHANISTIC: Replace the correlation paragraph (line ~406) ---
