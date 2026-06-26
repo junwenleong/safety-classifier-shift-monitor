@@ -119,7 +119,7 @@ Mixing-level sweep (50-step ramp):
 
 ### Mechanistic Hypothesis (Exploratory, n=4)
 
-Null score std correlates with mean detection latency: r=0.97, p=0.032 (n=4 classifiers). This is suggestive of a pattern — tighter score boundaries may increase sensitivity to distributional perturbation — but n=4 precludes robust confirmation. Pattern is shift-specific: paraphrase/temporal/compositional show wider→slower (r=0.70–0.97); adversarial suffix reverses (r=−0.20), producing the crossover.
+Null score std correlates with mean detection latency: r=0.97, p=0.032 (n=4 classifiers). However, within-family evaluation (6 encoder variants at different training epochs) yields r=0.21, p=0.70 — the original correlation was an artifact of the encoder/decoder architectural gap, not an intrinsic monitorability property. Pattern is shift-specific: paraphrase/temporal/compositional show wider→slower (r=0.70–0.97); adversarial suffix reverses (r=−0.20), producing the crossover.
 
 Embedding displacement does NOT mirror this pattern (overall r=−0.09, p=0.78). Detection is mediated by score-boundary geometry, not representation-space distance.
 
@@ -138,7 +138,7 @@ ESS reduction at dim=32 generalizes to paraphrase shift: Llama Guard ESS=32, Shi
 - **Residual variance.** 33.5% of latency variance is noise. MDE is 13.9 steps at 80% power.
 - **Binary classifiers only.** Multi-category safety taxonomies may exhibit category-specific shift invisible to scalar scores.
 - **Refusal contamination.** 9.4% of paraphrase corpus are LLM refusals (lower than the 14–20% manual estimate). Filtered ablation confirms negligible effect on detection.
-- **FAR asymmetry.** False alarm rates vary 5× across classifiers despite identical calibration. Llama Guard MMD FAR is 10% (2× target).
+- **FAR asymmetry.** Empirical KS false alarm rates vary 5× across classifiers (Text-Moderation 2.0% vs DeBERTa 9.5%). Resolved in v2 by a scan martingale that achieves FAR≤1% uniformly with no per-classifier calibration.
 - **PCA diagnostic validated on temporal + paraphrase.** ESS reduction generalizes but coverage recovery magnitude depends on calibration split.
 
 ## Verification
