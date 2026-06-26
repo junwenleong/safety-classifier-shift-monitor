@@ -36,7 +36,7 @@ By Ville's inequality and union-bound correction, $P(\exists t: \text{alarm} \mi
 
 While the martingale guarantees uniform FAR without per-model calibration, detection power depends on $\varepsilon$ and $W$: these design choices trade Type~I guarantee for Type~II detection delay. $\varepsilon = 0.3$ achieves 100\% detection for encoders but 57--77\% for decoders with wide null distributions. A practitioner may increase $\varepsilon$ for decoder-heavy deployments at the cost of slower detection.
 
-For long-horizon deployments where benign drift may violate exchangeability, we recommend a rolling reference window (our exchangeability stress test in \S\ref{sec:channel-comparison} characterises this boundary: gradual drift triggers alarms on encoders but not decoders; block-structured violations always trigger).
+For long-horizon deployments where benign drift may violate exchangeability, we recommend a rolling reference window (our exchangeability stress test in \S\ref{sec:channel-comparison} characterises this boundary: gradual drift triggers alarms on encoders but not decoders; block-structured violations always trigger). In production environments with high temporal auto-correlation (e.g., multi-turn sessions), exchangeability can be further preserved by sub-sampling the stream at session-level boundaries.
 
 
 % --- §6.4 MECHANISTIC: Replace the correlation paragraph (line ~406) ---
