@@ -1,5 +1,37 @@
 # Paper Framing & Key Section Language (Final)
 
+## Context: arXiv v2 update (not a new paper)
+
+This is an update to arXiv:2606.11949 ("Online Shift Detection and Conformal
+Adaptation for Deployed Safety Classifiers"). The original paper established
+the factorial evaluation (800 cells), KS detection, conformal adaptation, and
+a 22-example canary PoC. v2 replaces the weak KS calibration with the scan
+martingale, expands the canary PoC into a full adversarial robustness
+characterization, and corrects the monitorability claim.
+
+Same arXiv ID. LinkedIn/GitHub/GitHub Pages auto-update.
+
+---
+
+## Abstract (~150 words)
+
+Three assumptions underpin current safety classifier monitoring: (1)
+architectural diversity strengthens ensembles, (2) out-of-distribution
+detectors catch adversarial inputs, and (3) score-disagreement monitoring can
+be suppressed by an adaptive attacker. We empirically test all three.
+Assumption (1) is false: within-family canaries produce the strongest detection
+signal (η²=0.011 for architecture type). Assumption (2) is false:
+random-token perturbations produce far less divergence than gradient-optimised
+attacks (p<10⁻¹², Mann-Whitney), showing the signal is attack-specific, not
+generic anomaly. Assumption (3) is partially false: when the canary is
+confident, a divergence-minimising attacker stalls at a predicted equilibrium
+(gap=1/(2λ), validated within 95% CI), but succeeds via joint-flip when the
+canary is uncertain. We characterize the exact security boundary across a
+4-tier threat model and provide a calibration-free sequential monitor (scan
+martingale, FAR≤1%) requiring no per-classifier tuning.
+
+---
+
 ## One-sentence pitch
 
 "We characterize the exact conditions under which classifier-disagreement
@@ -120,3 +152,54 @@ transition that quantitatively predicts when the defense holds (gap stalls at
    Under Adaptive Adversaries"
 
 Recommendation: #2 for accessibility (workshop), #1 for precision (SaTML main).
+
+---
+
+## Operational framing (weave into Discussion §7)
+
+**Alert fatigue:** Standard OOD detectors flag any statistical anomaly,
+drowning analysts in false positives. Score disagreement is surgically
+specific: silent under random/gibberish noise, triggers only under directed
+gradient optimisation (CA6, p<10⁻¹²). This directly addresses the
+alert-fatigue problem that kills production monitoring deployments.
+
+**Work factor inflation:** A naive single-target GCG attack takes ~50 steps.
+Adding a canary forces the attacker into multi-objective joint optimisation
+with conflicting gradient vectors and (for cross-family) a 1.73× tokeniser
+fragmentation penalty. We do not claim an unbreakable defense — we quantify
+the computational tax imposed on the adversary (from trivial single-model GCG
+to expensive, constrained multi-objective search).
+
+---
+
+## arXiv v2: what changes from v1
+
+| Section | v1 (current) | v2 (update) |
+|---------|-------------|-------------|
+| Abstract | Monitoring + detection | + three falsified assumptions, phase transition |
+| §1 Intro | Drift detection gap | + "triple disillusionment" hook, gradient evasion as primary threat |
+| §2 Approach | KS + conformal | + §2.4 Scan martingale |
+| §3 Results | 800-cell factorial | Unchanged (still valid) |
+| §4 Operational | 5 recommendations | Rewrite #5 → full threat model + decision matrix |
+| §5 Methodology | Stats, corpus | + methodology for new experiments |
+| §6 Post-Factorial | CS, MMD, mechanistic | Replace "r=0.97 mechanistic" with honest negative. Add martingale eval (AV2/AV5/AV6). |
+| **§7 NEW** | — | **Canary Detection** (CA6, k-scaling, target-specificity, AutoDAN) |
+| **§8 NEW** | — | **Adversarial Robustness** (threat model, transfer, confidence-gating, joint evasion, divergence-min, tokeniser barrier) |
+| §9 Limitations | Original list | Update with new honest limits + what we don't claim |
+
+**v1 corrections:**
+- ~~"scores shift toward unsafe"~~ → "target collapses while non-target holds"
+- ~~"architecturally-different classifier"~~ → "any un-targeted classifier"
+- ~~"22 examples... validation needed"~~ → full n=49 characterisation
+- ~~"r=0.97 mechanistic"~~ → "falsified at n=8 (r=0.21, p=0.70)"
+- ~~"empirically calibrated at 97th percentile"~~ → scan martingale (no calibration)
+
+**Stays unchanged:** §3 factorial results (800 cells), corpus validation, post-factorial CS/MMD/PCA
+
+---
+
+## Venue & timeline
+
+**Target:** SaTML 2026 (check deadline) or AISec @ CCS 2025
+**Backup:** NeurIPS SafeGenAI workshop 2025
+**arXiv v2:** push after paper draft is complete (same ID: 2606.11949)
