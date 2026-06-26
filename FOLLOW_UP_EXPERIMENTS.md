@@ -286,19 +286,65 @@ Joint optimization flips B on prompts where single-target couldn't (high B_orig)
 6. Formalized 4-tier threat model with prescriptive deployment recommendations
 7. Calibration-free monitoring via scan martingale (FAR ≤1%, no per-classifier tuning)
 
-**Paper structure:**
-- §1 Introduction
-- §2 Background (GCG, safety classifiers, sequential monitoring)
-- §3 Threat model (4 tiers, decision matrix)
-- §4 The canary effect (CA6, k-scaling, divergence detection)
-- §5 Robustness analysis (transfer, confidence-gating, joint optimization, tokenizer barrier)
-- §6 Calibration-free monitoring (scan martingale, FAR uniformity)
-- §7 Discussion (deployment recommendations, limitations, honest negatives)
-- §8 Conclusion
-- Appendix A: Track C honest negative (monitorability law)
-- Appendix B: Full per-prompt results tables
+### Last Experiment (2026-06-26, ready to run)
 
-**Venue:** AISec / SaTML (strong fit). NeurIPS SafeGenAI workshop (backup). Possible USENIX Security submission if joint-optimization resistance story is strengthened with more prompts.
+**Divergence-minimisation attack** (`scripts/run_ca8_divergence_min.py`):
+- Loss = L_A(flip) + 2.0 × (score_B - score_A)² — attacker tries to flip A while suppressing canary signal
+- 10 prompts, 50 steps. ~1h on Mac Studio.
+- If attacker can't suppress divergence → "divergence is an unavoidable byproduct of evasion" (strongest claim)
+- If attacker can → bounds the defense honestly
+
+Run: `.venv/bin/python scripts/run_ca8_divergence_min.py`
+
+### Paper Plan: arXiv v2 (not a new paper)
+
+**Decision:** Update arXiv:2606.11949 as v2. The canary was already in v1 (headline #3). Track B replaces v1's weakest section. Track C corrects a v1 claim. One stronger paper, same arXiv ID.
+
+**v2 section-by-section changes:**
+
+| Section | v1 content | v2 change |
+|---|---|---|
+| Abstract | Monitoring + detection | ✏️ Add: canary validated at scale, martingale replaces empirical calibration |
+| §1 Problem | Drift detection | ✏️ Add: gradient evasion as primary remaining threat |
+| §2 Approach | KS + conformal + factorial | ✏️ Add §2.4: Scan martingale |
+| §3 Results | Factorial (800 cells) | Keep (still valid) |
+| §4 Operational | 5 recommendations | ✏️ Rewrite #5 with threat model + decision matrix |
+| §5 Methodology | Stats, corpus | Keep + add new experiment methodology |
+| §6 Post-Factorial | CS, MMD, drift, mechanistic, PCA | ✏️ Replace "mechanistic r=0.97" with honest negative. Add martingale eval (AV2/AV5/AV6). |
+| **§7 NEW** | — | **Canary Detection** (CA6, k-scaling, AutoDAN, target-specificity) |
+| **§8 NEW** | — | **Adversarial Robustness** (threat model, transfer, confidence-gating, joint evasion, div-min, tokenizer) |
+| §9 Limitations | Original list | ✏️ Update: addressed items removed, new honest limits added |
+
+**New §7: Canary Detection**
+- 7.1: GCG corpus (n=100, 49 successful)
+- 7.2: The canary effect (CA6: p<10⁻¹², CIs non-overlapping)
+- 7.3: Target-specificity, not architecture diversity (CA4 η²=0.011, CA6-ext 3/6)
+- 7.4: K-classifier scaling (k=2 optimal, 98%)
+- 7.5: AutoDAN baseline (1% → gradient attacks are the relevant threat class)
+
+**New §8: Adversarial Robustness of the Canary**
+- 8.1: Threat model (4 tiers, decision matrix figure)
+- 8.2: Transfer — confidence-gating (p=10⁻⁶, n=40) + budget dependence
+- 8.3: Joint GCG (within-family 70%, gradient interference 30%)
+- 8.4: Divergence-minimisation [result pending — bounds the core claim]
+- 8.5: Tokenizer barrier (1.73×, "exponentially penalises" cross-arch)
+
+**v1 corrections:**
+- ~~"scores shift toward unsafe"~~ → "target collapses while non-target holds"
+- ~~"architecturally-different classifier"~~ → "any un-targeted classifier (architecture provides transfer robustness, not detection)"
+- ~~"22 examples... larger-scale validation needed"~~ → replaced with full n=49 analysis
+- ~~"r=0.97 mechanistic"~~ → "falsified at n=8 (r=0.21, p=0.70)"
+- ~~"empirically calibrated at 97th percentile"~~ → scan martingale (no calibration)
+
+**Keeps untouched:** §3 factorial (800 cells), §5 methodology, post-factorial CS/MMD/PCA
+
+**Key figures to add:**
+1. Decision matrix (Tier × Investment → Detection rate)
+2. Budget curve (steps × single vs joint → transfer rate)
+3. Confidence-gating scatter (B_orig vs transfer outcome)
+4. K-scaling bar chart (k=1,2,3 with threat-tier overlay)
+
+**Venue:** Submit complete v2 to AISec/SaTML. arXiv update + LinkedIn/GitHub auto-update.
 
 ---
 **Parent work:** arXiv:2606.11949 (Shift Detection Monitor). The 980-cell factorial + post-factorial additions (CS growing-window, MMD, PCA-conformal, gradual drift, mechanistic n=4) are *complete and submitted*. This document plans the next phase.
