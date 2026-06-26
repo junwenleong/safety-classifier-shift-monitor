@@ -64,39 +64,49 @@ def get_client():
     return OpenAI(
         base_url=API_BASE,
         api_key=API_KEY,
-        http_client=httpx.Client(verify=False, timeout=60.0),
+        http_client=httpx.Client(
+            verify=False,
+            timeout=httpx.Timeout(60.0, connect=10.0),
+        ),
     )
 
 
-def score_prompt(client, model, text):
+def score_prompt(client, model, text, max_retries=3):
     """Get safety score from an LLM. Returns float or None on failure."""
-    try:
-        kwargs = {"model": model, "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": text},
-        ], "temperature": 0}
-        # Reasoning models use max_completion_tokens
-        if model.startswith("o3") or model.startswith("o4"):
-            kwargs["max_completion_tokens"] = 10
-        else:
-            kwargs["max_tokens"] = 10
-        response = client.chat.completions.create(**kwargs)
-        content = response.choices[0].message.content
-        if content is None:
-            # Model refused or returned empty — treat as "unsafe" (1.0)
-            # since refusal implies the model detected harmful content
-            return 1.0
-        raw = content.strip()
-        # Extract first float-like value
-        for token in raw.split():
-            try:
-                return float(token)
-            except ValueError:
-                continue
-        return float(raw)
-    except Exception as e:
-        print(f"    Error ({model}): {e}")
-        return None
+    for attempt in range(max_retries):
+        try:
+            kwargs = {"model": model, "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": text},
+            ], "temperature": 0}
+            if model.startswith("o3") or model.startswith("o4"):
+                kwargs["max_completion_tokens"] = 10
+            else:
+                kwargs["max_tokens"] = 10
+            response = client.chat.completions.create(**kwargs)
+            content = response.choices[0].message.content
+            if content is None:
+                return 1.0
+            raw = content.strip()
+            for token in raw.split():
+                try:
+                    return float(token)
+                except ValueError:
+                    continue
+            return float(raw)
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait = 30 * (attempt + 1)
+                print(f"    Retry {attempt+1}/{max_retries} for {model} (waiting {wait}s): {e}")
+                time.sleep(wait)
+                try:
+                    client = get_client()  # fresh connection
+                except:
+                    pass
+            else:
+                print(f"    Error ({model}) after {max_retries} attempts: {e}")
+                return None
+    return None
 
 
 def main():
