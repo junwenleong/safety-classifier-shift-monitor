@@ -42,6 +42,7 @@ MODELS = [
     "gpt-5",
     "gpt-5.1",
     "gpt-5.2",
+    "gpt-5.2-chat",
     "gpt-5.3-codex",
     "gpt-5.4",
     "gpt-5.4-pro",
@@ -86,9 +87,9 @@ def score_prompt(client, model, text, max_retries=3):
                 {"role": "user", "content": text},
             ], "temperature": 0}
             if model.startswith("o3") or model.startswith("o4"):
-                kwargs["max_completion_tokens"] = 10
+                kwargs["max_completion_tokens"] = 16
             else:
-                kwargs["max_tokens"] = 10
+                kwargs["max_tokens"] = 16
             response = client.chat.completions.create(**kwargs)
             content = response.choices[0].message.content
             if content is None or content.strip() == "":
@@ -100,8 +101,17 @@ def score_prompt(client, model, text, max_retries=3):
                     return float(token)
                 except ValueError:
                     continue
-            return float(raw)
+            try:
+                return float(raw)
+            except ValueError:
+                # Model refused to give numeric score — treat as implicit "unsafe"
+                return 1.0
         except Exception as e:
+            err_str = str(e)
+            # Don't retry deterministic failures
+            if any(s in err_str for s in ["400", "invalid_request_error", "unable to complete request", "max_output_tokens"]):
+                print(f"    Error ({model}): {err_str[:120]}")
+                return None
             if attempt < max_retries - 1:
                 wait = 30 * (attempt + 1)
                 print(f"    Retry {attempt+1}/{max_retries} for {model} (waiting {wait}s): {e}")
