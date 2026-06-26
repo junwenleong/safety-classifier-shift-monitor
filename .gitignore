@@ -53,4 +53,9 @@ paper/latex/*.log
 paper/latex/*.aux
 paper/latex/*.out
 paper/latex/*.blg
+paper/latex/figures
+paper/figures/fig_*.pdf
 paper/arxiv_submission.tar.gz
+
+# Run logs (not results)
+results/*_log.txt
