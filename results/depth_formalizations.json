@@ -1,0 +1,16 @@
+{
+  "cot_suffocation": {
+    "t50_benign": 46.38047967273573,
+    "t50_adv": 153.57766313185502,
+    "k_benign": 0.17276761633213975
+  },
+  "routing": {
+    "expected_cost_per_1M": 65,
+    "expected_detection": 0.849,
+    "escalation_rate": 0.12
+  },
+  "cross_lingual": {
+    "mechanism": "dual_channel (lexical + structural)",
+    "lexical_leak_rate": 0.3
+  }
+}
