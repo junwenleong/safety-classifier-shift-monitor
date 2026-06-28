@@ -15,7 +15,7 @@ from statistics import mean, stdev
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 RESULTS_DIR = Path("results")
-API_BASE = "https://api.openai.com/v1"
+API_BASE = os.environ.get("FRONTIER_API_BASE", "https://api.openai.com/v1")
 API_KEY = os.environ["FRONTIER_API_KEY"]
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 

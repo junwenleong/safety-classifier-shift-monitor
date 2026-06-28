@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 RESULTS_DIR = Path("results")
-API_BASE = "https://api.openai.com/v1"
+API_BASE = os.environ.get("FRONTIER_API_BASE", "https://api.openai.com/v1")
 API_KEY = os.environ["FRONTIER_API_KEY"]
 
 MODELS = [
