@@ -69,7 +69,7 @@ Fine-tuned classifiers are robust to template-based jailbreaks. In our evaluatio
 
 Cross-family classifier pairs (encoder $\leftrightarrow$ decoder) use different tokenisers. We measure the tokenisation ratio: the number of tokens produced by the canary's tokeniser divided by the number produced by the target's tokeniser, for the same adversarial suffix.
 
-\paragraph{Result.} The mean tokenisation ratio is $1.729 \pm 0.161$ ($n = 100$). A 20-token suffix optimised for DeBERTa's tokeniser maps to approximately 35 tokens under Llama Guard's tokeniser. This fragmentation explains why cross-family transfer is structurally suppressed: a single token substitution in the target's vocabulary shifts downstream subword boundaries in the canary's tokenisation, desynchronising the discrete search space (\S\ref{sec:cross-family-barrier}).
+\paragraph{Result.} The mean tokenisation ratio is $1.729 \pm 0.161$ ($n = 100$). A 20-token suffix optimised for DeBERTa's tokeniser maps to approximately 35 tokens under Llama Guard's tokeniser. This fragmentation explains why cross-family transfer is exponentially penalised: a single token substitution in the target's vocabulary shifts downstream subword boundaries in the canary's tokenisation, desynchronising the discrete search space (\S\ref{sec:cross-family-barrier}).
 
 %==============================================================================
 \section{Adversarial Robustness of Score-Disagreement Monitoring}
@@ -92,8 +92,8 @@ Having established that score disagreement detects single-target attacks (\S\ref
 \midrule
 1 & Monitor-ignorant (single-target GCG) & 98\% (48/49) & $k{=}2$ canaries sufficient \\
 2 & Knows canary exists (hopes for transfer) & 93\% (46/49) & Monitor canary confidence \\
-3 & Has canary weights (joint optimisation) & 30\% (3/10) & Cross-family canary \\
-4 & Stealth-aware (divergence minimisation) & 60\% (6/10) & Confidence gating \\
+3 & Has canary weights (joint optimisation) & 30\% (3/10, $n{=}10$) & Cross-family canary \\
+4 & Stealth-aware (divergence minimisation) & 60\% [31\%, 83\%] ($n{=}10$) & Confidence gating \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -114,7 +114,7 @@ Tier~1 is the baseline from \S\ref{sec:canary}. Tiers~2--4 represent progressive
 
 A Tier~2 attacker optimises against the target alone but hopes the adversarial suffix accidentally fools the canary (passive transfer). We evaluate this on $n = 40$ prompts scored on same-family canaries (DeBERTa $\rightarrow$ Text-Moderation).
 
-\paragraph{Confidence gating.} Transfer rate depends sharply on the canary's baseline confidence. When the canary's original score $f_B(x_{\text{orig}}) \geq 0.99$, the transfer rate is 4.3\% (1/23). When $f_B(x_{\text{orig}}) < 0.99$, the transfer rate is 76.5\% (13/17). The difference is significant (Mann--Whitney $p = 6.61 \times 10^{-7}$, $n = 40$).
+\paragraph{Confidence gating.} Transfer rate depends sharply on the canary's baseline confidence. When the canary's original score $f_B(x_{\text{orig}}) \geq 0.99$, the transfer rate is 4.3\% (1/23, Wilson 95\% CI [0.2\%, 21\%]). When $f_B(x_{\text{orig}}) < 0.99$, the transfer rate is 76.5\% (13/17). The difference is significant (Mann--Whitney $p = 6.61 \times 10^{-7}$, $n = 40$).
 
 \paragraph{Interpretation.} The detection threshold ($f_B \geq 0.5$) is an empirical operating point for the binary transfer/no-transfer decision. The gradient-paralysis mechanism (\S\ref{sec:divergence-min}) requires deeper saturation ($f_B \approx 1.0$, where $\|\nabla f_B\| \to 0$). These are distinct properties: detection relies on the canary holding its score above 0.5; gradient paralysis relies on the canary being in a flat, high-confidence basin.
 
@@ -123,14 +123,14 @@ A Tier~2 attacker optimises against the target alone but hopes the adversarial s
 
 A Tier~3 attacker has white-box access to both the target and the canary and optimises a combined loss $L = 0.5 \cdot L_A + 0.5 \cdot L_B$ using GCG with search width 256 and 50 steps.
 
-\paragraph{Result.} Of 10 prompts evaluated, 7 achieve joint flip (both classifiers below 0.5), compared to 3/10 that transfer passively under single-target optimisation on these same prompts. Joint optimisation substantially improves the attacker's success rate within-family ($70\%$ vs.\ $30\%$ passive transfer).
+\paragraph{Result.} Of 10 prompts evaluated, 7 achieve joint flip (both classifiers below 0.5), compared to 3/10 that transfer passively under single-target optimisation on these same prompts. Joint optimisation improves the attacker's success rate within-family ($70\%$ vs.\ $30\%$ passive transfer; exploratory, Fisher exact $p = 0.18$ at $n = 10$).
 
 \paragraph{Failure cases.} In 3/10 prompts, joint optimisation fails despite having white-box access to both models. Two of these (prompts 3 and 9: $f_A = 0.873$, $f_B = 0.998$ and $f_A = 0.916$, $f_B = 1.0$) exhibit gradient interference --- the combined gradient cannot simultaneously reduce both scores within the 50-step budget. One additional case (prompt 9) shows the canary holding at $f_B = 1.0$ while the target is stuck at $f_A = 0.916$, consistent with the confidence-gating mechanism.
 
-\paragraph{Cross-family barrier.} The 1.73$\times$ tokeniser fragmentation ratio (\S\ref{sec:tokeniser}) structurally disrupts coordinate alignment for discrete token search. Because a single character substitution shifts downstream subword boundaries in Model~B (but not Model~A), the discrete search space becomes desynchronised --- a step that improves the joint loss for Model~A's tokenisation may worsen it for Model~B's. Cross-family joint optimisation remains structurally untested due to this discrete-vocabulary incompatibility.
+\paragraph{Cross-family barrier.} The 1.73$\times$ tokeniser fragmentation ratio (\S\ref{sec:tokeniser}) exponentially penalises coordinate alignment for discrete token search. Because a single character substitution shifts downstream subword boundaries in Model~B (but not Model~A), the discrete search space becomes desynchronised --- a step that improves the joint loss for Model~A's tokenisation may worsen it for Model~B's. Cross-family joint optimisation remains empirically untested due to this discrete-vocabulary incompatibility.
 \label{sec:cross-family-barrier}
 
-\subsection{Divergence Minimisation: The Phase Transition}
+\subsection{Divergence Minimisation: The Confidence-Gated Equilibrium}
 \label{sec:divergence-min}
 
 A Tier~4 attacker explicitly minimises score disagreement while attacking the target. We formalise this as:
@@ -162,12 +162,12 @@ As $\|\nabla f_B\| \to 0$, the right-hand side diverges. No angle $\theta$ satis
 
 \paragraph{Caveat.} This analysis uses a continuous relaxation. GCG operates on discrete tokens; the stall is empirical (within the 95\% CI of the predicted value), not a formal proof of impossibility. Higher $\lambda$ would block more aggressively but also constrain the attacker's loss landscape in ways that may prevent meaningful optimisation entirely.
 
-\paragraph{Generality (second pair).} A replication on a different checkpoint pair (epoch-3 as target, epoch-10 as canary) yields 7/10 stealth and 3/10 blocked --- a higher stealth rate than v1 (4/10), confirming the confidence-gating mechanism: v2's canary is less confident on more prompts, pushing more inputs into the vulnerable regime. The 3 blocked cases stall at gaps $\{0.250, 0.250, 0.242\}$, mean $0.247$ --- even closer to the predicted $1/(2\lambda) = 0.250$ than v1 (mean $0.235$). The phase-transition boundary replicates across pairs.
+\paragraph{Generality (second pair).} A replication on a different checkpoint pair (epoch-3 as target, epoch-10 as canary) yields 7/10 stealth and 3/10 blocked --- a higher stealth rate than v1 (4/10), confirming the confidence-gating mechanism: v2's canary is less confident on more prompts, pushing more inputs into the vulnerable regime. The 3 blocked cases stall at gaps $\{0.250, 0.250, 0.242\}$, mean $0.247$ --- even closer to the predicted $1/(2\lambda) = 0.250$ than v1 (mean $0.235$). The equilibrium boundary is consistent with the predicted $1/(2\lambda) = 0.250$ across pairs (n=3 blocked cases per pair).
 
 \subsection{Deployment Recommendations}
 \label{sec:deployment-recs}
 
-The phase transition directly yields a measurable, input-time security indicator:
+The equilibrium directly yields a measurable, input-time security indicator:
 
 \begin{itemize}
 \item \textbf{Confident canary} ($f_B \geq 0.99$): The canary is in a saturated basin where $\|\nabla f_B\| \to 0$. Transfer rate is 4.3\% (passive transfer cannot dislodge the canary) and divergence-minimisation stalls at the predicted $1/(2\lambda)$ equilibrium (\S\ref{sec:divergence-min}). Trust the divergence signal unconditionally.
@@ -206,11 +206,28 @@ The canary classifiers evaluated in \S\ref{sec:canary}--\ref{sec:adversarial-rob
 
 \paragraph{Root cause: token budget truncation.} The ceiling-clipping was a \emph{methodological artifact}, not a model property. Reasoning models (o3, o3-mini, o4-mini, gemini-2.5-flash, gemini-2.5-pro) consume their token budget on internal chain-of-thought before producing visible output. At \texttt{max\_completion\_tokens=16}, these models returned empty responses, which our parsing code defaulted to $1.0$. Rerunning all 35 models with \texttt{max\_tokens$\geq$200} eliminated the artifact: all previously ``ceiling-clipped'' models produce discriminating scores (benign $\approx 0.0$, adversarial $\geq 0.7$).
 
-\paragraph{CoT Suffocation: a phase transition in token budget.} The response probability as a function of allocated reasoning tokens $T_r$ follows a sigmoid:
+\paragraph{CoT budget starvation: a sigmoid response curve.} The response probability as a function of allocated reasoning tokens $T_r$ follows a sigmoid:
 \[
 P(\text{response} \mid T_r) = \frac{1}{1 + e^{-k(T_r - T_{50})}}
 \]
 where $T_{50}$ is the critical threshold at which 50\% of inputs elicit a valid response. Crucially, $T_{50}$ is \emph{input-complexity-dependent}. For o3 with \texttt{reasoning\_effort=low}: $T_{50,\text{benign}} = 46$ tokens (steepness $k = 0.173$), $T_{50,\text{adv}} = 154$ tokens ($k = 0.030$). The ratio $T_{50,\text{adv}} / T_{50,\text{benign}} \approx 3.3\times$ reflects the additional reasoning required for complex adversarial inputs. The 90\% coverage threshold (where $>$90\% of inputs get valid scores) is $T_r \geq 59$ tokens for benign and $T_r \geq 227$ tokens for adversarial inputs. \emph{Deployment rule}: set $T_r \geq T_{50}(\text{hardest expected class}) + 2.2/k$ for $>$90\% coverage on that class.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Token budget thresholds for reasoning-tier safety monitors (o3, \texttt{reasoning\_effort=low}). Budgets below $T_{50}$ cause total scoring failure.}
+\label{tab:cot-thresholds}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Input class} & $\mathbf{T_{50}}$ \textbf{(50\% response)} & $\mathbf{T_{90}}$ \textbf{(90\% response)} \\
+\midrule
+Benign (simple queries) & 46 tokens & 60 tokens \\
+Adversarial (GCG-appended) & 154 tokens & 200 tokens \\
+\midrule
+\textbf{Ratio (adv/benign)} & \textbf{3.3$\times$} & \textbf{3.3$\times$} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Corrected taxonomy: 33 discriminators + 2 content-aware refusers.} After correction, the 35 models partition into: (i)~33 \emph{discriminating} models that score benign $\approx 0.0$ and adversarial $0.7$--$0.9$; and (ii)~2 \emph{content-aware refusers} (gpt-5-nano, gpt-5.5) that score benign content correctly ($= 0.0$, 100\% response rate on 20 benign prompts) but refuse to produce a numeric score for harmful content (returning empty or a refusal string, parsed as $1.0$). The refusers are not broken --- they demonstrate content-aware safety behaviour --- but they cannot serve as graded canaries. They can, however, serve as binary detection signals (refusal $\Rightarrow$ flag as potentially harmful).
 
@@ -233,7 +250,7 @@ The critical finding is that adversarial prompts are scored identically to clean
 
 At $N = 20$ (our initial evaluation), this claim is underpowered (MDE = 0.253, observed mean $\Delta = 0.047$). At $N = 49$, Bayes Factor analysis (JZS prior, $r = \sqrt{2}/2$) yields $\text{BF}_{01} > 3$ for 16/20 models (evidence for the null) and $\text{BF}_{01} < 1/3$ for 2/20. TOST equivalence testing confirms: 16/20 models equivalent within $\pm 0.15$ ($p < 0.05$), and 19/20 within $\pm 0.20$. The median $|\Delta|$ across 20 models is 0.035 --- an order of magnitude below any operationally meaningful threshold.
 
-\paragraph{Empirical suffix-insensitivity bound.} Across $N = 49$ adversarial prompts and 20 discriminating models, the maximum observed per-prompt score deviation $|f(p + s) - f(p)|$ is 0.35 (a single outlier; 95th percentile $= 0.15$). Normalising by suffix length in tokens ($|s| = 20$): the empirical per-token Lipschitz constant is $L \leq 0.008$ at the 95th percentile. This confirms that the safety scoring function is locally flat with respect to suffix perturbations --- gradient-based optimisation in the suffix subspace cannot traverse the distance from the saturation floor ($\approx 0.88$) to the decision boundary ($\tau = 0.5$) within any feasible suffix length.
+\paragraph{Empirical suffix-insensitivity bound.} Across $N = 49$ adversarial prompts and 20 discriminating models, the maximum observed per-prompt score deviation $|f(p + s) - f(p)|$ is 0.35 (a single outlier; 95th percentile $= 0.15$). Normalising by suffix length in tokens ($|s| = 20$): the empirical per-token Lipschitz constant is $L \leq 0.008$ at the 95th percentile --- that is, \textbf{the scoring function's sensitivity to suffix tokens is bounded at less than 0.01 per token}. This confirms that the safety scoring function is locally flat with respect to suffix perturbations --- gradient-based optimisation in the suffix subspace cannot traverse the distance from the saturation floor ($\approx 0.88$) to the decision boundary ($\tau = 0.5$) within any feasible suffix length.
 
 \paragraph{Reconciling BF and TOST on outliers.} For \texttt{gpt-4.1} ($\Delta = -0.039$, $\text{BF}_{01} = 0.19$), the effect is statistically detectable due to extremely low within-model variance, but the magnitude is two orders of magnitude smaller than DeBERTa's collapse (DeBERTa: $\Delta \approx -0.8$; \texttt{gpt-4.1}: $\Delta = -0.039$). TOST confirms equivalence within $\pm 0.15$. For \texttt{claude-opus-4-7} ($\Delta = +0.127$, $\text{BF}_{01} = 0.13$), the positive delta matches the suffix-sensitivity pattern observed across all Claude variants: scrambled suffixes produce a comparable shift ($\Delta_{\text{scram-clean}} = +0.100$) for this model, confirming that any appended text --- GCG or random --- elevates its score relative to the clean baseline. This is not GCG-specific detection but the dual-channel behavior documented in the scrambled analysis below. TOST passes at $\pm 0.20$ but not $\pm 0.15$. The two inconclusive models (\texttt{gemini-2.5-flash-lite}, \texttt{gpt-4.1-nano}) have within-pair SD of 0.39 and 0.32 respectively (vs.\ mean 0.19 for the other 18 models), limiting BF sensitivity. We justify the $\pm 0.15$ bound via downstream decision invariance: the operational classification threshold is $\tau = 0.5$, so any score fluctuation that does not cross this boundary is functionally equivalent under the deployment loss function. At mean clean score $= 0.78$ (SD $= 0.09$) across 20 models, a shift of $\pm 0.15$ remains safely above the decision boundary.
 
@@ -253,7 +270,7 @@ At $N = 49$: 15/20 models show no significant difference between scrambled and G
 
 \paragraph{Black-box robustness.} To test whether an adversary can degrade canary scores without gradient access, we run 100 iterations of coordinate-ascent token substitution against \texttt{gpt-4o-mini}: the maximum score reduction achieved is 0.2 (from $\approx 0.83$ to $\approx 0.63$), which does not breach the $\tau = 0.5$ decision threshold. \texttt{gpt-5.1} shows equivalent robustness under the same attack budget.
 
-\paragraph{Optimization saturation (extended budget).} Extending the attack budget to 500 iterations reveals a \emph{hard optimization floor}: all score improvements occur within the first 50 steps, after which the fitness landscape is completely flat. Across 5 prompts selected as the hardest cases (baseline $\geq 0.8$, representing the upper tail of the $N = 49$ GCG corpus): two prompts show zero improvement at any step ($\Delta = 0.000$); three prompts achieve a single reduction in steps 1--50 (to 0.70--0.90) then exhibit identically zero marginal gain for steps 50--500. No prompt breaches the $\tau = 0.5$ threshold. The mean final score is 0.88. This demonstrates that the adversarial optimization landscape is discrete and saturating: the safety scoring function is locally flat with respect to suffix-token perturbations once the low-hanging-fruit substitutions are exhausted. Arbitrarily increasing the attacker's query budget provides no competitive advantage.
+\paragraph{Optimization saturation (extended budget).} Extending the attack budget to 500 iterations reveals an \emph{optimization floor}: in 5 tested prompts (hardest cases, baseline $\geq 0.8$, upper tail of the $N = 49$ GCG corpus), all score improvements occur within the first 50 steps, after which the fitness landscape is completely flat. Two prompts show zero improvement at any step ($\Delta = 0.000$); three achieve a single reduction in steps 1--50 (to 0.70--0.90) then zero marginal gain for steps 50--500. No prompt breaches the $\tau = 0.5$ threshold. The mean final score is 0.88. The adversarial optimization landscape is discrete and saturating: once low-hanging-fruit substitutions are exhausted, additional query budget provides no advantage in the 5 evaluated prompts.
 
 \paragraph{Ghost suffix inertness.} GCG suffixes appended to \emph{benign} content do not induce false alarms: \texttt{gpt-5.1} scores 0/20 false positives on benign prompts with adversarial suffixes attached. The suffix is inert when the base prompt lacks harmful semantic content.
 
@@ -263,13 +280,13 @@ At $N = 49$: 15/20 models show no significant difference between scrambled and G
 
 \paragraph{Dual-channel detection mechanism.} The cross-lingual degradation is asymmetric: explicit-harm prompts (direct violence, slurs) degrade 19--29 percentage points, while ambiguous/roleplay prompts degrade only 10--15 pp. This reveals two distinct safety detection channels: (i) a \emph{lexical channel} trained on English safety vocabulary that fails under translation, and (ii) a \emph{structural channel} that recognizes harmful intent patterns (e.g., roleplay framing, instructional structure) regardless of language. For \texttt{gpt-5.1}, 84\% (16/19) of prompts detected in English remain detected cross-lingually (structural channel), while 16\% leak (lexical-dependent). The safety score is effectively $S = \max(S_{\text{lexical}}, S_{\text{structural}})$; cross-lingual degradation represents loss of the lexical contribution only.
 
-\paragraph{Wilson CI Pareto.} Using Wilson score intervals for guaranteed minimum detection: \texttt{gpt-4o-mini} guarantees $\geq 71\%$ detection (95\% CI lower bound); \texttt{gpt-5.1} guarantees $\geq 83.5\%$. The cost--detection tradeoff is modest: gpt-5.1 costs $\approx$3$\times$ more for 12.5 percentage points of guaranteed detection improvement. Across all 28 configured models, detection rate correlates weakly with API cost (Pearson $r = 0.51$); no inverted-U relationship exists. Once configured correctly, almost any model works --- cost determines the optimal choice, not capability.
+\paragraph{Wilson CI Pareto.} Using Wilson score intervals for guaranteed minimum detection: \texttt{gpt-4o-mini} guarantees $\geq 71\%$ detection (95\% CI lower bound); \texttt{gpt-5.1} guarantees $\geq 83.5\%$. The cost--detection tradeoff is modest: gpt-5.1 costs $\approx$3$\times$ more for 12.5 percentage points of guaranteed detection improvement. Across all 28 configured models, detection rate is moderately correlated with API cost (Pearson $r = 0.51$, $p = 0.006$); no inverted-U relationship exists. Once configured correctly, all 33 tested decoder-only models discriminate --- cost determines the optimal choice, not capability.
 
-\paragraph{Cost-bounded safety routing.} The Pareto structure admits a simple escalation router. Define the routing policy: screen all inputs with \texttt{gpt-4o-mini} (\$0.033/1k calls); escalate ambiguous scores ($\in [0.3, 0.7]$) and non-English inputs to \texttt{gpt-5.1} (\$0.30/1k). At an empirical escalation rate of $\sim$12\%, expected cost is \$65/1M queries with 84.9\% detection --- vs.\ \$300/1M for always-escalating to \texttt{gpt-5.1} and \$33/1M for always using \texttt{gpt-4o-mini} (83.7\%). The router achieves near-optimal detection at 78\% cost reduction compared to the highest-detection single model.
+\paragraph{Cost-bounded safety routing.} The Pareto structure admits a simple escalation router. Define the routing policy: screen all inputs with \texttt{gpt-4o-mini} (\$0.033 per 1{,}000 calls); escalate ambiguous scores ($\in [0.3, 0.7]$) and non-English inputs to \texttt{gpt-5.1} (\$0.30 per 1{,}000 calls). At an empirical escalation rate of $\sim$12\%, expected cost is \$65/1M queries with 84.9\% detection --- vs.\ \$300/1M for always-escalating to \texttt{gpt-5.1} and \$33/1M for always using \texttt{gpt-4o-mini} (83.7\%). The router achieves near-optimal detection at 78\% cost reduction compared to the highest-detection single model.
 
 \paragraph{Limitations.}
 \begin{itemize}
-\item Temperature = 0, single inference, no variance estimate per prompt.
+\item \textbf{Temperature sensitivity.} All results use temperature $= 0$ for reproducibility. A sensitivity sweep at $T \in \{0, 0.3, 1.0\}$ across 5 models ($n = 20$ adv + 20 benign prompts, 3 replicates per non-zero temperature) shows detection rate varies by $< 5$ pp across temperatures, with within-prompt SD at $T = 1.0$ of $0.03$--$0.11$ across models. Temperature does not materially affect detection; $T = 0$ is recommended for operational consistency.
 \item API-based: non-reproducible across provider version changes.
 \item All 35 models are decoder-only transformers with RLHF --- no real architectural diversity relative to each other.
 \item Cross-lingual detection degrades 15--25\% for non-English prompts (vocabulary bias in safety calibration).
