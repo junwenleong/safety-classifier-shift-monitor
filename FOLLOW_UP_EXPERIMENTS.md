@@ -1579,7 +1579,7 @@ HF_HUB_DISABLE_SSL_VERIFY=1 python -c "from transformers import AutoModelForCaus
 | Priority | Experiment | Status | Notes |
 |---|---|---|---|
 | **#1** | Llama Guard 3 Surrogate GCG → API transfer | ⏳ READY (run on Mac Studio) | Consolidated into `scripts/run_mac_studio_batch.py` as M1. Pull and run on Mac Studio. |
-| **#2** | 500-step Black-Box n=10 extension (A3) | ⏳ RUNNING | Script: `run_blackbox_500step_ext.py`. ~4h remaining. Will update paper n=5→n=10 on completion. |
+| **#2** | 500-step Black-Box n=10 extension (A3) | ✅ COMPLETE | 9/10 flat after step 50, 1/10 small reduction (still >0.5). Mean 0.90. Paper + MDs updated. |
 | **#3** | Depth Formalizations (analysis) | ✅ COMPLETE | CoT Suffocation sigmoid, dual-channel cross-lingual, CBSE Router, Lipschitz bound — all in paper. |
 | **A1** | Temperature sensitivity sweep | ✅ COMPLETE | T∈{0,0.3,1.0} × 5 models × 20+20 prompts. <5pp change, σ=0.03–0.11. Added to paper limitations. |
 | **A4** | Cross-lingual N=49 Spanish (gpt-4o-mini) | ✅ COMPLETE | 63.3% (31/49, Wilson CI [49.3%, 75.3%]) vs 83.7% English. 20.4pp drop. Paper + all MDs updated. |
@@ -1648,7 +1648,7 @@ Numbers cross-checked: T_50=46/154, Wilson ≥71%/≥83.5%, 0/1000 FPR, r=0.51, 
 
 **2 API experiments + Mac Studio batch left:**
 
-1. **A3** — 500-step blackbox n=10 extension (running, ~4h). On completion: update paper "5 tested prompts" → "10 prompts" in §7.8 optimization saturation paragraph.
+1. ~~**A3** — done.~~ ✅
 2. **Mac Studio batch (M1-M4)** — pull and run tomorrow:
    ```bash
    cd sentry && git pull && .venv/bin/python scripts/run_mac_studio_batch.py

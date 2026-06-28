@@ -127,7 +127,7 @@ For safety-critical deployments, pay 10× for `gpt-5.1` (≥83.5% guaranteed det
 
 ## Depth results (post-v2)
 
-**Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks reveal a saturating fitness landscape: all improvements occur in the first 50 steps, then the score is completely flat (Δ=0.000 for steps 50–500). Mean final score: 0.88 (threshold: 0.5). No fracture point exists — increasing attacker budget provides zero marginal advantage. (n=5 prompts; n=10 extension in progress.)
+**Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks (n=10 prompts, hardest-case selection): 9/10 show zero improvement after step 50; 1/10 has one small reduction still above threshold. Mean final score: 0.90 (threshold: 0.5). No prompt breaches 0.5. No fracture point — increasing attacker budget provides no advantage.
 
 **Temperature sensitivity.** Detection rate varies by <5pp across T∈{0, 0.3, 1.0} (5 models × 20 adv + 20 benign, 3 reps per non-zero T). Within-prompt SD at T=1.0: 0.03–0.11. T=0 recommended for reproducibility.
 
