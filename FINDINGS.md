@@ -177,3 +177,18 @@ Paper: [arXiv](https://arxiv.org/abs/2606.11949) · Code and results: [github.co
 - Conformal test martingale replaces empirical KS calibration
 - FAR≤1% uniformly across all 4 classifiers (vs 2-9.5% under empirical KS)
 - Zero per-model calibration required
+- **Honesty note**: with proper per-condition calibrated KS (97th-percentile threshold), KS matches or exceeds scan detection power at all tested mixing levels. The martingale's contribution is *operational simplicity* (deploy once, guaranteed FAR), not superior detection power.
+
+### Depth Results (post-v2 characterization)
+
+**CoT Suffocation phase transition.** Response probability follows a sigmoid: P(response|T_r) = σ(k·(T_r - T_50)). For o3: T_50(benign)=46 tokens (k=0.173), T_50(adversarial)=154 tokens (k=0.030). The 3.3× gap means standard API configs (max_tokens=16) cause total failure on adversarial inputs while benign queries occasionally succeed. Deploy with T_r ≥ T_50(hardest class) + 2.2/k for >90% coverage.
+
+**500-step black-box hard floor.** Extended coordinate ascent (500 steps, 5 prompts with baseline ≥0.8) reveals a saturating fitness landscape: all improvements occur in first 50 steps, then the score is completely flat (Δ=0.000 for steps 50–500). Mean final score: 0.88. No prompt breaches 0.5. There is no fracture point — increasing attacker budget provides zero marginal advantage.
+
+**Dual-channel cross-lingual mechanism.** The 15-25% cross-lingual degradation is asymmetric: explicit-harm prompts (direct violence, slurs) degrade 19-29pp, while ambiguous/roleplay prompts degrade only 10-15pp. Two safety channels: (i) lexical keyword matching (language-specific, fails under translation), (ii) structural intent recognition (language-invariant, transfers natively). For gpt-5.1: 84% of detections are structural (hold cross-lingually), 16% are lexical (leak when translated). Multilingual suffix transfer: mean Δ = +0.022 (suffix completely inert across languages).
+
+**Cost-bounded safety routing (CBSE).** The Pareto frontier admits a dynamic escalation router: screen all inputs with gpt-4o-mini ($0.033/1k); escalate ambiguous (score ∈ [0.3, 0.7]) and non-English inputs to gpt-5.1 ($0.30/1k). At ~12% escalation rate: expected cost $65/1M queries, 84.9% detection — vs $300/1M for always-gpt-5.1 (93.9%) and $33/1M for always-gpt-4o-mini (83.7%). Near-optimal detection at 78% cost reduction.
+
+**Monitorability law falsified (Track C).** The n=4 correlation (r=0.97) between null-score std and detection latency was an encoder/decoder gap artifact. Within-family evaluation (n=6 encoder variants, epoch-{1,3,5,10} + 2 originals) yields r=0.21, p=0.70. Monitorability is not a predictable intrinsic property of score-distribution geometry.
+
+**Llama Guard 3 surrogate GCG transfer.** Script prepared (`scripts/run_gcg_llama_guard_transfer.py`), model downloaded. Pending execution on Mac Studio (requires ≥20GB for 8B fp16 + GCG gradients). Expected outcome: non-transfer (Δ≈0 on API canaries), closing the architecture-matched white-box attack vector.

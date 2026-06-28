@@ -22,7 +22,13 @@ The system operates on simulated production streams across a factorial evaluatio
 
 4. **The Deployment Configuration Trap.** An initial screen of 35 frontier LLMs appeared to show a 'reversed scaling law' where flagship/reasoning models (o3, gpt-5) were ceiling-clipped at 1.0 on all inputs. Investigation revealed this was entirely a token-budget parsing artifact: reasoning models require `max_completion_tokens≥200` for their internal chain-of-thought; at the standard `max_tokens=16`, they produce empty responses incorrectly parsed as maximum-unsafe. With proper configuration, ALL models discriminate correctly (benign≈0.0, harmful≈0.8). Only 2 models (gpt-5-nano, gpt-5.5) exhibit genuine content-aware refusal. The optimal production choice remains `gpt-4o-mini` ($0.15/1M tokens, ≥71% guaranteed detection, <1.5% FPR at N=1000) due to cost, not capability.
 
-5. **Calibration-free monitoring via scan martingale.** A conformal test martingale replaces empirical threshold tuning, achieving FAR≤1% uniformly across all 4 classifiers with no per-model calibration (vs 2–9.5% spread under empirical KS calibration).
+5. **Calibration-free monitoring via scan martingale.** A conformal test martingale replaces empirical threshold tuning, achieving FAR≤1% uniformly across all 4 classifiers with no per-model calibration (vs 2–9.5% spread under empirical KS calibration). The martingale's value is operational simplicity (deploy once, guaranteed FAR), not superior detection power — with proper per-condition calibration, KS matches or exceeds it.
+
+6. **Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks against `gpt-4o-mini` reveal a saturating fitness landscape: all improvements occur within the first 50 steps, after which the score is completely flat (Δ=0.000 for steps 50–500). Mean final score: 0.88 (threshold: 0.5). Increasing attacker budget provides zero marginal advantage.
+
+7. **CoT Suffocation phase transition.** Reasoning models exhibit a sigmoid response curve: P(response|T_r) = σ(k·(T_r - T_50)), with T_50(benign)=46 tokens and T_50(adversarial)=154 tokens for o3. The 3.3× gap explains why standard API configurations (max_tokens=16) cause total failure on complex inputs while simple queries occasionally succeed.
+
+8. **Monitorability law falsified.** The n=4 correlation (r=0.97) between null-score std and detection latency was an encoder/decoder gap artifact. Within-family evaluation (n=6 encoder variants) yields r=0.21, p=0.70 — monitorability is not a predictable intrinsic property of score-distribution geometry.
 
 ## Installation
 
