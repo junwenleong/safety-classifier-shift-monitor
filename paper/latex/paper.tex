@@ -29,7 +29,8 @@ Jun Wen Leong \\
 
 \begin{abstract}
 We present an online monitoring system for distributional shift in deployed safety classifiers, using calibrated sequential statistics on KS test statistics to detect when a classifier has moved out of distribution. Upon detection, a conformal abstention layer adapts decision thresholds to recover a target error rate $\varepsilon = 0.1$ when density-ratio estimation is effective. In a pre-registered factorial evaluation across 4 classifiers $\times$ 5 shift conditions $\times$ 20 seeds $\times$ 2 window sizes (800 cells), the system achieves an 86.6\% valid detection rate (693/800 cells, 95\% CI [84.1\%, 88.8\%]), with mean detection latency of 39.5 steps at window size 100 and empirical false alarm rates of 2--10\% across classifiers. Detection holds across three ground-truth regimes: synthetic onset (86.6\%), real temporal jailbreaks from public red-team databases (85\%, 17/20), and a GCG adversarial demonstration showing that successful attacks produce insufficient distributional signal for detection in the target classifier while appearing anomalous to non-target classifiers. In a 4-classifier $\times$ 3-shift conformal evaluation, weighted conformal prediction recovers up to 39 pp of lost coverage for DeBERTa (effective sample size 46/300) but eliminates data-driven reweighting for all other classifiers (ESS${\approx}$300; residual recoveries $\leq$+0.10 are a mechanical artifact of the test-point contribution): logistic density ratio estimation achieves perfect source/target separability in their embedding spaces, clipping all importance weights to the floor. This collapse is observed consistently across three of four classifiers and all three shift types; DeBERTa shows a gradient from effective correction (paraphrase, ESS${=}$46) to near-total collapse (adversarial suffix, ESS${=}$206) depending on shift type. PCA to 32 dimensions before density ratio estimation breaks the collapse, recovering 33 pp for Llama Guard and 21 pp for ShieldGemma on temporal shift. Variance decomposition reveals that classifier ($\eta^2 = 0.243$), shift type ($\eta^2 = 0.237$), and their interaction ($\eta^2 = 0.185$) all contribute substantially to detection latency variance (all $p < 0.001$), indicating that neither factor alone determines detection difficulty and that per-classifier monitoring profiles are necessary.
-Additionally, we address the adversarial robustness of score-disagreement monitoring as a canary for gradient-based evasion. We empirically falsify three common assumptions: (1)~architectural diversity is the mechanism for divergence detection---false ($\eta^2 = 0.011$); (2)~the divergence signal is generic out-of-distribution detection---false ($p < 10^{-12}$, GCG-specific); and (3)~an adaptive attacker can suppress the disagreement signal---partially false (blocked when the canary is confident, succeeding only via joint-flip when uncertain). We characterise the exact security boundary via a confidence-gated phase transition (stall at gap $= 1/(2\lambda)$, validated within 95\% CI) and provide a calibration-free scan martingale achieving FAR${\leq}1\%$ uniformly across all classifiers without per-model threshold tuning.
+Additionally, we address the adversarial robustness of score-disagreement monitoring as a canary for gradient-based evasion. We empirically falsify three common assumptions: (1)~architectural diversity is the mechanism for divergence detection---false ($\eta^2 = 0.011$); (2)~the divergence signal is generic out-of-distribution detection---false ($p < 10^{-12}$, GCG-specific); and (3)~an adaptive attacker can suppress the disagreement signal---partially false (blocked when the canary is confident, succeeding only via joint-flip when uncertain). We characterise the exact security boundary via a confidence-gated equilibrium (stall at gap $= 1/(2\lambda)$, validated within 95\% CI) and provide a calibration-free scan martingale achieving FAR${\leq}1\%$ uniformly across all classifiers without per-model threshold tuning.
+Our contribution is a quantitative security characterisation: we do not propose a new detection algorithm, but establish the exact conditions under which score-disagreement monitoring succeeds, fails, and at what cost to an adaptive attacker.
 \end{abstract}
 
 %==============================================================================
@@ -56,6 +57,8 @@ Beyond drift detection, deployed classifiers face a second threat: gradient-base
 \paragraph{RQ4 (Canary Detection).} Under what conditions does score disagreement between a targeted and un-targeted classifier detect gradient-based evasion, and when does it fail?
 
 \paragraph{RQ5 (Adversarial Robustness).} Can an adaptive, monitor-aware attacker suppress the disagreement signal while evading the target classifier?
+
+\paragraph{Contributions.} We contribute: (1)~a pre-registered factorial evaluation (800 cells) establishing detection baselines across 4 classifiers $\times$ 5 shift types; (2)~a calibration-free scan martingale replacing empirical threshold tuning (FAR spread reduced from $5\times$ to $<2\times$); (3)~the first adversarial characterisation of score-disagreement monitoring across 4 threat tiers, including a formal equilibrium bound (gap $= 1/(2\lambda)$, validated within 95\% CI); (4)~empirical falsification of three assumptions: architecture diversity as detection mechanism ($\eta^2 = 0.011$), reversed scaling in frontier models (a token-budget artifact), and monitorability as intrinsic classifier property ($r = 0.21$, $p = 0.70$ within-family); and (5)~a deployment blueprint across 35 frontier models with Wilson CI performance guarantees ($\geq 71\%$ detection at $< 1.5\%$ FPR; $N{=}1000$ FPR validation on 10 Pareto-dominant models).
 
 %==============================================================================
 \section{Related Work}
@@ -145,7 +148,7 @@ For each incoming score $s_t$, we compute a two-sided conformal $p$-value agains
 \begin{equation}
 \log W_t = \log W_{t-1} + \log \varepsilon + (\varepsilon - 1) \log p_t
 \end{equation}
-where $\varepsilon = 0.3$ is the betting parameter. We maintain $M = 50$ concurrent sub-martingales (one started per timestep), each tested at threshold $\log(M/\alpha)$ (union bound). An alarm fires when any sub-martingale exceeds this threshold.
+where $\varepsilon = 0.3$ is the betting parameter. We maintain $M = 50$ concurrent sub-martingales (one started per timestep), each tested at threshold $\log(M/\alpha)$ (union bound). An alarm fires when any sub-martingale exceeds this threshold. Results are validated at $M \in \{50, 100\}$; broader window sweeps are deferred (see \S\ref{sec:limitations}).
 
 By Ville's inequality and union-bound correction, $P(\exists t: \text{alarm} \mid H_0) \leq \alpha$, providing time-uniform FAR control. Empirically, the scan martingale achieves FAR $\leq 1\%$ across all four classifiers with zero calibration (vs.\ 2--10\% under empirical KS calibration).
 
@@ -398,7 +401,7 @@ The top interactions by magnitude: DeBERTa $\times$ adversarial-suffix ($+21.6$ 
 
 The preceding results use Regime A: synthetic shift onset at a known step. We evaluate two additional ground-truth regimes.
 
-\paragraph{Regime B (Temporal split).} Real temporal jailbreaks from public red-team databases replace the synthetic shift corpus. The monitor receives no signal about when or whether shift occurs. Evaluated on DeBERTa and Llama Guard $\times$ temporal corpus $\times$ 5 seeds $\times$ 2 window sizes $= 20$ cells. The system detects shift in 17 of 20 cells (85\% detection rate), with mean detection latency of 32.6 steps. Llama Guard achieves 10/10; DeBERTa achieves 7/10. Detection generalizes to naturally-occurring shift.
+\paragraph{Regime B (Temporal split).} Real temporal jailbreaks from public red-team databases replace the synthetic shift corpus. The monitor receives no signal about when or whether shift occurs. Evaluated on DeBERTa and Llama Guard $\times$ temporal corpus $\times$ 5 seeds $\times$ 2 window sizes $= 20$ cells. The system detects shift in 17 of 20 cells (85\% detection rate, Wilson 95\% CI [64\%, 95\%]), with mean detection latency of 32.6 steps. Llama Guard achieves 10/10; DeBERTa achieves 7/10. Detection generalizes to naturally-occurring shift.
 
 \paragraph{Regime C (Adversarial success).}
 \label{sec:regime-c}
@@ -475,15 +478,18 @@ To test whether embedding-space displacement drives the same pattern, we compute
 \item \textbf{Residual variance.} 33.5\% of variance in detection latency is attributable to seed/noise. With 20 seeds per cell, the MDE is 13.9 steps at 80\% power.
 \item \textbf{Binary classifiers only.} All four classifiers produce a single unsafe probability. Multi-category safety taxonomies may exhibit category-specific shift patterns invisible to a scalar score monitor.
 \item \textbf{Canary analysis scope.} The adversarial robustness characterisation (\S\ref{sec:adversarial-robustness}) uses $n = 49$ GCG attacks on a single target (DeBERTa). Cross-target generalisation is untested.
-\item \textbf{Joint-optimisation sample size.} Joint GCG results (\S\ref{sec:joint-gcg}) use $n = 10$ prompts at a single $\lambda$. Larger-scale sweeps may reveal additional failure modes.
-\item \textbf{Phase-transition derivation.} The stall condition (Appendix~\ref{app:derivation}) uses a continuous relaxation; GCG operates on discrete tokens. The match is empirical (within 95\% CI), not a formal convergence proof.
+\item \textbf{Joint-optimisation sample size.} Joint GCG results (\S\ref{sec:joint-gcg}) use $n = 10$ prompts at a single $\lambda$ (exploratory; Fisher exact $p = 0.18$). Larger-scale sweeps may reveal additional failure modes.
+\item \textbf{Equilibrium derivation.} The stall condition (Appendix~\ref{app:derivation}) uses a continuous relaxation; GCG operates on discrete tokens. The match is empirical (within 95\% CI), not a formal convergence proof.
 \item \textbf{Homogeneous negative controls.} Negative control streams draw exclusively from WildGuardMix unharmful examples; production streams with higher natural variance may require larger calibration sets.
+\item \textbf{GCG suffix length.} All GCG experiments use 20-token suffixes (the standard length in \citealt{zou2023universal}). Longer suffixes may achieve higher attack success against the target classifier; shorter suffixes may be more deployment-realistic (lower perplexity). The suffix-length sensitivity of both attack success and cross-architecture transfer is untested.
+\item \textbf{Pre-registration deviation (window size 500).} The pre-registered factorial configuration included $w{=}500$; this was not executed because it produces insufficient post-shift observations with the 300-example shifted corpus. Window sensitivity analysis is restricted to $w \in \{100, 200\}$.
+\item \textbf{Scan martingale window sweep.} The scan martingale is validated at $w \in \{50, 100\}$ (sub-martingale counts). A broader sensitivity analysis across $w \in \{25, 50, 75, 100, 150, 200\}$ was not performed; reported FAR and detection results hold only for the two validated configurations.
 \end{itemize}
 
 \subsection{Future Work}
 \label{sec:future}
 
-CUSUM or Bayesian online change-point detection for shift onset that accumulates over thousands of steps (below the 30\% mixing threshold identified in our ramp sweep). The phase-transition boundary (gap $= 1/(2\lambda)$) predicts a $\lambda$-dependent security frontier; a sweep across $\lambda$ values would confirm whether the stall point tracks the theory continuously. Cross-family joint optimisation (shared-tokeniser setting) remains untested due to the discrete-vocabulary incompatibility documented in \S\ref{sec:tokeniser}. Larger-scale adversarial evaluations ($n > 100$ prompts, multiple target classifiers) are needed to confirm the confidence-gating threshold and divergence-minimisation results. Truly online conformal prediction under arbitrary distribution shift~\citep{gibbs2021adaptive} would eliminate the batch requirement for density ratio estimation.
+CUSUM or Bayesian online change-point detection for shift onset that accumulates over thousands of steps (below the 30\% mixing threshold identified in our ramp sweep). The equilibrium boundary (gap $= 1/(2\lambda)$) predicts a $\lambda$-dependent security frontier; a sweep across $\lambda$ values would confirm whether the stall point tracks the theory continuously. Cross-family joint optimisation (shared-tokeniser setting) remains untested due to the discrete-vocabulary incompatibility documented in \S\ref{sec:tokeniser}. Larger-scale adversarial evaluations ($n > 100$ prompts, multiple target classifiers) are needed to confirm the confidence-gating threshold and divergence-minimisation results. Truly online conformal prediction under arbitrary distribution shift~\citep{gibbs2021adaptive} would eliminate the batch requirement for density ratio estimation.
 
 %==============================================================================
 % v2 NEW SECTIONS: Canary Detection + Adversarial Robustness + LLM Canary
@@ -599,7 +605,7 @@ ShieldGemma & 92.5\% & 8.5\% & 84.0\% \\
 
 The 5-percentage-point gap between raw TPR (91.5\%) and valid detection (86.6\%) is fully explained by the 46/800 cells with dirty negative controls (Control FAR = 5.8\%). Detection sensitivity is high across all classifiers; the valid-detection metric is conservative because it penalizes detectors that are also over-sensitive on in-distribution data.
 
-\section{Monitorability Law Falsification}
+\subsection{Falsified: Monitorability Is Not an Intrinsic Classifier Property}
 \label{app:monitorability}
 
 The mechanistic hypothesis of \S\ref{sec:mechanistic} reported $r = 0.97$ ($p = 0.032$, $n = 4$) between null-score standard deviation and mean detection latency. We test whether this correlation holds within a single architecture family by fine-tuning DeBERTa-v3-large at training epochs \{1, 3, 5, 10\}, producing four encoder variants with null-score $\sigma \in [0.109, 0.153]$.
@@ -610,6 +616,13 @@ Combined with the two original encoders (DeBERTa $\sigma = 0.087$, Text-Moderati
 
 \section{Derivation of the Stall Condition}
 \label{app:derivation}
+
+\noindent\fbox{\parbox{0.96\textwidth}{%
+\textbf{Proposition 1} (Divergence-Minimisation Equilibrium).
+Let $f_A, f_B$ be differentiable classifiers with scores in $[0,1]$, and let an attacker minimise $L(\delta) = f_A(x+\delta) + \lambda(f_B(x+\delta) - f_A(x+\delta))^2$. If the canary is confident ($f_B \approx 1$, $\|\nabla f_B\| \to 0$), the score gap $g = f_B - f_A$ stalls at $g^* = 1/(2\lambda)$. At this point, the gradient coefficient on $\nabla f_A$ inverts sign, and further descent on $L$ \emph{increases} $f_A$.
+
+\smallskip\noindent\textbf{Experimental validation:} At $\lambda = 2.0$, predicted $g^* = 0.250$. Observed across 9 blocked prompts (two canary pairs): mean gap $= 0.240$, bootstrap 95\% CI $[0.224, 0.250]$. The prediction falls within the CI.%
+}}\medskip
 
 Consider the divergence-minimisation loss:
 \[
