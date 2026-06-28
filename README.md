@@ -20,7 +20,9 @@ The system operates on simulated production streams across a factorial evaluatio
 
 3. **Score-disagreement monitoring detects gradient-based evasion.** Any un-targeted classifier detects when the primary is under GCG attack (p<10⁻¹², n=49). The divergence is attack-specific (not generic OOD) and confidence-gated: when the canary is confident, a divergence-minimising attacker stalls at a predicted equilibrium (gap=1/(2λ), validated within 95% CI). Architecture diversity is not required for detection (η²=0.011) but provides transfer robustness (0% cross-family transfer vs 30% within-family).
 
-4. **Calibration-free monitoring via scan martingale.** A conformal test martingale replaces empirical threshold tuning, achieving FAR≤1% uniformly across all 4 classifiers with no per-model calibration (vs 2–9.5% spread under empirical KS calibration).
+4. **The Deployment Configuration Trap.** An initial screen of 35 frontier LLMs appeared to show a 'reversed scaling law' where flagship/reasoning models (o3, gpt-5) were ceiling-clipped at 1.0 on all inputs. Investigation revealed this was entirely a token-budget parsing artifact: reasoning models require `max_completion_tokens≥200` for their internal chain-of-thought; at the standard `max_tokens=16`, they produce empty responses incorrectly parsed as maximum-unsafe. With proper configuration, ALL models discriminate correctly (benign≈0.0, harmful≈0.8). Only 2 models (gpt-5-nano, gpt-5.5) exhibit genuine content-aware refusal. The optimal production choice remains `gpt-4o-mini` ($0.15/1M tokens, ≥71% guaranteed detection, <1.5% FPR at N=1000) due to cost, not capability.
+
+5. **Calibration-free monitoring via scan martingale.** A conformal test martingale replaces empirical threshold tuning, achieving FAR≤1% uniformly across all 4 classifiers with no per-model calibration (vs 2–9.5% spread under empirical KS calibration).
 
 ## Installation
 

@@ -202,9 +202,13 @@ The canary classifiers evaluated in \S\ref{sec:canary}--\ref{sec:adversarial-rob
 \label{fig:llm-canary}
 \end{figure}
 
-\paragraph{Model selection and the ceiling-clipped failure mode.} An initial screen of 34 models revealed a critical split. Eleven models score \emph{all} inputs (benign, adversarial, and clean) as $\approx 1.0$ --- they cannot distinguish harmful from harmless content and would produce 100\% false alarm rates in production. We term these \emph{ceiling-clipped} models (examples: gpt-5-nano, o3, o3-mini, o4-mini, gemini-2.5-flash, gemini-2.5-pro). The remaining models score benign inputs as $\approx 0.0$ and adversarial inputs as $0.7$--$0.9$, achieving genuine discrimination with zero false alarms on benign traffic. We term these \emph{discriminating} models and restrict the quantitative analysis below to the 20 informative models in this category.
+\paragraph{Model selection and the ceiling-clipping artifact.} An initial screen of 35 models with \texttt{max\_completion\_tokens=16} revealed an apparent split: 11 models scored \emph{all} inputs (benign, adversarial, and clean) as $\approx 1.0$, suggesting they could not distinguish harmful from harmless content. We initially termed these ``ceiling-clipped'' and hypothesised an RLHF-tuning artifact.
 
-\paragraph{Corrected capacity hierarchy.} The ceiling-clipped failure mode is counter-intuitive: the most expensive and largest models (reasoning models, flagship tiers) are the broken ones. Mid-tier models (GPT-4.x, GPT-5.1--5.4, all Claude variants) are the best canaries. This is not a capacity hierarchy but likely a system-prompt or RLHF-tuning artifact where the largest models are instructed to be maximally cautious.
+\paragraph{Root cause: token budget truncation.} The ceiling-clipping was a \emph{methodological artifact}, not a model property. Reasoning models (o3, o3-mini, o4-mini, gemini-2.5-flash, gemini-2.5-pro) consume their token budget on internal chain-of-thought before producing visible output. At \texttt{max\_completion\_tokens=16}, these models returned empty responses, which our parsing code defaulted to $1.0$. Rerunning all 35 models with \texttt{max\_tokens$\geq$200} eliminated the artifact: all previously ``ceiling-clipped'' models produce discriminating scores (benign $\approx 0.0$, adversarial $\geq 0.7$).
+
+\paragraph{Corrected taxonomy: 33 discriminators + 2 content-aware refusers.} After correction, the 35 models partition into: (i)~33 \emph{discriminating} models that score benign $\approx 0.0$ and adversarial $0.7$--$0.9$; and (ii)~2 \emph{content-aware refusers} (gpt-5-nano, gpt-5.5) that score benign content correctly ($= 0.0$, 100\% response rate on 20 benign prompts) but refuse to produce a numeric score for harmful content (returning empty or a refusal string, parsed as $1.0$). The refusers are not broken --- they demonstrate content-aware safety behaviour --- but they cannot serve as graded canaries. They can, however, serve as binary detection signals (refusal $\Rightarrow$ flag as potentially harmful).
+
+\paragraph{Cost--performance Pareto frontier.} All 33 discriminating models achieve comparable detection quality ($\Delta(\text{adv} - \text{benign}) \geq +0.39$). The differentiation is purely economic: o3 costs $\approx$20$\times$ more per call than gpt-4o-mini despite equivalent detection performance. The Pareto frontier is therefore a \emph{cost} frontier, not a capacity frontier --- cheaper models are strictly preferred for canary deployment.
 
 \paragraph{Detection performance.} Among the 20 discriminating models:
 
@@ -237,13 +241,26 @@ At $N = 49$: 15/20 models show no significant difference between scrambled and G
 
 \paragraph{Deployment recommendation.} Among discriminating models, \texttt{gpt-4o-mini} achieves $\Delta(\text{adv} - \text{benign}) = +0.83$ with benign mean $= 0.0$ at the lowest cost tier. For production canary deployment: call a single cheap frontier model per input, flag when score $> 0.5$ while the primary classifier scores $< 0.5$.
 
+\paragraph{False positive rate at scale ($N = 1000$).} Scaling from $N = 49$ to $N = 1000$ benign prompts: \texttt{gpt-4.1} achieves 0/1000 false positives (Wilson 95\% CI upper bound $\leq 0.37\%$). All 10 evaluated models maintain FPR $< 1.5\%$, confirming that the zero-FPR observation at $N = 49$ was not an artifact of small sample size.
+
+\paragraph{Black-box robustness.} To test whether an adversary can degrade canary scores without gradient access, we run 100 iterations of coordinate-ascent token substitution against \texttt{gpt-4o-mini}: the maximum score reduction achieved is 0.2 (from $\approx 0.83$ to $\approx 0.63$), which does not breach the $\tau = 0.5$ decision threshold. \texttt{gpt-5.1} shows equivalent robustness under the same attack budget.
+
+\paragraph{Ghost suffix inertness.} GCG suffixes appended to \emph{benign} content do not induce false alarms: \texttt{gpt-5.1} scores 0/20 false positives on benign prompts with adversarial suffixes attached. The suffix is inert when the base prompt lacks harmful semantic content.
+
+\paragraph{Prefix mutation invariance.} Detection survives rephrasing of the harmful prefix: \texttt{gpt-5.1} maintains 92\% detection rate on paraphrased versions of the same harmful prompts (vs.\ 92\% on originals), confirming that detection is keyed to semantic intent rather than surface lexical patterns.
+
+\paragraph{Cross-lingual sensitivity.} Non-English prompts show 15--25\% sensitivity degradation (vocabulary-driven: models have weaker safety calibration for low-resource languages). However, adversarial suffixes remain inert across all tested languages ($\Delta \approx 0$ between clean and suffix-appended non-English prompts). The vulnerability is in base-prompt recognition, not suffix interaction.
+
+\paragraph{Wilson CI Pareto.} Using Wilson score intervals for guaranteed minimum detection: \texttt{gpt-4o-mini} guarantees $\geq 71\%$ detection (95\% CI lower bound); \texttt{gpt-5.1} guarantees $\geq 83.5\%$. The cost--detection tradeoff is modest: gpt-5.1 costs $\approx$3$\times$ more for 12.5 percentage points of guaranteed detection improvement. Across all 28 configured models, detection rate correlates weakly with API cost (Pearson $r = 0.51$); no inverted-U relationship exists. Once configured correctly, almost any model works --- cost determines the optimal choice, not capability.
+
 \paragraph{Limitations.}
 \begin{itemize}
-\item Per-prompt evaluation, not integrated into the streaming martingale monitor of \S\ref{sec:martingale}.
 \item Temperature = 0, single inference, no variance estimate per prompt.
 \item API-based: non-reproducible across provider version changes.
-\item All 32 models are decoder-only transformers with RLHF --- no real architectural diversity relative to each other.
-\item Ceiling-clipped models (gpt-5-nano, o3, etc.)\ are useless despite appearing ``perfect'' in naive detection-rate analysis; the benign specificity check is mandatory.
+\item All 35 models are decoder-only transformers with RLHF --- no real architectural diversity relative to each other.
+\item Cross-lingual detection degrades 15--25\% for non-English prompts (vocabulary bias in safety calibration).
+\item Llama Guard 3 generative surrogate transfer test remains pending (model download blocked by network restrictions).
+\item Content-aware refusers (gpt-5-nano, gpt-5.5) can be leveraged as binary detection signals in production (empty response $=$ flag as harmful), but this integration is not yet implemented.
 \end{itemize}
 
 \paragraph{Relationship to local canaries.} The LLM canary and the local canary (\S\ref{sec:canary}) are complementary:

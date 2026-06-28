@@ -1,0 +1,218 @@
+{
+  "correlation_log_cost_detection": 0.506768161046633,
+  "tiers": {
+    "Ultra-cheap (<$0.5)": [
+      [
+        "gpt-4.1-nano",
+        {
+          "det": 63.3,
+          "cost_in": 0.1
+        }
+      ],
+      [
+        "gemini-2.5-flash-lite",
+        {
+          "det": 49.0,
+          "cost_in": 0.1
+        }
+      ],
+      [
+        "gpt-4o-mini",
+        {
+          "det": 83.7,
+          "cost_in": 0.15
+        }
+      ],
+      [
+        "gemini-3.1-flash-lite",
+        {
+          "det": 67.3,
+          "cost_in": 0.25
+        }
+      ],
+      [
+        "gemini-2.5-flash",
+        {
+          "det": 76.0,
+          "cost_in": 0.3,
+          "note": "fixed"
+        }
+      ],
+      [
+        "gpt-4.1-mini",
+        {
+          "det": 73.5,
+          "cost_in": 0.4
+        }
+      ]
+    ],
+    "Mid-tier ($0.5-$3)": [
+      [
+        "gemini-3-flash-preview",
+        {
+          "det": 44.0,
+          "cost_in": 0.5,
+          "note": "fixed"
+        }
+      ],
+      [
+        "claude-haiku-4-5",
+        {
+          "det": 73.5,
+          "cost_in": 1.0
+        }
+      ],
+      [
+        "o3-mini",
+        {
+          "det": 90.0,
+          "cost_in": 1.1,
+          "note": "fixed"
+        }
+      ],
+      [
+        "o4-mini",
+        {
+          "det": 73.0,
+          "cost_in": 1.1,
+          "note": "fixed"
+        }
+      ],
+      [
+        "gpt-5.1",
+        {
+          "det": 93.9,
+          "cost_in": 1.25
+        }
+      ],
+      [
+        "gemini-2.5-pro",
+        {
+          "det": 57.0,
+          "cost_in": 1.25,
+          "note": "fixed"
+        }
+      ],
+      [
+        "gpt-5.2",
+        {
+          "det": 85.7,
+          "cost_in": 1.75
+        }
+      ],
+      [
+        "gpt-5.3-codex",
+        {
+          "det": 91.8,
+          "cost_in": 1.75
+        }
+      ],
+      [
+        "gpt-5.2-chat",
+        {
+          "det": 73.0,
+          "cost_in": 1.75,
+          "note": "fixed"
+        }
+      ],
+      [
+        "gpt-4.1",
+        {
+          "det": 85.7,
+          "cost_in": 2.0
+        }
+      ],
+      [
+        "gemini-3.1-pro-preview",
+        {
+          "det": 82.0,
+          "cost_in": 2.0,
+          "note": "fixed"
+        }
+      ],
+      [
+        "gpt-4o",
+        {
+          "det": 87.8,
+          "cost_in": 2.5
+        }
+      ],
+      [
+        "gpt-5.4",
+        {
+          "det": 91.8,
+          "cost_in": 2.5
+        }
+      ]
+    ],
+    "Premium ($3-$10)": [
+      [
+        "claude-sonnet-4-0",
+        {
+          "det": 83.7,
+          "cost_in": 3.0
+        }
+      ],
+      [
+        "claude-sonnet-4-5",
+        {
+          "det": 79.6,
+          "cost_in": 3.0
+        }
+      ],
+      [
+        "claude-sonnet-4-6",
+        {
+          "det": 61.2,
+          "cost_in": 3.0
+        }
+      ],
+      [
+        "claude-opus-4-5",
+        {
+          "det": 95.9,
+          "cost_in": 5.0
+        }
+      ],
+      [
+        "claude-opus-4-6",
+        {
+          "det": 71.4,
+          "cost_in": 5.0
+        }
+      ],
+      [
+        "claude-opus-4-7",
+        {
+          "det": 87.8,
+          "cost_in": 5.0
+        }
+      ],
+      [
+        "claude-opus-4-8",
+        {
+          "det": 77.6,
+          "cost_in": 5.0
+        }
+      ]
+    ],
+    "Flagship (>$10)": [
+      [
+        "o3",
+        {
+          "det": 83.0,
+          "cost_in": 10.0,
+          "note": "fixed"
+        }
+      ],
+      [
+        "gpt-5.4-pro",
+        {
+          "det": 88.3,
+          "cost_in": 30.0
+        }
+      ]
+    ]
+  },
+  "conclusion": "No inverted-U. Flat relationship. Cost determines choice, not capability."
+}

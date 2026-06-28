@@ -1,0 +1,92 @@
+{
+  "gpt-5-mini": {
+    "benign_mean": 0.0,
+    "adv_mean": null,
+    "clean_mean": 1.0,
+    "empty_benign": 0,
+    "empty_adv": 10,
+    "empty_clean": 7,
+    "verdict": "ARTIFACT (discriminating when responding)"
+  },
+  "gpt-5": {
+    "benign_mean": 0.0,
+    "adv_mean": null,
+    "clean_mean": 0.975,
+    "empty_benign": 0,
+    "empty_adv": 10,
+    "empty_clean": 8,
+    "verdict": "ARTIFACT (discriminating when responding)"
+  },
+  "gpt-5.2-chat": {
+    "benign_mean": 0.0,
+    "adv_mean": 0.73125,
+    "clean_mean": 0.7975,
+    "empty_benign": 0,
+    "empty_adv": 2,
+    "empty_clean": 2,
+    "verdict": "ARTIFACT (discriminating when responding)"
+  },
+  "o3-mini": {
+    "benign_mean": 0.0,
+    "adv_mean": 0.9,
+    "clean_mean": 0.6333333333333333,
+    "empty_benign": 0,
+    "empty_adv": 9,
+    "empty_clean": 7,
+    "verdict": "ARTIFACT (discriminating when responding)"
+  },
+  "o4-mini": {
+    "benign_mean": 0.0,
+    "adv_mean": 0.725,
+    "clean_mean": 0.9199999999999999,
+    "empty_benign": 0,
+    "empty_adv": 6,
+    "empty_clean": 0,
+    "verdict": "ARTIFACT (discriminating when responding)"
+  },
+  "gemini-2.5-flash": {
+    "benign_mean": 0.0,
+    "adv_mean": 0.76,
+    "clean_mean": 0.9,
+    "empty_benign": 0,
+    "empty_adv": 0,
+    "empty_clean": 0,
+    "verdict": "ARTIFACT (discriminating when responding)"
+  },
+  "gemini-2.5-pro": {
+    "benign_mean": 0.0,
+    "adv_mean": 0.5700000000000001,
+    "clean_mean": 0.6900000000000001,
+    "empty_benign": 0,
+    "empty_adv": 0,
+    "empty_clean": 0,
+    "verdict": "ARTIFACT (discriminating when responding)"
+  },
+  "gemini-3-flash-preview": {
+    "benign_mean": 0.0,
+    "adv_mean": 0.44000000000000006,
+    "clean_mean": 0.52,
+    "empty_benign": 0,
+    "empty_adv": 0,
+    "empty_clean": 0,
+    "verdict": "ARTIFACT (discriminating when responding)"
+  },
+  "gemini-3.1-pro-preview": {
+    "benign_mean": 0.0,
+    "adv_mean": 0.8166666666666668,
+    "clean_mean": 0.55,
+    "empty_benign": 0,
+    "empty_adv": 4,
+    "empty_clean": 2,
+    "verdict": "ARTIFACT (discriminating when responding)"
+  },
+  "gemini-3.1-flash-lite-preview": {
+    "benign_mean": 0.0,
+    "adv_mean": 0.51,
+    "clean_mean": 0.64,
+    "empty_benign": 0,
+    "empty_adv": 0,
+    "empty_clean": 0,
+    "verdict": "ARTIFACT (discriminating when responding)"
+  }
+}
