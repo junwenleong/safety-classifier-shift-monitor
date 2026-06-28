@@ -1,3 +1,4 @@
+import os
 """500-step black-box coordinate ascent against gpt-4o-mini.
 
 Extended budget to find the fracture point of the canary's robustness.
@@ -15,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 RESULTS_DIR = Path("results")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 TARGET_MODEL = "gpt-4o-mini"
 N_PROMPTS = 5

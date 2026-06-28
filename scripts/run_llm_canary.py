@@ -1,3 +1,4 @@
+import os
 """LLM-as-judge canary: Do frontier API models detect GCG attacks that fool DeBERTa?
 
 Sends 49 GCG-suffixed prompts + 50 clean prompts to multiple frontier models,
@@ -19,7 +20,7 @@ RESULTS_DIR = Path("results")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 MODELS = [
     # Google — generations

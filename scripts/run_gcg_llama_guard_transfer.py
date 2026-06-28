@@ -1,3 +1,4 @@
+import os
 """GCG against Llama Guard 3 (generative surrogate) + transfer test to API canaries.
 
 Optimizes suffixes to minimize Llama Guard's unsafe probability (white-box,
@@ -24,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 RESULTS_DIR = Path("results")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 MODEL_ID = "meta-llama/Llama-Guard-3-8B"
 N_PROMPTS = 10

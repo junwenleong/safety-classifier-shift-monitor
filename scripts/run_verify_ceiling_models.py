@@ -1,3 +1,4 @@
+import os
 """Verify: Are gpt-5-nano and gemini-3.5-flash also token-budget artifacts?
 
 Uses max_completion_tokens=100 (or max_tokens=100 for non-reasoning models),
@@ -15,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 RESULTS_DIR = Path("results")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 MODELS = ["gpt-5-nano", "gemini-3.5-flash"]
 

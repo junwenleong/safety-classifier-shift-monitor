@@ -1,3 +1,4 @@
+import os
 """System prompt sensitivity sweep on ceiling-clipped models.
 
 Tests whether the 1.0 ceiling-clipping is caused by:
@@ -19,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 RESULTS_DIR = Path("results")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 # Ceiling-clipped models to test
 MODELS = [

@@ -1,3 +1,4 @@
+import os
 """Fix failed models (gpt-5.4-pro, gpt-5.5) and add claude-opus-4-1.
 
 gpt-5.4-pro and gpt-5.5 failed in v1 due to using max_tokens instead of
@@ -20,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 RESULTS_DIR = Path("results")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 # Models that failed or were skipped
 MODELS = [

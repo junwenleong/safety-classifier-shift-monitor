@@ -1,3 +1,4 @@
+import os
 """N=100 expansion for gemini-2.5-flash-lite and gpt-4.1-nano.
 
 These two models had inconclusive Bayes Factors (within-pair SD of 0.39, 0.32)
@@ -25,7 +26,7 @@ GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 # Also load from the full (non-gate-a) file for extra prompts
 GCG_FULL_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes.jsonl")
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 MODELS = ["gemini-2.5-flash-lite", "gpt-4.1-nano"]
 
