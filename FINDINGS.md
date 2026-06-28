@@ -146,3 +146,34 @@ ESS reduction at dim=32 generalizes to paraphrase shift: Llama Guard ESS=32, Shi
 All numbers in this document were programmatically verified against raw experimental data using `scripts/verify_paper_numbers.py` (90 assertions, all passing). Experiment configurations in `configs/` were committed before execution (commit `be630f3`). Post-factorial additions pre-registered in `docs/pre_registration_amendment_2.md` (committed June 8, executed June 9–10).
 
 Paper: [arXiv](https://arxiv.org/abs/2606.11949) · Code and results: [github.com/junwenleong/safety-classifier-shift-monitor](https://github.com/junwenleong/safety-classifier-shift-monitor)
+
+## v2 Additions (arXiv v2)
+
+### Canary Detection (§7)
+- Score disagreement detects GCG evasion (p<10⁻¹², n=49)
+- Target-specific, not architecture-diverse (η²=0.011)
+- k=2 ensemble achieves 98% detection
+- Tokeniser barrier: 1.73× fragmentation ratio blocks cross-family transfer
+
+### Adversarial Robustness (§8)
+- 4-tier threat model with confidence-gated routing
+- Within-family transfer: 30% passive, 70% with joint optimization
+- Divergence-minimisation stall at gap=1/(2λ)=0.250 (empirical: 0.235-0.247)
+- Black-box coordinate ascent fails against both Pareto-optimal canaries (max Δ=0.2)
+
+### Frontier LLMs as Semantic Canaries (§7.8)
+- 35 models tested via frontier-api API (api.openai.com)
+- The 'ceiling-clipping' phenomenon was a deployment configuration artifact (max_tokens=16 + empty→1.0 parsing)
+- With max_tokens≥200: ALL models discriminate correctly (33 discriminating + 2 content-aware refusers)
+- N=1000 FPR: gpt-4.1 and claude-haiku-4-5 achieve 0/1000 (CI ≤ 0.37%)
+- Semantic mechanism: detection operates on base-prompt intent, ignoring suffix tokens (BF01>3 for 16/20 models, TOST ±0.15 for 16/20)
+- Ghost suffix: GCG suffixes inert on benign content (Δ=+0.005 for gpt-5.1)
+- Prefix mutation: 92% detection survives rephrasing (gpt-5.1)
+- Cross-lingual: 15-25% sensitivity degradation (vocabulary-driven), suffix inert across languages
+- Cost-scaling: r=0.51 (flat), cost determines optimal choice, not capability
+- Pareto frontier (Wilson CI): gpt-4o-mini ≥71% at $0.033/call, gpt-5.1 ≥83.5% at $0.30/call
+
+### Scan Martingale (§3.7)
+- Conformal test martingale replaces empirical KS calibration
+- FAR≤1% uniformly across all 4 classifiers (vs 2-9.5% under empirical KS)
+- Zero per-model calibration required

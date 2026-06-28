@@ -104,6 +104,25 @@ Deploy k=2 classifiers (one same-family for sensitivity, one cross-family for tr
 
 ---
 
+
+## The Deployment Configuration Trap (v2)
+
+We tested 35 frontier LLMs as safety monitoring canaries via the frontier-api API. The headline findings:
+
+**All models work when configured correctly.** The apparent 'inverse scaling' (bigger/reasoning models = worse monitors) was entirely a token-budget parsing artifact. Reasoning models (o3, o4-mini) require `max_completion_tokens≥200` for their internal chain-of-thought. At the standard `max_tokens=16`, they produce empty responses that our code parsed as 1.0 (maximum unsafe). With proper configuration, all 33 of 35 models discriminate correctly (benign≈0.0, harmful≈0.8).
+
+**Two genuine failures:** gpt-5-nano and gpt-5.5 refuse to score harmful content entirely (content-aware refusal). They score benign correctly (0.0) but return empty for harmful inputs — a binary detection signal, not a scoring failure.
+
+**Production recommendation:** Deploy `gpt-4o-mini` ($0.15/1M input tokens — approximately $0.000033 per classification call):
+- ≥71% guaranteed detection (Wilson 95% CI lower bound)
+- <1.5% false positive rate (7/1000, N=1000)
+- Robust to black-box adversarial optimization (100 iterations, max Δ=0.2)
+- Semantic detection survives prefix rephrasing, language translation, and suffix scrambling
+
+For safety-critical deployments, pay 10× for `gpt-5.1` (≥83.5% guaranteed detection).
+
+**Cross-lingual caveat:** Detection degrades 15-25% for non-English prompts (Spanish, Mandarin, Arabic). The degradation is vocabulary-driven (explicit harm keywords are English-specific), not structural. Suffix perturbation remains inert across all languages.
+
 ## What I built
 
 - KS detector on sliding-window score distributions with empirically calibrated thresholds (50 negative control streams per classifier)
