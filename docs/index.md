@@ -123,6 +123,24 @@ For safety-critical deployments, pay 10× for `gpt-5.1` (≥83.5% guaranteed det
 
 **Cross-lingual caveat:** Detection degrades 15-25% for non-English prompts (Spanish, Mandarin, Arabic). The degradation is vocabulary-driven (explicit harm keywords are English-specific), not structural. Suffix perturbation remains inert across all languages.
 
+---
+
+## Depth results (post-v2)
+
+**Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks reveal a saturating fitness landscape: all improvements occur in the first 50 steps, then the score is completely flat (Δ=0.000 for steps 50–500). Mean final score: 0.88 (threshold: 0.5). No fracture point exists — increasing attacker budget provides zero marginal advantage.
+
+**CoT Suffocation phase transition.** Response probability follows a sigmoid: P(response|T_r) = σ(k·(T_r - T_50)). For o3: T_50(benign)=46 tokens, T_50(adversarial)=154 tokens. The 3.3× gap explains why standard configs fail on complex inputs. Deploy with max_completion_tokens ≥ 200 for adversarial coverage.
+
+**Monitorability law falsified.** The n=4 correlation (r=0.97) between null-score std and detection latency was an encoder/decoder gap artifact. Within-family (n=6 encoder variants): r=0.21, p=0.70 — not a predictable property.
+
+**Dual-channel cross-lingual mechanism.** Explicit-harm prompts degrade 19-29pp cross-lingually (lexical keyword failure), while ambiguous prompts degrade only 10-15pp (structural intent transfers). For gpt-5.1: 84% of detections are structurally based (hold cross-lingually).
+
+**N=1000 FPR.** gpt-4.1 and claude-haiku-4-5 achieve 0/1000 false positives (95% CI upper ≤ 0.37%). All 10 evaluated canaries maintain FPR < 1.5%.
+
+**Cost-bounded safety routing.** Escalation router: screen with gpt-4o-mini, escalate ambiguous/non-English to gpt-5.1. At 12% escalation rate: $65/1M queries for 84.9% detection (vs $300/1M for always-gpt-5.1).
+
+**Honesty note on the scan martingale:** its value is operational simplicity (deploy once, guaranteed FAR ≤ α), not superior detection power. With proper per-condition calibrated KS thresholds, KS matches or exceeds the martingale at all mixing levels.
+
 ## What I built
 
 - KS detector on sliding-window score distributions with empirically calibrated thresholds (50 negative control streams per classifier)
