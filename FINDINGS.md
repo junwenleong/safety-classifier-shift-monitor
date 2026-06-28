@@ -169,7 +169,7 @@ Paper: [arXiv](https://arxiv.org/abs/2606.11949) · Code and results: [github.co
 - Semantic mechanism: detection operates on base-prompt intent, ignoring suffix tokens (BF01>3 for 16/20 models, TOST ±0.15 for 16/20)
 - Ghost suffix: GCG suffixes inert on benign content (Δ=+0.005 for gpt-5.1)
 - Prefix mutation: 92% detection survives rephrasing (gpt-5.1)
-- Cross-lingual: 15-25% sensitivity degradation (vocabulary-driven), suffix inert across languages
+- Cross-lingual: 15-25% sensitivity degradation (vocabulary-driven), suffix inert across languages. Spanish confirmed N=49 (gpt-4o-mini): 63.3% (Wilson CI [49.3%, 75.3%]) vs 83.7% English — 20.4pp drop
 - Cost-scaling: r=0.51 (flat), cost determines optimal choice, not capability
 - Pareto frontier (Wilson CI): gpt-4o-mini ≥71% at $0.033/1k calls, gpt-5.1 ≥83.5% at $0.30/1k calls
 
