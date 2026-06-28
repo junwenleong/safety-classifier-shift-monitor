@@ -1,3 +1,4 @@
+import os
 """Consolidated Mac Studio batch: M1 (LG3 GCG), M2 (suffix sweep), M3 (div-min +10), M4 (joint +10).
 
 Run all overnight on Mac Studio (96GB). Each experiment saves independently so
@@ -21,7 +22,7 @@ RESULTS_DIR = Path("results")
 EPOCH_SWEEP_DIR = Path("checkpoints/deberta-epoch-sweep/run")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 RESULTS_DIR.mkdir(exist_ok=True)
 
 

@@ -1,3 +1,4 @@
+import os
 """LLM canary v2: All 49 GCG prompts on informative models + scrambled suffix control.
 
 Changes from v1:
@@ -17,7 +18,7 @@ RESULTS_DIR = Path("results")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 # Only models with REAL score variance (not all-1.0 ceiling models)
 MODELS = [

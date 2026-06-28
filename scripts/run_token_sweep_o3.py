@@ -1,3 +1,4 @@
+import os
 """Token Limit Sweep: Find the CoT suffocation threshold for o3.
 
 Varies max_completion_tokens from 10 to 80 in steps of 10.
@@ -16,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 RESULTS_DIR = Path("results")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 TOKEN_LIMITS = [10, 20, 30, 40, 50, 60, 70, 80]
 

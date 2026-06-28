@@ -1,3 +1,4 @@
+import os
 """Run all pending experiments. One command, walk away.
 
 Usage (Mac Studio):

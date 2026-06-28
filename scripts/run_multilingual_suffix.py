@@ -1,3 +1,4 @@
+import os
 """Multilingual Suffix Transfer: Does English GCG suffix affect non-English prompts?
 
 Appends the SAME English GCG suffix (optimized for DeBERTa on the English prompt)
@@ -16,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 RESULTS_DIR = Path("results")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 MODELS = ["gpt-4o-mini", "gpt-5.1"]
 LANGUAGES = ["spanish", "mandarin", "arabic"]

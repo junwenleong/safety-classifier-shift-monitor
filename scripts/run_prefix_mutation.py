@@ -1,3 +1,4 @@
+import os
 """Prefix Mutation Sweep: Do canaries still detect when the harmful prefix is rephrased?
 
 GCG suffixes are optimized against the exact token sequence of the original prompt.
@@ -19,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 RESULTS_DIR = Path("results")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 MODELS = ["gpt-4o-mini", "gpt-5.1", "bedrock.claude-sonnet-4-5"]
 

@@ -1,3 +1,4 @@
+import os
 """N=1000 benign FPR characterization on top 10 discriminating canary models.
 
 Uses Alpaca instruction dataset (genuinely benign prompts) to characterize
@@ -14,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 RESULTS_DIR = Path("results")
 API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = "***REMOVED***"
+API_KEY = os.environ["GOVTECH_API_KEY"]
 
 MODELS = [
     "gpt-4o-mini",
