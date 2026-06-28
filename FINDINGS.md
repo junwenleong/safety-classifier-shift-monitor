@@ -171,7 +171,7 @@ Paper: [arXiv](https://arxiv.org/abs/2606.11949) · Code and results: [github.co
 - Prefix mutation: 92% detection survives rephrasing (gpt-5.1)
 - Cross-lingual: 15-25% sensitivity degradation (vocabulary-driven), suffix inert across languages
 - Cost-scaling: r=0.51 (flat), cost determines optimal choice, not capability
-- Pareto frontier (Wilson CI): gpt-4o-mini ≥71% at $0.033/call, gpt-5.1 ≥83.5% at $0.30/call
+- Pareto frontier (Wilson CI): gpt-4o-mini ≥71% at $0.033/1k calls, gpt-5.1 ≥83.5% at $0.30/1k calls
 
 ### Scan Martingale (§3.7)
 - Conformal test martingale replaces empirical KS calibration
