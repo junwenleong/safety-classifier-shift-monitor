@@ -14,7 +14,7 @@ We expand the 22-example canary observation from \S\ref{sec:regime-c} into a ful
 \subsection{Setup and Scoring Protocol}
 \label{sec:canary-setup}
 
-For each of the 49 successful GCG attacks against DeBERTa, we score the adversarial input on all four classifiers. We define \emph{divergence} for a classifier pair $(A, B)$ as $|f_B(x_{\text{adv}}) - f_A(x_{\text{adv}})|$, where $A$ is the target and $B$ is the canary. A canary \emph{detects} the attack when the divergence exceeds a null threshold calibrated at the 95th percentile of divergence under clean inputs.
+Of $n = 100$ GCG attempts, 49 successfully flip DeBERTa below 0.5 (49\% attack success rate). For each of these 49 successful attacks, we score the adversarial input on all four classifiers. We define \emph{divergence} for a classifier pair $(A, B)$ as $|f_B(x_{\text{adv}}) - f_A(x_{\text{adv}})|$, where $A$ is the target and $B$ is the canary. A canary \emph{detects} the attack when the divergence exceeds a null threshold calibrated at the 95th percentile of divergence under clean inputs.
 
 Both GCG suffixes and random-token controls use exactly 20 tokens (\texttt{SUFFIX\_LEN=20}), controlling for perturbation magnitude. The divergence difference reported below is attributable to the optimisation structure of GCG, not to perturbation size.
 
@@ -276,7 +276,7 @@ At $N = 49$: 15/20 models show no significant difference between scrambled and G
 
 \paragraph{Prefix mutation invariance.} Detection survives rephrasing of the harmful prefix: \texttt{gpt-5.1} maintains 92\% detection rate on paraphrased versions of the same harmful prompts (vs.\ 92\% on originals), confirming that detection is keyed to semantic intent rather than surface lexical patterns.
 
-\paragraph{Cross-lingual sensitivity.} Non-English prompts show 15--25\% sensitivity degradation (vocabulary-driven: models have weaker safety calibration for low-resource languages). However, adversarial suffixes remain inert across all tested languages ($\Delta \approx 0$ between clean and suffix-appended non-English prompts). The vulnerability is in base-prompt recognition, not suffix interaction.
+\paragraph{Cross-lingual sensitivity.} Non-English prompts show 15--25\% sensitivity degradation (vocabulary-driven: models have weaker safety calibration for low-resource languages). For \texttt{gpt-4o-mini} on Spanish specifically, the degradation is confirmed at $N = 49$: 63.3\% detection (31/49, Wilson 95\% CI [49.3\%, 75.3\%]) vs.\ 83.7\% in English (41/49, Wilson CI [71.0\%, 91.5\%]), a drop of 20.4~pp. However, adversarial suffixes remain inert across all tested languages ($\Delta \approx 0$ between clean and suffix-appended non-English prompts). The vulnerability is in base-prompt recognition, not suffix interaction.
 
 \paragraph{Dual-channel detection mechanism.} The cross-lingual degradation is asymmetric: explicit-harm prompts (direct violence, slurs) degrade 19--29 percentage points, while ambiguous/roleplay prompts degrade only 10--15 pp. This reveals two distinct safety detection channels: (i) a \emph{lexical channel} trained on English safety vocabulary that fails under translation, and (ii) a \emph{structural channel} that recognizes harmful intent patterns (e.g., roleplay framing, instructional structure) regardless of language. For \texttt{gpt-5.1}, 84\% (16/19) of prompts detected in English remain detected cross-lingually (structural channel), while 16\% leak (lexical-dependent). The safety score is effectively $S = \max(S_{\text{lexical}}, S_{\text{structural}})$; cross-lingual degradation represents loss of the lexical contribution only.
 
@@ -289,7 +289,7 @@ At $N = 49$: 15/20 models show no significant difference between scrambled and G
 \item \textbf{Temperature sensitivity.} All results use temperature $= 0$ for reproducibility. A sensitivity sweep at $T \in \{0, 0.3, 1.0\}$ across 5 models ($n = 20$ adv + 20 benign prompts, 3 replicates per non-zero temperature) shows detection rate varies by $< 5$ pp across temperatures, with within-prompt SD at $T = 1.0$ of $0.03$--$0.11$ across models. Temperature does not materially affect detection; $T = 0$ is recommended for operational consistency.
 \item API-based: non-reproducible across provider version changes.
 \item All 35 models are decoder-only transformers with RLHF --- no real architectural diversity relative to each other.
-\item Cross-lingual detection degrades 15--25\% for non-English prompts (vocabulary bias in safety calibration).
+\item Cross-lingual detection degrades 15--25\% for non-English prompts (vocabulary bias in safety calibration). Spanish degradation is confirmed at $N = 49$ (Wilson CI [49.3\%, 75.3\%]); Mandarin and Arabic estimates remain at $N = 20$ with wider CIs.
 \item Llama Guard 3 generative surrogate transfer test remains pending (script prepared; requires GPU with $\geq$20GB for 8B model + GCG gradients).
 \item Content-aware refusers (gpt-5-nano, gpt-5.5) can be leveraged as binary detection signals in production (empty response $=$ flag as harmful), but this integration is not yet implemented.
 \end{itemize}
