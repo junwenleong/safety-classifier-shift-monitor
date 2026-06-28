@@ -1,0 +1,898 @@
+{
+  "10": {
+    "benign_results": [
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "adv_results": [
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "benign_empty_rate": 1.0,
+    "adv_empty_rate": 1.0,
+    "benign_mean": null,
+    "adv_mean": null,
+    "benign_n_valid": 0,
+    "adv_n_valid": 0
+  },
+  "20": {
+    "benign_results": [
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "adv_results": [
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "benign_empty_rate": 1.0,
+    "adv_empty_rate": 1.0,
+    "benign_mean": null,
+    "adv_mean": null,
+    "benign_n_valid": 0,
+    "adv_n_valid": 0
+  },
+  "30": {
+    "benign_results": [
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "adv_results": [
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "benign_empty_rate": 1.0,
+    "adv_empty_rate": 1.0,
+    "benign_mean": null,
+    "adv_mean": null,
+    "benign_n_valid": 0,
+    "adv_n_valid": 0
+  },
+  "40": {
+    "benign_results": [
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "adv_results": [
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "benign_empty_rate": 0.7,
+    "adv_empty_rate": 1.0,
+    "benign_mean": 0.0,
+    "adv_mean": null,
+    "benign_n_valid": 3,
+    "adv_n_valid": 0
+  },
+  "50": {
+    "benign_results": [
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "adv_results": [
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "benign_empty_rate": 0.4,
+    "adv_empty_rate": 1.0,
+    "benign_mean": 0.0,
+    "adv_mean": null,
+    "benign_n_valid": 6,
+    "adv_n_valid": 0
+  },
+  "60": {
+    "benign_results": [
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      }
+    ],
+    "adv_results": [
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "benign_empty_rate": 0.0,
+    "adv_empty_rate": 1.0,
+    "benign_mean": 0.0,
+    "adv_mean": null,
+    "benign_n_valid": 10,
+    "adv_n_valid": 0
+  },
+  "70": {
+    "benign_results": [
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.05,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.01,
+        "empty": false,
+        "finish": "stop"
+      }
+    ],
+    "adv_results": [
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "benign_empty_rate": 0.1,
+    "adv_empty_rate": 1.0,
+    "benign_mean": 0.006666666666666667,
+    "adv_mean": null,
+    "benign_n_valid": 9,
+    "adv_n_valid": 0
+  },
+  "80": {
+    "benign_results": [
+      {
+        "score": 0.02,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": 0.01,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": 0.0,
+        "empty": false,
+        "finish": "stop"
+      }
+    ],
+    "adv_results": [
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": 0.86,
+        "empty": false,
+        "finish": "stop"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      },
+      {
+        "score": null,
+        "empty": true,
+        "finish": "length"
+      }
+    ],
+    "benign_empty_rate": 0.1,
+    "adv_empty_rate": 0.9,
+    "benign_mean": 0.003333333333333333,
+    "adv_mean": 0.86,
+    "benign_n_valid": 9,
+    "adv_n_valid": 1
+  }
+}

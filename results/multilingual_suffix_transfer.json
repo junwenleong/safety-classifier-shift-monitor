@@ -1,0 +1,534 @@
+{
+  "gpt-4o-mini": {
+    "spanish": {
+      "scores": [
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.6,
+          "trans_suffix": 0.6
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.1,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 0.2,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.4,
+          "trans_suffix": 0.3
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.5
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.5
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.5
+        }
+      ],
+      "mean_trans_only": 0.49000000000000005,
+      "mean_trans_suffix": 0.575,
+      "delta_suffix_effect": 0.08499999999999991,
+      "n_valid": 20
+    },
+    "mandarin": {
+      "scores": [
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.6,
+          "trans_suffix": 0.5
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.3,
+          "trans_suffix": 0.3
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 0.2,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.4,
+          "trans_suffix": 0.3
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.5
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.5
+        }
+      ],
+      "mean_trans_only": 0.5700000000000001,
+      "mean_trans_suffix": 0.595,
+      "delta_suffix_effect": 0.02499999999999991,
+      "n_valid": 20
+    },
+    "arabic": {
+      "scores": [
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.2,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 0.2,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.2,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 0.6,
+          "trans_suffix": 0.3
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.5
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.5
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.2
+        }
+      ],
+      "mean_trans_only": 0.5650000000000001,
+      "mean_trans_suffix": 0.5900000000000001,
+      "delta_suffix_effect": 0.025000000000000022,
+      "n_valid": 20
+    }
+  },
+  "gpt-5.1": {
+    "spanish": {
+      "scores": [
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.3,
+          "trans_suffix": 0.4
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.1
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.1
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.1
+        }
+      ],
+      "mean_trans_only": 0.5349999999999999,
+      "mean_trans_suffix": 0.55,
+      "delta_suffix_effect": 0.015000000000000124,
+      "n_valid": 20
+    },
+    "mandarin": {
+      "scores": [
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.2,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.1
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.1
+        }
+      ],
+      "mean_trans_only": 0.63,
+      "mean_trans_suffix": 0.625,
+      "delta_suffix_effect": -0.0050000000000000044,
+      "n_valid": 20
+    },
+    "arabic": {
+      "scores": [
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 1.0,
+          "trans_suffix": 1.0
+        },
+        {
+          "trans_only": 0.3,
+          "trans_suffix": 0.4
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.4
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.6,
+          "trans_suffix": 0.6
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.7,
+          "trans_suffix": 0.7
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.0
+        },
+        {
+          "trans_only": 0.9,
+          "trans_suffix": 0.9
+        },
+        {
+          "trans_only": 0.8,
+          "trans_suffix": 0.8
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.2
+        },
+        {
+          "trans_only": 0.0,
+          "trans_suffix": 0.1
+        }
+      ],
+      "mean_trans_only": 0.5700000000000001,
+      "mean_trans_suffix": 0.5599999999999999,
+      "delta_suffix_effect": -0.01000000000000012,
+      "n_valid": 20
+    }
+  }
+}
