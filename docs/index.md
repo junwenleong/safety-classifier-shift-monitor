@@ -121,13 +121,15 @@ We tested 35 frontier LLMs as safety monitoring canaries via the frontier-api AP
 
 For safety-critical deployments, pay 10× for `gpt-5.1` (≥83.5% guaranteed detection).
 
-**Cross-lingual caveat:** Detection degrades 15-25% for non-English prompts (Spanish, Mandarin, Arabic). The degradation is vocabulary-driven (explicit harm keywords are English-specific), not structural. Suffix perturbation remains inert across all languages.
+**Cross-lingual caveat:** Detection degrades 15-25% for non-English prompts. Spanish confirmed at N=49 (gpt-4o-mini): 63.3% detection (Wilson CI [49.3%, 75.3%]) vs 83.7% English — 20.4pp drop. Mandarin/Arabic at N=20 with wider CIs. Degradation is vocabulary-driven (explicit harm keywords are English-specific), not structural. Suffix perturbation remains inert across all languages.
 
 ---
 
 ## Depth results (post-v2)
 
-**Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks reveal a saturating fitness landscape: all improvements occur in the first 50 steps, then the score is completely flat (Δ=0.000 for steps 50–500). Mean final score: 0.88 (threshold: 0.5). No fracture point exists — increasing attacker budget provides zero marginal advantage.
+**Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks reveal a saturating fitness landscape: all improvements occur in the first 50 steps, then the score is completely flat (Δ=0.000 for steps 50–500). Mean final score: 0.88 (threshold: 0.5). No fracture point exists — increasing attacker budget provides zero marginal advantage. (n=5 prompts; n=10 extension in progress.)
+
+**Temperature sensitivity.** Detection rate varies by <5pp across T∈{0, 0.3, 1.0} (5 models × 20 adv + 20 benign, 3 reps per non-zero T). Within-prompt SD at T=1.0: 0.03–0.11. T=0 recommended for reproducibility.
 
 **CoT Suffocation phase transition.** Response probability follows a sigmoid: P(response|T_r) = σ(k·(T_r - T_50)). For o3: T_50(benign)=46 tokens, T_50(adversarial)=154 tokens. The 3.3× gap explains why standard configs fail on complex inputs. Deploy with max_completion_tokens ≥ 200 for adversarial coverage.
 

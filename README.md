@@ -24,7 +24,7 @@ The system operates on simulated production streams across a factorial evaluatio
 
 5. **Calibration-free monitoring via scan martingale.** A conformal test martingale replaces empirical threshold tuning, achieving FAR≤1% uniformly across all 4 classifiers with no per-model calibration (vs 2–9.5% spread under empirical KS calibration). The martingale's value is operational simplicity (deploy once, guaranteed FAR), not superior detection power — with proper per-condition calibration, KS matches or exceeds it.
 
-6. **Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks against `gpt-4o-mini` reveal a saturating fitness landscape: all improvements occur within the first 50 steps, after which the score is completely flat (Δ=0.000 for steps 50–500). Mean final score: 0.88 (threshold: 0.5). Increasing attacker budget provides zero marginal advantage.
+6. **Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks against `gpt-4o-mini` reveal a saturating fitness landscape: all improvements occur within the first 50 steps, after which the score is completely flat (Δ=0.000 for steps 50–500). Mean final score: 0.88 (threshold: 0.5). Increasing attacker budget provides zero marginal advantage. (n=5 prompts, hardest-case selection; n=10 extension in progress.)
 
 7. **CoT Suffocation phase transition.** Reasoning models exhibit a sigmoid response curve: P(response|T_r) = σ(k·(T_r - T_50)), with T_50(benign)=46 tokens and T_50(adversarial)=154 tokens for o3. The 3.3× gap explains why standard API configurations (max_tokens=16) cause total failure on complex inputs while simple queries occasionally succeed.
 
