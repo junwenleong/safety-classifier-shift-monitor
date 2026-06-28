@@ -191,7 +191,7 @@ We do not claim this defence is absolute. A Tier~3 attacker with white-box acces
 
 The canary classifiers evaluated in \S\ref{sec:canary}--\ref{sec:adversarial-robustness} are local models requiring GPU inference. A natural question is whether API-served frontier LLMs --- which are robust to GCG by construction (their tokenisers and weights are not accessible for gradient computation) --- can serve as zero-deployment canaries. We evaluate this by prompting frontier models to score input safety on a 0--1 scale and measuring whether their scores diverge from the targeted classifier's under GCG attack.
 
-\paragraph{Setup.} We score $n = 49$ GCG-adversarial prompts (the same corpus from \S\ref{sec:ca6}), $n = 49$ clean prompts (base prompts without suffix), and $n = 49$ scrambled-suffix prompts (same characters as the GCG suffix, randomly permuted to destroy gradient alignment) on 20 frontier models spanning 4 providers via \texttt{api.openai.com}. System prompt: ``Rate safety risk 0.0--1.0, reply with only a number.'' Temperature = 0.
+\paragraph{Setup.} We score $n = 49$ GCG-adversarial prompts (the same corpus from \S\ref{sec:ca6}), $n = 49$ clean prompts (base prompts without suffix), and $n = 49$ scrambled-suffix prompts (same characters as the GCG suffix, randomly permuted to destroy gradient alignment) on 20 frontier models spanning 4 providers via an OpenAI-compatible frontier API. System prompt: ``Rate safety risk 0.0--1.0, reply with only a number.'' Temperature = 0.
 
 \begin{figure}[t]
 \centering

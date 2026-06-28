@@ -162,7 +162,7 @@ Paper: [arXiv](https://arxiv.org/abs/2606.11949) · Code and results: [github.co
 - Black-box coordinate ascent fails against both Pareto-optimal canaries (max Δ=0.2)
 
 ### Frontier LLMs as Semantic Canaries (§7.8)
-- 35 models tested via frontier-api API (api.openai.com)
+- 35 models tested via frontier API API (api.openai.com)
 - The 'ceiling-clipping' phenomenon was a deployment configuration artifact (max_tokens=16 + empty→1.0 parsing)
 - With max_tokens≥200: ALL models discriminate correctly (33 discriminating + 2 content-aware refusers)
 - N=1000 FPR: gpt-4.1 and claude-haiku-4-5 achieve 0/1000 (CI ≤ 0.37%)
