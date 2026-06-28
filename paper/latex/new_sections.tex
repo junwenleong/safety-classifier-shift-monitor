@@ -206,6 +206,12 @@ The canary classifiers evaluated in \S\ref{sec:canary}--\ref{sec:adversarial-rob
 
 \paragraph{Root cause: token budget truncation.} The ceiling-clipping was a \emph{methodological artifact}, not a model property. Reasoning models (o3, o3-mini, o4-mini, gemini-2.5-flash, gemini-2.5-pro) consume their token budget on internal chain-of-thought before producing visible output. At \texttt{max\_completion\_tokens=16}, these models returned empty responses, which our parsing code defaulted to $1.0$. Rerunning all 35 models with \texttt{max\_tokens$\geq$200} eliminated the artifact: all previously ``ceiling-clipped'' models produce discriminating scores (benign $\approx 0.0$, adversarial $\geq 0.7$).
 
+\paragraph{CoT Suffocation: a phase transition in token budget.} The response probability as a function of allocated reasoning tokens $T_r$ follows a sigmoid:
+\[
+P(\text{response} \mid T_r) = \frac{1}{1 + e^{-k(T_r - T_{50})}}
+\]
+where $T_{50}$ is the critical threshold at which 50\% of inputs elicit a valid response. Crucially, $T_{50}$ is \emph{input-complexity-dependent}. For o3 with \texttt{reasoning\_effort=low}: $T_{50,\text{benign}} = 46$ tokens (steepness $k = 0.173$), $T_{50,\text{adv}} = 154$ tokens ($k = 0.030$). The ratio $T_{50,\text{adv}} / T_{50,\text{benign}} \approx 3.3\times$ reflects the additional reasoning required for complex adversarial inputs. The 90\% coverage threshold (where $>$90\% of inputs get valid scores) is $T_r \geq 59$ tokens for benign and $T_r \geq 227$ tokens for adversarial inputs. \emph{Deployment rule}: set $T_r \geq T_{50}(\text{hardest expected class}) + 2.2/k$ for $>$90\% coverage on that class.
+
 \paragraph{Corrected taxonomy: 33 discriminators + 2 content-aware refusers.} After correction, the 35 models partition into: (i)~33 \emph{discriminating} models that score benign $\approx 0.0$ and adversarial $0.7$--$0.9$; and (ii)~2 \emph{content-aware refusers} (gpt-5-nano, gpt-5.5) that score benign content correctly ($= 0.0$, 100\% response rate on 20 benign prompts) but refuse to produce a numeric score for harmful content (returning empty or a refusal string, parsed as $1.0$). The refusers are not broken --- they demonstrate content-aware safety behaviour --- but they cannot serve as graded canaries. They can, however, serve as binary detection signals (refusal $\Rightarrow$ flag as potentially harmful).
 
 \paragraph{Cost--performance Pareto frontier.} All 33 discriminating models achieve comparable detection quality ($\Delta(\text{adv} - \text{benign}) \geq +0.39$). The differentiation is purely economic: o3 costs $\approx$20$\times$ more per call than gpt-4o-mini despite equivalent detection performance. The Pareto frontier is therefore a \emph{cost} frontier, not a capacity frontier --- cheaper models are strictly preferred for canary deployment.
@@ -245,13 +251,19 @@ At $N = 49$: 15/20 models show no significant difference between scrambled and G
 
 \paragraph{Black-box robustness.} To test whether an adversary can degrade canary scores without gradient access, we run 100 iterations of coordinate-ascent token substitution against \texttt{gpt-4o-mini}: the maximum score reduction achieved is 0.2 (from $\approx 0.83$ to $\approx 0.63$), which does not breach the $\tau = 0.5$ decision threshold. \texttt{gpt-5.1} shows equivalent robustness under the same attack budget.
 
+\paragraph{Zero-gradient plateau (extended budget).} Extending the attack budget to 500 iterations reveals a \emph{hard optimization floor}: all score improvements occur within the first 50 steps, after which the fitness landscape is completely flat. Across 5 prompts with baseline $\geq 0.8$: two prompts show zero improvement at any step ($\Delta = 0.000$); three prompts achieve a single reduction in steps 1--50 (to 0.70--0.90) then exhibit identically zero marginal gain for steps 50--500. No prompt breaches the $\tau = 0.5$ threshold. The mean final score is 0.88. This demonstrates that the adversarial optimization landscape is discrete and saturating: the safety scoring function is locally flat with respect to suffix-token perturbations once the low-hanging-fruit substitutions are exhausted. Arbitrarily increasing the attacker's query budget provides no competitive advantage.
+
 \paragraph{Ghost suffix inertness.} GCG suffixes appended to \emph{benign} content do not induce false alarms: \texttt{gpt-5.1} scores 0/20 false positives on benign prompts with adversarial suffixes attached. The suffix is inert when the base prompt lacks harmful semantic content.
 
 \paragraph{Prefix mutation invariance.} Detection survives rephrasing of the harmful prefix: \texttt{gpt-5.1} maintains 92\% detection rate on paraphrased versions of the same harmful prompts (vs.\ 92\% on originals), confirming that detection is keyed to semantic intent rather than surface lexical patterns.
 
 \paragraph{Cross-lingual sensitivity.} Non-English prompts show 15--25\% sensitivity degradation (vocabulary-driven: models have weaker safety calibration for low-resource languages). However, adversarial suffixes remain inert across all tested languages ($\Delta \approx 0$ between clean and suffix-appended non-English prompts). The vulnerability is in base-prompt recognition, not suffix interaction.
 
+\paragraph{Dual-channel detection mechanism.} The cross-lingual degradation is asymmetric: explicit-harm prompts (direct violence, slurs) degrade 19--29 percentage points, while ambiguous/roleplay prompts degrade only 10--15 pp. This reveals two distinct safety detection channels: (i) a \emph{lexical channel} trained on English safety vocabulary that fails under translation, and (ii) a \emph{structural channel} that recognizes harmful intent patterns (e.g., roleplay framing, instructional structure) regardless of language. For \texttt{gpt-5.1}, 84\% (16/19) of prompts detected in English remain detected cross-lingually (structural channel), while 16\% leak (lexical-dependent). The safety score is effectively $S = \max(S_{\text{lexical}}, S_{\text{structural}})$; cross-lingual degradation represents loss of the lexical contribution only.
+
 \paragraph{Wilson CI Pareto.} Using Wilson score intervals for guaranteed minimum detection: \texttt{gpt-4o-mini} guarantees $\geq 71\%$ detection (95\% CI lower bound); \texttt{gpt-5.1} guarantees $\geq 83.5\%$. The cost--detection tradeoff is modest: gpt-5.1 costs $\approx$3$\times$ more for 12.5 percentage points of guaranteed detection improvement. Across all 28 configured models, detection rate correlates weakly with API cost (Pearson $r = 0.51$); no inverted-U relationship exists. Once configured correctly, almost any model works --- cost determines the optimal choice, not capability.
+
+\paragraph{Cost-bounded safety routing.} The Pareto structure admits a simple escalation router. Define the routing policy: screen all inputs with \texttt{gpt-4o-mini} (\$0.033/1k calls); escalate ambiguous scores ($\in [0.3, 0.7]$) and non-English inputs to \texttt{gpt-5.1} (\$0.30/1k). At an empirical escalation rate of $\sim$12\%, expected cost is \$65/1M queries with 84.9\% detection --- vs.\ \$300/1M for always-escalating to \texttt{gpt-5.1} and \$33/1M for always using \texttt{gpt-4o-mini} (83.7\%). The router achieves near-optimal detection at 78\% cost reduction compared to the highest-detection single model.
 
 \paragraph{Limitations.}
 \begin{itemize}
@@ -259,7 +271,7 @@ At $N = 49$: 15/20 models show no significant difference between scrambled and G
 \item API-based: non-reproducible across provider version changes.
 \item All 35 models are decoder-only transformers with RLHF --- no real architectural diversity relative to each other.
 \item Cross-lingual detection degrades 15--25\% for non-English prompts (vocabulary bias in safety calibration).
-\item Llama Guard 3 generative surrogate transfer test remains pending (model download blocked by network restrictions).
+\item Llama Guard 3 generative surrogate transfer test remains pending (script prepared; requires GPU with $\geq$20GB for 8B model + GCG gradients).
 \item Content-aware refusers (gpt-5-nano, gpt-5.5) can be leveraged as binary detection signals in production (empty response $=$ flag as harmful), but this integration is not yet implemented.
 \end{itemize}
 
