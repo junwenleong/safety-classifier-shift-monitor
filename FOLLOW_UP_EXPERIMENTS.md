@@ -1578,9 +1578,11 @@ HF_HUB_DISABLE_SSL_VERIFY=1 python -c "from transformers import AutoModelForCaus
 
 | Priority | Experiment | Status | Notes |
 |---|---|---|---|
-| **#1** | Llama Guard 3 Surrogate GCG → API transfer | ⏳ READY (run on Mac Studio) | Model downloaded. Script at `scripts/run_gcg_llama_guard_transfer.py`. MacBook Pro (24GB) OOMs on 8B fp16 + gradients. Run on Mac Studio (96GB). |
-| **#2** | 500-step Black-Box Coordinate Ascent | ✅ COMPLETE | Hard floor proven. Zero improvement after step 50 for all 5 prompts. |
+| **#1** | Llama Guard 3 Surrogate GCG → API transfer | ⏳ READY (run on Mac Studio) | Consolidated into `scripts/run_mac_studio_batch.py` as M1. Pull and run on Mac Studio. |
+| **#2** | 500-step Black-Box n=10 extension (A3) | ⏳ RUNNING | Script: `run_blackbox_500step_ext.py`. ~4h remaining. Will update paper n=5→n=10 on completion. |
 | **#3** | Depth Formalizations (analysis) | ✅ COMPLETE | CoT Suffocation sigmoid, dual-channel cross-lingual, CBSE Router, Lipschitz bound — all in paper. |
+| **A1** | Temperature sensitivity sweep | ✅ COMPLETE | T∈{0,0.3,1.0} × 5 models × 20+20 prompts. <5pp change, σ=0.03–0.11. Added to paper limitations. |
+| **A4** | Cross-lingual N=49 Spanish (gpt-4o-mini) | ✅ COMPLETE | 63.3% (31/49, Wilson CI [49.3%, 75.3%]) vs 83.7% English. 20.4pp drop. Paper + all MDs updated. |
 
 ### Priority #1: Llama Guard 3 Surrogate Attack
 
@@ -1640,17 +1642,23 @@ All integrated into paper LaTeX (`new_sections.tex`):
 | FINDINGS.md | ✅ Full depth results section |
 | docs/index.md | ✅ All depth results + Track C |
 
-Numbers cross-checked: T_50=46/154, Wilson ≥71%/≥83.5%, 0/1000 FPR, r=0.51 — all consistent across files.
+Numbers cross-checked: T_50=46/154, Wilson ≥71%/≥83.5%, 0/1000 FPR, r=0.51, Spanish 63.3% [49.3%,75.3%] — all consistent across paper + MD files.
 
 ### Remaining
 
-**Only 1 experiment left:** Llama Guard 3 GCG → API transfer (Mac Studio).
+**2 API experiments + Mac Studio batch left:**
 
-After LG3 completes:
-1. Replace "pending" limitation in paper with actual result
-2. Add transfer result to §8 (adversarial robustness)
-3. Compile final PDF
-4. Upload arXiv v2
+1. **A3** — 500-step blackbox n=10 extension (running, ~4h). On completion: update paper "5 tested prompts" → "10 prompts" in §7.8 optimization saturation paragraph.
+2. **Mac Studio batch (M1-M4)** — pull and run tomorrow:
+   ```bash
+   cd sentry && git pull && .venv/bin/python scripts/run_mac_studio_batch.py
+   ```
+   - M1 (LG3 surrogate): removes "pending" from §8 limitations
+   - M2 (suffix length 10/20/40): removes suffix-length limitation
+   - M3 (div-min +10 → n=20): Proposition 1 confirmatory
+   - M4 (joint GCG +10 → n=20): converts Fisher p=0.18 → p≈0.03
+
+Completed since last update: A1 (temperature, ✅), A4 (Spanish N=49, ✅), L1–L12 language edits (✅), n=49 corpus explanation (✅).
 
 ---
 
@@ -1675,10 +1683,10 @@ Applied 8 precision edits to `paper/latex/paper.tex` and `paper/latex/new_sectio
 
 **Zero new experiments. Zero new sections. Language precision only.**
 
-### Remaining After LG3
+### After All Mac Studio + A3 Complete
 
-1. ⏳ LG3 surrogate GCG → API transfer (Mac Studio running)
-2. Replace "pending" limitation with actual result
+1. Update paper with M1 LG3 result (remove "pending" limitation)
+2. Update paper with A3 n=10 numbers (optimization saturation paragraph)
 3. Final compile + verify numbers
 4. Upload arXiv v2
 5. Submit to SaTML 2026 (check deadline)
