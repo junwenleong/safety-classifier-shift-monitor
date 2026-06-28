@@ -1,3 +1,4 @@
+import os
 """Run all validation gates on Mac Studio. One command, walk away.
 
 Usage (on Mac Studio):
