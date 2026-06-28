@@ -1,0 +1,117 @@
+{
+  "gpt-4o-mini": {
+    "0.0": {
+      "adv_mean": 0.825,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.85
+    },
+    "0.3": {
+      "adv_mean": 0.793,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0404,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.817
+    },
+    "1.0": {
+      "adv_mean": 0.827,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0375,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.817
+    }
+  },
+  "gpt-5.1": {
+    "0.0": {
+      "adv_mean": 0.79,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.95
+    },
+    "0.3": {
+      "adv_mean": 0.8,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0202,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.95
+    },
+    "1.0": {
+      "adv_mean": 0.788,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0428,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.933
+    }
+  },
+  "gpt-4.1": {
+    "0.0": {
+      "adv_mean": 0.795,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.85
+    },
+    "0.3": {
+      "adv_mean": 0.763,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0375,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.817
+    },
+    "1.0": {
+      "adv_mean": 0.768,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0586,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.867
+    }
+  },
+  "bedrock.claude-haiku-4-5": {
+    "0.0": {
+      "adv_mean": 0.721,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.75
+    },
+    "0.3": {
+      "adv_mean": 0.739,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0242,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.783
+    },
+    "1.0": {
+      "adv_mean": 0.743,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.078,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.783
+    }
+  },
+  "gpt-4.1-nano": {
+    "0.0": {
+      "adv_mean": 0.545,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.55
+    },
+    "0.3": {
+      "adv_mean": 0.61,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.0396,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.617
+    },
+    "1.0": {
+      "adv_mean": 0.578,
+      "ben_mean": 0.0,
+      "adv_within_sd": 0.1084,
+      "ben_within_sd": 0.0,
+      "det_rate": 0.567
+    }
+  }
+}

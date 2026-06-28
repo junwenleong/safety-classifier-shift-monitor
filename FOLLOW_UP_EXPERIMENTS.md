@@ -1651,3 +1651,34 @@ After LG3 completes:
 2. Add transfer result to §8 (adversarial robustness)
 3. Compile final PDF
 4. Upload arXiv v2
+
+---
+
+### Paper Language Calibration (2026-06-28 13:38 SGT) ✅
+
+Applied 8 precision edits to `paper/latex/paper.tex` and `paper/latex/new_sections.tex`. Paper compiles cleanly at 28 pages, 564KB.
+
+**Motivation:** External review identified the paper as empirically strong but at risk of overclaiming in language. Edits calibrate language to match the actual contribution type (quantitative security characterisation, not new algorithm).
+
+| # | Edit | Rationale |
+|---|---|---|
+| 1 | Cost units: `$/1k calls` → `$ per 1,000 calls` | Prevents reviewer flagging pricing error (was ambiguous) |
+| 2 | Abstract: added "Our contribution is a quantitative security characterisation" | Pre-empts "just two classifiers" objection |
+| 3 | "phase transition" → "equilibrium" / "sigmoid response curve" (6 occurrences) | CoT sigmoid is n=1 model, 8 points — not a phase transition |
+| 4 | "structurally blocked/suppressed" → "exponentially penalised" (3 occurrences) | 0% transfer at n=49 ≠ mathematical impossibility |
+| 5 | 1/(2λ) promoted to boxed Proposition 1 with experimental validation | Only genuine theoretical contribution — make it structurally prominent |
+| 6 | `\paragraph{Contributions.}` added to end of §1 (5 bullet items) | Makes reviewer's contribution-mapping trivial |
+| 7 | Track C → `\subsection{Falsified: Monitorability Is Not an Intrinsic Classifier Property}` | Honest negatives that correct own prior claims signal integrity |
+| 8 | CoT budget starvation table (Table `tab:cot-thresholds`: T50=46/154, T90=60/200) | Citable deployment numbers practitioners will screenshot |
+
+**Additional:** Lipschitz bound bolded ("sensitivity bounded at less than 0.01 per token"), cost-routing paragraph units verified ($/1M for aggregate costs left as-is — correct unit).
+
+**Zero new experiments. Zero new sections. Language precision only.**
+
+### Remaining After LG3
+
+1. ⏳ LG3 surrogate GCG → API transfer (Mac Studio running)
+2. Replace "pending" limitation with actual result
+3. Final compile + verify numbers
+4. Upload arXiv v2
+5. Submit to SaTML 2026 (check deadline)
