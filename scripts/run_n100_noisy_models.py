@@ -25,8 +25,8 @@ RESULTS_DIR = Path("results")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 # Also load from the full (non-gate-a) file for extra prompts
 GCG_FULL_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes.jsonl")
-API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = os.environ["GOVTECH_API_KEY"]
+API_BASE = "https://api.openai.com/v1"
+API_KEY = os.environ["FRONTIER_API_KEY"]
 
 MODELS = ["gemini-2.5-flash-lite", "gpt-4.1-nano"]
 

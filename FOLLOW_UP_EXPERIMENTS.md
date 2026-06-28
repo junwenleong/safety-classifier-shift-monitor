@@ -964,7 +964,7 @@ Good ideas that are deliberately *not* in the deliverable structure. They become
 
 ## Post-v2 Characterization Batch (2026-06-28)
 
-All experiments below use the frontier-api API (`api.openai.com`). Results saved to `results/`.
+All experiments below use the frontier API API (`api.openai.com`). Results saved to `results/`.
 
 ---
 
@@ -1386,7 +1386,7 @@ Classified 20 prompts: 7 explicit-harm (direct violence, slurs, illegal acts), 1
 **CONCLUSION: The "reversed scaling law" / "ceiling-clipping" phenomenon is ENTIRELY a deployment configuration artifact.**
 
 **Final taxonomy (corrected):**
-1. **DISCRIMINATING (ALL 33 models with proper config):** Every model on the frontier-api API can act as a safety canary when given `max_tokens≥200` and proper parsing (empty=skip, not empty=1.0).
+1. **DISCRIMINATING (ALL 33 models with proper config):** Every model on the frontier API API can act as a safety canary when given `max_tokens≥200` and proper parsing (empty=skip, not empty=1.0).
 2. **CONTENT-REFUSAL (2 models: gpt-5-nano, gpt-5.5):** These models genuinely refuse to score harmful content (always empty on harmful inputs regardless of token budget). This is RLHF-enforced task refusal, not over-conservative scoring.
 
 **The "reversed scaling" story is dead. The real story is a "Deployment Configuration Trap":**
