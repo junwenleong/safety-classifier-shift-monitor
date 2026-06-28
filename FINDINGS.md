@@ -183,9 +183,13 @@ Paper: [arXiv](https://arxiv.org/abs/2606.11949) · Code and results: [github.co
 
 **CoT Suffocation phase transition.** Response probability follows a sigmoid: P(response|T_r) = σ(k·(T_r - T_50)). For o3: T_50(benign)=46 tokens (k=0.173), T_50(adversarial)=154 tokens (k=0.030). The 3.3× gap means standard API configs (max_tokens=16) cause total failure on adversarial inputs while benign queries occasionally succeed. Deploy with T_r ≥ T_50(hardest class) + 2.2/k for >90% coverage.
 
-**500-step black-box hard floor.** Extended coordinate ascent (500 steps, 5 prompts with baseline ≥0.8) reveals a saturating fitness landscape: all improvements occur in first 50 steps, then the score is completely flat (Δ=0.000 for steps 50–500). Mean final score: 0.88. No prompt breaches 0.5. There is no fracture point — increasing attacker budget provides zero marginal advantage.
+**500-step black-box hard floor.** Extended coordinate ascent (500 steps, 5 prompts with baseline ≥0.8) reveals a saturating fitness landscape: all improvements occur in first 50 steps, then the score is completely flat (Δ=0.000 for steps 50–500). Mean final score: 0.88. No prompt breaches 0.5. There is no fracture point — increasing attacker budget provides zero marginal advantage. (n=5 prompts; n=10 extension in progress.)
+
+**Temperature sensitivity.** Detection rate varies by <5pp across T∈{0, 0.3, 1.0} (5 models × 20 adv + 20 benign, 3 reps per non-zero T). Within-prompt SD at T=1.0: 0.03–0.11. T=0 recommended for reproducibility; temperature does not materially affect detection.
 
 **Dual-channel cross-lingual mechanism.** The 15-25% cross-lingual degradation is asymmetric: explicit-harm prompts (direct violence, slurs) degrade 19-29pp, while ambiguous/roleplay prompts degrade only 10-15pp. Two safety channels: (i) lexical keyword matching (language-specific, fails under translation), (ii) structural intent recognition (language-invariant, transfers natively). For gpt-5.1: 84% of detections are structural (hold cross-lingually), 16% are lexical (leak when translated). Multilingual suffix transfer: mean Δ = +0.022 (suffix completely inert across languages).
+
+**Cross-lingual N=49 (Spanish, gpt-4o-mini).** Confirmed at N=49: 63.3% detection (31/49, Wilson CI [49.3%, 75.3%]) vs 83.7% English (41/49, CI [71.0%, 91.5%]). Drop: 20.4pp. Tightens CI from ±20pp (N=20) to ±13pp. Mandarin/Arabic remain at N=20.
 
 **Cost-bounded safety routing (CBSE).** The Pareto frontier admits a dynamic escalation router: screen all inputs with gpt-4o-mini ($0.033/1k); escalate ambiguous (score ∈ [0.3, 0.7]) and non-English inputs to gpt-5.1 ($0.30/1k). At ~12% escalation rate: expected cost $65/1M queries, 84.9% detection — vs $300/1M for always-gpt-5.1 (93.9%) and $33/1M for always-gpt-4o-mini (83.7%). Near-optimal detection at 78% cost reduction.
 
