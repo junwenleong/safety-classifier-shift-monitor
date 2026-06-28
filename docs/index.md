@@ -107,7 +107,7 @@ Deploy k=2 classifiers (one same-family for sensitivity, one cross-family for tr
 
 ## The Deployment Configuration Trap (v2)
 
-We tested 35 frontier LLMs as safety monitoring canaries via the frontier-api API. The headline findings:
+We tested 35 frontier LLMs as safety monitoring canaries via the frontier API API. The headline findings:
 
 **All models work when configured correctly.** The apparent 'inverse scaling' (bigger/reasoning models = worse monitors) was entirely a token-budget parsing artifact. Reasoning models (o3, o4-mini) require `max_completion_tokens≥200` for their internal chain-of-thought. At the standard `max_tokens=16`, they produce empty responses that our code parsed as 1.0 (maximum unsafe). With proper configuration, all 33 of 35 models discriminate correctly (benign≈0.0, harmful≈0.8).
 

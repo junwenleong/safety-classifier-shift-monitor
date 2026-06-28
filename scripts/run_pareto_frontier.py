@@ -17,7 +17,7 @@ from scipy.stats import beta as beta_dist
 
 RESULTS_DIR = Path("results")
 
-# Cost per 1M tokens (input, output) — from frontier-api API pricing
+# Cost per 1M tokens (input, output) — from frontier API API pricing
 COSTS = {
     "gpt-4o-mini": {"input": 0.15, "output": 0.6},
     "gpt-4o": {"input": 2.5, "output": 10},

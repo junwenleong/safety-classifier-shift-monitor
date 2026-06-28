@@ -15,8 +15,8 @@ from statistics import mean, stdev
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 RESULTS_DIR = Path("results")
-API_BASE = "https://api.openai.com/platform/models/v1"
-API_KEY = os.environ["GOVTECH_API_KEY"]
+API_BASE = "https://api.openai.com/v1"
+API_KEY = os.environ["FRONTIER_API_KEY"]
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 
 MODELS = ["gpt-4o-mini", "gpt-5.1", "gpt-4.1", "bedrock.claude-haiku-4-5", "gpt-4.1-nano"]
