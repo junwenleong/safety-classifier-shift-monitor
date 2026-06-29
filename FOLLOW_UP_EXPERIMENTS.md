@@ -1651,14 +1651,26 @@ Numbers cross-checked: T_50=46/154, Wilson ≥71%/≥83.5%, 0/1000 FPR, r=0.51, 
 **2 API experiments + Mac Studio batch left:**
 
 1. ~~**A3** — done.~~ ✅
-2. **Mac Studio batch (M1-M4)** — pull and run tomorrow:
-   ```bash
-   cd sentry && git pull && .venv/bin/python scripts/run_mac_studio_batch.py
-   ```
+2. **Mac Studio batch (M1-M4)** — ⏳ IN PROGRESS (started 2026-06-29 ~10:48 SGT)
    - M1 (LG3 surrogate): removes "pending" from §8 limitations
    - M2 (suffix length 10/20/40): removes suffix-length limitation
    - M3 (div-min +10 → n=20): Proposition 1 confirmatory
    - M4 (joint GCG +10 → n=20): converts Fisher p=0.18 → p≈0.03
+
+   **⚠️ Mac Studio push protocol (remote was force-pushed, branches diverged):**
+   ```bash
+   # 1. Sync to latest remote WITHOUT losing untracked result files
+   git fetch origin && git reset --hard origin/main
+   # (untracked files like results/*.json are NOT touched by reset --hard)
+
+   # 2. Stage only the new result files
+   git add results/gcg_llama_guard_transfer.json results/suffix_length_sweep.json \
+           results/ca8_divergence_min_n20.json results/ca8_joint_gcg_n20.json
+
+   # 3. Commit and push
+   git commit -S -m "results: M1-M4 Mac Studio batch complete"
+   git push
+   ```
 
 Completed since last update: A1 (temperature, ✅), A4 (Spanish N=49, ✅), L1–L12 language edits (✅), n=49 corpus explanation (✅).
 
