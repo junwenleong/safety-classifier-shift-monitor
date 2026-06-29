@@ -1,4 +1,3 @@
-import os
 """Consolidated Mac Studio batch: M1 (LG3 GCG), M2 (suffix sweep), M3 (div-min +10), M4 (joint +10).
 
 Run all overnight on Mac Studio (96GB). Each experiment saves independently so
@@ -8,7 +7,7 @@ Usage:
     .venv/bin/python scripts/run_mac_studio_batch.py [--only M1|M2|M3|M4]
 """
 from __future__ import annotations
-import json, sys, time, argparse
+import json, os, sys, time, argparse
 from pathlib import Path
 import torch
 import torch.nn.functional as F
