@@ -8,7 +8,7 @@ Online monitoring system for distributional shift in deployed safety classifiers
 
 The system operates on simulated production streams across a factorial evaluation design:
 
-- **4 classifiers**: Llama Guard 3 (8B), ShieldGemma (9B), gpt-oss-safeguard, DeBERTa-v3-large
+- **4 classifiers**: Llama Guard 3 (8B), ShieldGemma (9B), Text-Moderation (KoalaAI), DeBERTa-v3-large
 - **5 shift conditions**: paraphrase, code-switch, adversarial suffix, compositional/long-context, temporal
 - **3 ground-truth regimes**: synthetic onset (A), temporal split (B), adversarial success (C)
 
@@ -16,19 +16,19 @@ The system operates on simulated production streams across a factorial evaluatio
 
 1. **Density-ratio collapse in high-dimensional embeddings.** Weighted conformal correction fails for generative classifiers (Llama Guard, ShieldGemma) because logistic regression achieves perfect separability in 3584–4096-d embedding space, driving all density ratios to zero. A diagnostic PCA experiment confirms this is a dimensionality artifact: projecting to ≤32 dimensions breaks the separability and restores coverage.
 
-2. **Architectural crossover invisible to single-classifier studies.** Encoders detect paraphrase fast (28–35 steps) but adversarial suffix slow; decoders show the opposite. The classifier × shift interaction explains 18.5% of detection latency variance — monitoring must be tuned per-classifier.
+2. **Architectural crossover invisible to single-classifier studies.** Encoders detect paraphrase fast (28–35 steps) but adversarial suffix slow; decoders show the opposite. The classifier × shift interaction explains 18.5% of detection latency variance; monitoring must be tuned per-classifier.
 
-3. **Score-disagreement monitoring detects gradient-based evasion.** Any un-targeted classifier detects when the primary is under GCG attack (p<10⁻¹², n=49). The divergence is attack-specific (not generic OOD) and confidence-gated: when the canary is confident, a divergence-minimising attacker stalls at a predicted equilibrium (gap=1/(2λ), validated within 95% CI). Architecture diversity is not required for detection (η²=0.011) but provides transfer robustness (0% cross-family transfer vs 30% within-family).
+3. **Score-disagreement monitoring detects gradient-based evasion.** Any un-targeted classifier detects when the primary is under GCG attack (p<10⁻¹², n=49). The divergence is attack-specific (not generic OOD) and confidence-gated: when the canary is confident, a divergence-minimising attacker stalls at a predicted equilibrium (gap=1/(2λ)=0.250; 14/20 prompts blocked, mean gap 0.218). Architecture diversity is not required for detection (η²=0.011) but provides transfer robustness (0% cross-family transfer vs 30% within-family).
 
 4. **The Deployment Configuration Trap.** An initial screen of 35 frontier LLMs appeared to show a 'reversed scaling law' where flagship/reasoning models (o3, gpt-5) were ceiling-clipped at 1.0 on all inputs. Investigation revealed this was entirely a token-budget parsing artifact: reasoning models require `max_completion_tokens≥200` for their internal chain-of-thought; at the standard `max_tokens=16`, they produce empty responses incorrectly parsed as maximum-unsafe. With proper configuration, ALL models discriminate correctly (benign≈0.0, harmful≈0.8). Only 2 models (gpt-5-nano, gpt-5.5) exhibit genuine content-aware refusal. The optimal production choice remains `gpt-4o-mini` ($0.15/1M tokens, ≥71% guaranteed detection, <1.5% FPR at N=1000) due to cost, not capability.
 
-5. **Calibration-free monitoring via scan martingale.** A conformal test martingale replaces empirical threshold tuning, achieving FAR≤1% uniformly across all 4 classifiers with no per-model calibration (vs 2–9.5% spread under empirical KS calibration). The martingale's value is operational simplicity (deploy once, guaranteed FAR), not superior detection power — with proper per-condition calibration, KS matches or exceeds it.
+5. **Calibration-free monitoring via scan martingale.** A conformal test martingale replaces empirical threshold tuning, achieving FAR≤1% uniformly across all 4 classifiers with no per-model calibration (vs 2–9.5% spread under empirical KS calibration). The martingale's value is operational simplicity (deploy once, guaranteed FAR), not superior detection power; with proper per-condition calibration, KS matches or exceeds it.
 
 6. **Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks against `gpt-4o-mini` (n=10 prompts, hardest-case selection): 9/10 show zero improvement after step 50, 1/10 shows one small reduction still above threshold. Mean final score: 0.90 (threshold: 0.5). No prompt breaches 0.5. Increasing attacker budget provides no advantage.
 
-7. **CoT Suffocation phase transition.** Reasoning models exhibit a sigmoid response curve: P(response|T_r) = σ(k·(T_r - T_50)), with T_50(benign)=46 tokens and T_50(adversarial)=154 tokens for o3. The 3.3× gap explains why standard API configurations (max_tokens=16) cause total failure on complex inputs while simple queries occasionally succeed.
+7. **CoT Suffocation phase transition.** Reasoning models exhibit a sigmoid response curve: P(response|T_r) = σ(k·(T_r - T_50)), with T_50(benign)=46 tokens and T_50(adversarial)=154 tokens for o3. The 3.3× gap explains why standard configurations (max_tokens=16) cause total failure on complex inputs while simple queries occasionally succeed.
 
-8. **Monitorability law falsified.** The n=4 correlation (r=0.97) between null-score std and detection latency was an encoder/decoder gap artifact. Within-family evaluation (n=6 encoder variants) yields r=0.21, p=0.70 — monitorability is not a predictable intrinsic property of score-distribution geometry.
+8. **Monitorability law falsified.** The n=4 correlation (r=0.97) between null-score std and detection latency was an encoder/decoder gap artifact. Within-family evaluation (n=6 encoder variants) yields r=0.21, p=0.70; monitorability is not a predictable intrinsic property of score-distribution geometry.
 
 ## Installation
 
