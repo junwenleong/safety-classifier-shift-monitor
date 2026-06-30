@@ -81,5 +81,19 @@
       "success": true
     }
   ],
-  "n_success": 10
+  "n_success": 10,
+  "transfer": {
+    "gpt-4o-mini": {
+      "orig_mean": 0.84,
+      "attacked_mean": 0.84,
+      "delta": 0.0,
+      "n": 10
+    },
+    "gpt-5.1": {
+      "orig_mean": 0.77,
+      "attacked_mean": 0.76,
+      "delta": -0.01,
+      "n": 10
+    }
+  }
 }

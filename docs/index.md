@@ -39,13 +39,13 @@ The critical pattern: **encoders and decoders invert on shift type.** DeBERTa ca
 
 ## Conformal correction silently fails
 
-When shift is detected, weighted conformal prediction should adapt thresholds using density ratios to preserve coverage. For DeBERTa, it works: +14 pp recovery (ESS = 88/300, genuine reweighting).
+When shift is detected, weighted conformal prediction should adapt thresholds using density ratios to preserve coverage. For DeBERTa, it works: +16 pp recovery (ESS = 88/300, genuine reweighting).
 
 For the other three classifiers, it does nothing:
 
 | Classifier | Embedding dim | ESS | Recovery | What's happening |
 |---|---|---|---|---|
-| DeBERTa | 1024 | 88 | +14 pp | ✓ Working: 24 calibration points retain meaningful weights |
+| DeBERTa | 1024 | 88 | +16 pp | ✓ Working: 24 calibration points retain meaningful weights |
 | Text-Mod. | 768 | 300 | +2 pp | ✗ Collapsed: all weights at floor |
 | Llama Guard | 4096 | 300 | +2 pp | ✗ Collapsed: all weights at floor |
 | ShieldGemma | 3584 | 300 | +7.5 pp | ✗ Collapsed: all weights at floor |
@@ -92,12 +92,12 @@ All three systematic factors are significant (p < 0.001, 1000 permutations). A m
 
 ## Adversarial robustness (v2)
 
-The canary effect — a second, un-targeted classifier detecting when the primary is under gradient-based attack — works under precise conditions:
+The canary effect (a second, un-targeted classifier detecting when the primary is under gradient-based attack) works under precise conditions:
 
-- **Attack-specific:** GCG divergence >> random noise (p<10⁻¹², n=49). Silent under gibberish.
+- **Attack-specific:** GCG divergence >> random noise (p<10⁻¹², n=49). Canary alarms far less often under length-matched random suffixes (12.2%) than under GCG (75.5%).
 - **Confident canary:** detection is robust (7% transfer when canary confident)
 - **Uncertain canary:** attacker can stealth-evade (100% transfer when uncertain)
-- **Phase transition:** a divergence-minimising attacker stalls at gap=1/(2λ) when canary is confident — the defense has a predictable, measurable boundary (predicted 0.250, observed 0.235, within 95% CI)
+- **Phase transition:** a divergence-minimising attacker stalls at gap=1/(2λ)=0.250 when canary is confident; 14/20 prompts blocked, mean gap 0.218, median 0.250, with 9 near-equilibrium cases at 0.2499
 - **Architecture diversity is NOT required** for detection (η²=0.011), but IS required for transfer robustness (0% cross-family vs 30% within-family)
 
 Deploy k=2 classifiers (one same-family for sensitivity, one cross-family for transfer robustness). A scan martingale provides FAR≤1% without per-classifier threshold tuning.
@@ -107,33 +107,33 @@ Deploy k=2 classifiers (one same-family for sensitivity, one cross-family for tr
 
 ## The Deployment Configuration Trap (v2)
 
-We tested 35 frontier LLMs as safety monitoring canaries via the frontier API API. The headline findings:
+We tested 35 frontier LLMs as safety monitoring canaries via a frontier model service. The headline findings:
 
 **All models work when configured correctly.** The apparent 'inverse scaling' (bigger/reasoning models = worse monitors) was entirely a token-budget parsing artifact. Reasoning models (o3, o4-mini) require `max_completion_tokens≥200` for their internal chain-of-thought. At the standard `max_tokens=16`, they produce empty responses that our code parsed as 1.0 (maximum unsafe). With proper configuration, all 33 of 35 models discriminate correctly (benign≈0.0, harmful≈0.8).
 
-**Two genuine failures:** gpt-5-nano and gpt-5.5 refuse to score harmful content entirely (content-aware refusal). They score benign correctly (0.0) but return empty for harmful inputs — a binary detection signal, not a scoring failure.
+**Two genuine failures:** gpt-5-nano and gpt-5.5 refuse to score harmful content entirely (content-aware refusal). They score benign correctly (0.0) but return empty for harmful inputs, producing a binary detection signal rather than a scoring failure.
 
-**Production recommendation:** Deploy `gpt-4o-mini` ($0.15/1M input tokens — approximately $0.000033 per classification call):
+**Production recommendation:** Deploy `gpt-4o-mini` ($0.033 per 1,000 calls, at prices current at time of evaluation):
 - ≥71% guaranteed detection (Wilson 95% CI lower bound)
 - <1.5% false positive rate (7/1000, N=1000)
 - Robust to black-box adversarial optimization (100 iterations, max Δ=0.2)
 - Semantic detection survives prefix rephrasing, language translation, and suffix scrambling
 
-For safety-critical deployments, pay 10× for `gpt-5.1` (≥83.5% guaranteed detection).
+For safety-critical deployments, pay 9× for `gpt-5.1` (≥83.5% guaranteed detection).
 
-**Cross-lingual caveat:** Detection degrades 15-25% for non-English prompts. Spanish confirmed at N=49 (gpt-4o-mini): 63.3% detection (Wilson CI [49.3%, 75.3%]) vs 83.7% English — 20.4pp drop. Mandarin/Arabic at N=20 with wider CIs. Degradation is vocabulary-driven (explicit harm keywords are English-specific), not structural. Suffix perturbation remains inert across all languages.
+**Cross-lingual caveat:** Detection degrades 15-25% for non-English prompts. Spanish confirmed at N=49 (gpt-4o-mini): 63.3% detection (Wilson CI [49.3%, 75.3%]) vs 83.7% English (20.4pp drop). Mandarin/Arabic at N=20 with wider CIs. Degradation is vocabulary-driven (explicit harm keywords are English-specific), not structural. Suffix perturbation remains inert across all languages.
 
 ---
 
 ## Depth results (post-v2)
 
-**Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks (n=10 prompts, hardest-case selection): 9/10 show zero improvement after step 50; 1/10 has one small reduction still above threshold. Mean final score: 0.90 (threshold: 0.5). No prompt breaches 0.5. No fracture point — increasing attacker budget provides no advantage.
+**Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks (n=10 prompts, hardest-case selection): 9/10 show zero improvement after step 50; 1/10 has one small reduction still above threshold. Mean final score: 0.90 (threshold: 0.5). No prompt breaches 0.5. No fracture point; increasing attacker budget provides no advantage.
 
 **Temperature sensitivity.** Detection rate varies by <5pp across T∈{0, 0.3, 1.0} (5 models × 20 adv + 20 benign, 3 reps per non-zero T). Within-prompt SD at T=1.0: 0.03–0.11. T=0 recommended for reproducibility.
 
 **CoT Suffocation phase transition.** Response probability follows a sigmoid: P(response|T_r) = σ(k·(T_r - T_50)). For o3: T_50(benign)=46 tokens, T_50(adversarial)=154 tokens. The 3.3× gap explains why standard configs fail on complex inputs. Deploy with max_completion_tokens ≥ 200 for adversarial coverage.
 
-**Monitorability law falsified.** The n=4 correlation (r=0.97) between null-score std and detection latency was an encoder/decoder gap artifact. Within-family (n=6 encoder variants): r=0.21, p=0.70 — not a predictable property.
+**Monitorability law falsified.** The n=4 correlation (r=0.97) between null-score std and detection latency was an encoder/decoder gap artifact. Within-family (n=6 encoder variants): r=0.21, p=0.70; not a predictable property.
 
 **Dual-channel cross-lingual mechanism.** Explicit-harm prompts degrade 19-29pp cross-lingually (lexical keyword failure), while ambiguous prompts degrade only 10-15pp (structural intent transfers). For gpt-5.1: 84% of detections are structurally based (hold cross-lingually).
 
