@@ -65,7 +65,7 @@ A crossover interaction is visible: paraphrase is easy for encoders but hard for
 
 DeBERTa's recovery is statistically significant (weighted lower bound 0.957 > unweighted upper bound 0.892, non-overlapping CIs).
 
-**The density ratio collapse mechanism:** For both generative models, logistic regression achieves perfect separability between source and target embeddings. All 300 calibration weights clip to the floor (1/C = 0.1), eliminating data-driven reweighting. Residual recoveries (+0.02–0.10) at ESS≈300 are a mechanical artifact of the test-point contribution: the implicit weight w(X_test)=1.0 raises the effective quantile level from 90.3% to 93.3% at n_cal=300, ε=0.1: a formula artifact, not adaptation. For DeBERTa, 92% of weights clip to floor but ~24 calibration examples retain non-trivial weights (max 3.02, ESS = 88/300), driving the genuine 16 pp recovery under temporal shift. (Numbers from the pooled `conformal_full.json` evaluation; an earlier single-classifier exploratory run reported ESS=79 due to a different calibration split.)
+**The density ratio collapse mechanism:** For both generative models, logistic regression achieves perfect separability between source and target embeddings. All 300 calibration weights clip to the floor (1/C = 0.1), eliminating data-driven reweighting. Residual recoveries (+0.02–0.10) at ESS≈300 are a mechanical artifact of the test-point contribution: the implicit weight w(X_test)=1.0 raises the effective quantile level from 90.3% to 93.3% at n_cal=300, ε=0.1: a formula artifact, not adaptation. For DeBERTa, 92% of weights clip to floor but ~24 calibration examples retain non-trivial weights (max 3.02, ESS = 88/300), driving the genuine 16 pp recovery under temporal shift. (Numbers from the pooled `conformal_full.json` evaluation.)
 
 ### RQ3: Variance Decomposition
 
@@ -76,9 +76,9 @@ Two-way ANOVA on detection latency (693 valid detections):
 | Classifier | 0.243 | [0.205, 0.291] | < 0.001 |
 | Shift type | 0.237 | [0.193, 0.293] | < 0.001 |
 | Classifier × Shift | 0.185 | [0.164, 0.223] | < 0.001 |
-| Residual | 0.335 | — | — |
+| Residual | 0.335 | n/a | n/a |
 
-The three systematic factors contribute roughly equally. The initial N=5 estimate inflated the interaction (0.265); at N=20 it shrinks to 0.185 while main effects grow, consistent with small-sample noise.
+The three systematic factors contribute roughly equally.
 
 ### Robustness Across Ground-Truth Regimes
 
@@ -138,7 +138,7 @@ ESS reduction at dim=32 generalizes to paraphrase shift: Llama Guard ESS=32, Shi
 - **Residual variance.** 33.5% of latency variance is noise. MDE is 13.9 steps at 80% power.
 - **Binary classifiers only.** Multi-category safety taxonomies may exhibit category-specific shift invisible to scalar scores.
 - **Refusal contamination.** 9.4% of paraphrase corpus are LLM refusals (lower than the 14–20% manual estimate). Filtered ablation confirms negligible effect on detection.
-- **FAR asymmetry.** Empirical KS false alarm rates vary 5× across classifiers (Text-Moderation 2.0% vs DeBERTa 9.5%). Resolved in v2 by a scan martingale that achieves FAR≤1% uniformly with no per-classifier calibration.
+- **FAR asymmetry.** Empirical KS false alarm rates vary 5× across classifiers (Text-Moderation 2.0% vs DeBERTa 9.5%). A scan martingale achieves FAR≤1% uniformly with no per-classifier calibration (see Extended Results).
 - **PCA diagnostic validated on temporal + paraphrase.** ESS reduction generalizes but coverage recovery magnitude depends on calibration split.
 
 ## Verification
@@ -147,7 +147,7 @@ All numbers in this document were programmatically verified against raw experime
 
 Paper: [arXiv](https://arxiv.org/abs/2606.11949) · Code and results: [github.com/junwenleong/safety-classifier-shift-monitor](https://github.com/junwenleong/safety-classifier-shift-monitor)
 
-## v2 Additions (arXiv v2)
+## Extended Results
 
 ### Canary Detection (§7)
 - Score disagreement detects GCG evasion (p<10⁻¹², n=49)
@@ -179,7 +179,7 @@ Paper: [arXiv](https://arxiv.org/abs/2606.11949) · Code and results: [github.co
 - Zero per-model calibration required
 - **Honesty note**: for *instantaneous* step-onset shift, with proper per-condition calibrated KS (97th-percentile threshold), KS matches or exceeds scan detection power. For *ramped-onset* adversaries (gradual contamination injection over 50 steps), scan substantially outperforms KS (37% vs 3% at 15% mixing, 67% vs 7% at 20% mixing; see AD1 figure in §3.7). The martingale's contributions are (1) operational simplicity (deploy once, guaranteed FAR ≤1% without per-classifier calibration) and (2) superior detection for ramped-onset adversaries; it does not uniformly dominate instantaneous-onset calibrated KS.
 
-### Depth Results (post-v2 characterization)
+### Depth Results
 
 **CoT Suffocation phase transition.** Response probability follows a sigmoid: P(response|T_r) = σ(k·(T_r - T_50)). For o3: T_50(benign)=46 tokens (k=0.173), T_50(adversarial)=154 tokens (k=0.030). The 3.3× gap means standard service configs (max_tokens=16) cause total failure on adversarial inputs while benign queries occasionally succeed. Deploy with T_r ≥ T_50(hardest class) + 2.2/k for >90% coverage.
 

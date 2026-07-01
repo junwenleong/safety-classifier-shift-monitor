@@ -90,7 +90,7 @@ All three systematic factors are significant (p < 0.001, 1000 permutations). A m
 
 ---
 
-## Adversarial robustness (v2)
+## Adversarial robustness
 
 The canary effect (a second, un-targeted classifier detecting when the primary is under gradient-based attack) works under precise conditions:
 
@@ -105,7 +105,7 @@ Deploy k=2 classifiers (one same-family for sensitivity, one cross-family for tr
 ---
 
 
-## The Deployment Configuration Trap (v2)
+## The Deployment Configuration Trap
 
 We tested 35 frontier LLMs as safety monitoring canaries via a frontier model service. The headline findings:
 
@@ -125,7 +125,7 @@ For safety-critical deployments, pay 9× for `gpt-5.1` (≥83.5% guaranteed dete
 
 ---
 
-## Depth results (post-v2)
+## Depth results
 
 **Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks (n=10 prompts, hardest-case selection): 9/10 show zero improvement after step 50; 1/10 has one small reduction still above threshold. Mean final score: 0.90 (threshold: 0.5). No prompt breaches 0.5. No fracture point; increasing attacker budget provides no advantage.
 
