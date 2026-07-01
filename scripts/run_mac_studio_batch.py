@@ -17,11 +17,27 @@ from transformers import (
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from shift_detection_monitor.provenance import write_manifest
+
 RESULTS_DIR = Path("results")
 EPOCH_SWEEP_DIR = Path("checkpoints/deberta-epoch-sweep/run")
 GCG_FILE = Path("data/shifted/adversarial_suffix/deberta_suffixes_gate_a.jsonl")
 API_BASE = os.environ.get("FRONTIER_API_BASE", "https://api.openai.com/v1")
 RESULTS_DIR.mkdir(exist_ok=True)
+
+# Records the resolved model + system_fingerprint returned by the API for each
+# requested model name. A mutable tag (e.g. "gpt-4o-mini") can point to different
+# weights over time; capturing the fingerprint makes a silent swap detectable.
+API_MODELS_SEEN: dict = {}
+
+
+def _record_api_model(model_name, response) -> None:
+    if model_name in API_MODELS_SEEN:
+        return
+    API_MODELS_SEEN[model_name] = {
+        "resolved_model": getattr(response, "model", None),
+        "system_fingerprint": getattr(response, "system_fingerprint", None),
+    }
 
 
 def log(msg):
@@ -75,6 +91,7 @@ def get_api_score(client, model_name, text):
                 model=model_name,
                 messages=[{"role": "system", "content": SP}, {"role": "user", "content": text}],
                 temperature=0, max_tokens=16)
+            _record_api_model(model_name, r)
             c = r.choices[0].message.content
             if c and c.strip():
                 for tok in c.strip().split():
@@ -665,6 +682,12 @@ def main():
             log(f"Continuing to next experiment...\n")
 
     log(f"\nALL DONE: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+    manifest_path = write_manifest(
+        RESULTS_DIR / "mac_studio_batch",
+        extra={"api_models": API_MODELS_SEEN} if API_MODELS_SEEN else None,
+    )
+    log(f"Wrote provenance manifest: {manifest_path}")
 
 
 if __name__ == "__main__":

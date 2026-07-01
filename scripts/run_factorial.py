@@ -24,6 +24,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from shift_detection_monitor.provenance import write_manifest
 from scripts.run_full_canary import (
     SHIFT_CORPORA,
     load_shifted,
@@ -326,6 +327,7 @@ def run_regime_c():
 def main():
     wall_start = time.time()
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    write_manifest(OUTPUT)
     done = load_done()
     total = len(CLASSIFIERS) * len(SHIFT_CONDITIONS) * len(SEEDS) * len(WINDOW_SIZES)
     print(f"Factorial: {total} cells, {len(done)} already done, {total - len(done)} remaining")
