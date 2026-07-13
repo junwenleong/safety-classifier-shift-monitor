@@ -343,23 +343,20 @@ def main():
     else:
         print("  ⚠ Ramp sweep results not found, skipping")
 
-    # ========================================================================
-    # SUMMARY
-    # ========================================================================
-    print("\n" + "=" * 70)
-    print(f"RESULTS: {PASS} passed, {FAIL} failed")
-    if FAIL > 0:
-        sys.exit(1)
-    print("ALL CHECKS PASSED ✓")
-
-
-if __name__ == "__main__":
-    main()
-
 
 # =============================================================================
 # v2 ADDITIONS — Canary, Martingale, LLM Canary
 # =============================================================================
+
+def check_bool(label, condition):
+    global PASS, FAIL
+    if condition:
+        PASS += 1
+        print(f"  ✓ {label}")
+    else:
+        FAIL += 1
+        print(f"  ✗ {label}")
+
 
 def verify_v2():
     """Verify v2 paper numbers against raw data."""
@@ -373,31 +370,32 @@ def verify_v2():
     ca6_data = json.loads(Path("results/gate_a_ca6_gibberish.json").read_text())
     # GCG detection: 37/49 = 75.5%
     if "gcg_detection_rate" in ca6_data:
-        check("CA6 GCG detection 75.5%", abs(ca6_data["gcg_detection_rate"] - 0.755) < 0.01)
-    
+        check_bool("CA6 GCG detection 75.5%", abs(ca6_data["gcg_detection_rate"] - 0.755) < 0.01)
+
     # --- k-scaling ---
     k_data = json.loads(Path("results/track_a_k_scaling.json").read_text())
-    if isinstance(k_data, dict) and "k1_best" in k_data:
-        check("k=1 best 93.9%", abs(k_data["k1_best"] - 0.939) < 0.01)
-        check("k=2 best 98.0%", abs(k_data["k2_best"] - 0.980) < 0.01)
-    
+    k_summary = k_data.get("summary", {}) if isinstance(k_data, dict) else {}
+    if "k1_best" in k_summary:
+        check_bool("k=1 best 93.9%", abs(k_summary["k1_best"]["rate"] - 0.939) < 0.01)
+        check_bool("k=2 best 98.0%", abs(k_summary["k2_best"]["rate"] - 0.980) < 0.01)
+
     # --- LLM canary v2 ---
     v2_path = Path("results/llm_canary_v2.json")
     if v2_path.exists():
         v2 = json.loads(v2_path.read_text())
-        
+
         # 20 models
-        check("LLM canary v2: 20 models", len(v2) == 20)
-        
+        check_bool("LLM canary v2: 20 models", len(v2) == 20)
+
         # Each model has 147 scores (49 gcg + 49 clean + 49 scrambled)
         for model_name, model_data in v2.items():
             n = len(model_data["scores"])
             if n != 147:
-                check(f"LLM v2 {model_name}: 147 scores", False)
+                check_bool(f"LLM v2 {model_name}: 147 scores", False)
                 break
         else:
-            check("LLM v2: all models have 147 scores", True)
-        
+            check_bool("LLM v2: all models have 147 scores", True)
+
         # Compute median |Δ(gcg - clean)| ≈ 0.035
         all_deltas = []
         for model_data in v2.values():
@@ -406,8 +404,8 @@ def verify_v2():
             mean_delta = np.mean(gcg) - np.mean(clean)
             all_deltas.append(abs(mean_delta))
         median_abs_delta = np.median(all_deltas)
-        check(f"Median |Δ(gcg-clean)| < 0.05 (got {median_abs_delta:.3f})", median_abs_delta < 0.05)
-        
+        check_bool(f"Median |Δ(gcg-clean)| < 0.05 (got {median_abs_delta:.3f})", median_abs_delta < 0.05)
+
         # Scrambled: 15/20 non-significant (already computed, trust the analysis)
         # Boundary flips: 59/980
         flips = 0
@@ -420,41 +418,35 @@ def verify_v2():
                 total += 1
                 if clean[i] >= 0.5 and gcg[i] < 0.5:
                     flips += 1
-        check(f"Boundary flips 59/980 (got {flips}/{total})", flips == 59 and total == 980)
-    
+        check_bool(f"Boundary flips 59/980 (got {flips}/{total})", flips == 59 and total == 980)
+
     # --- Divergence minimisation ---
     dm_path = Path("results/ca8_divergence_min.json")
     if dm_path.exists():
         dm = json.loads(dm_path.read_text())
         if "blocked" in dm:
-            check("Div-min: 6 blocked", dm["blocked"] == 6)
-            check("Div-min: 4 stealth", dm["stealth"] == 4)
-    
-    # --- Martingale FAR ---
-    mb_path = Path("results/gate_b_martingale.json")
-    if mb_path.exists():
-        mb = json.loads(mb_path.read_text())
-        # FAR should be <= 1% for all classifiers
-        if "far" in mb:
-            for clf, far_val in mb["far"].items():
-                check(f"Martingale FAR {clf} <= 1%", far_val <= 0.01)
+            check_bool("Div-min: 6 blocked", dm["blocked"] == 6)
+            check_bool("Div-min: 4 stealth", dm["stealth"] == 4)
 
-
-def check(label, condition):
-    global PASS, FAIL
-    if condition:
-        PASS += 1
-        print(f"  ✓ {label}")
-    else:
-        FAIL += 1
-        print(f"  ✗ {label}")
+    # --- Martingale FAR (per-classifier, from Track B AV2 evaluation) ---
+    # NOTE: results/gate_b_martingale.json only holds the aggregate scan_w50
+    # FAR as a display string ("0/200 = 0.0%") from the initial single-classifier
+    # gate run; it does not have a per-classifier breakdown. The actual AV2
+    # cross-classifier FAR uniformity check (which the paper and
+    # FOLLOW_UP_EXPERIMENTS.md §B.2b report as "FAR<=1% across all 4
+    # classifiers") lives in results/track_b_full_eval.json under the "av2" key.
+    av2_path = Path("results/track_b_full_eval.json")
+    if av2_path.exists():
+        av2_data = json.loads(av2_path.read_text())
+        av2 = av2_data.get("av2", {})
+        for clf, entry in av2.items():
+            check_bool(f"Martingale FAR {clf} <= 1%", entry["far"] <= 0.01)
 
 
 if __name__ == "__main__":
-    # The original verify function is already defined above. 
-    # Just call v2 verification.
+    main()
     verify_v2()
     print(f"\n{'=' * 60}")
-    print(f"v2 RESULTS: {PASS} passed, {FAIL} failed")
+    print(f"TOTAL: {PASS} passed, {FAIL} failed")
     print(f"{'=' * 60}")
     sys.exit(1 if FAIL > 0 else 0)
