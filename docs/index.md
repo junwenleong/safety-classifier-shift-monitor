@@ -65,7 +65,7 @@ PCA before density ratio estimation breaks the collapse:
 | Classifier | Without PCA | With PCA (d=32) | Recovery gained |
 |---|---|---|---|
 | Llama Guard | +2 pp (ESS=300) | +33 pp (ESS=19.6) | 31 pp |
-| ShieldGemma | +7.5 pp (ESS=300) | +21 pp (ESS=85) | 13.5 pp |
+| ShieldGemma | +7.5 pp (ESS=300) | +20.5 pp (ESS=85) | 13 pp |
 
 At 32 dimensions, 82–91% of embedding variance is retained but the logistic classifier can no longer achieve perfect separability. At 64 dimensions, ShieldGemma re-collapses; at 128, both re-collapse. The critical threshold is ≤32 dimensions for these embedding spaces.
 
@@ -141,7 +141,7 @@ For safety-critical deployments, pay 9× for `gpt-5.1` (≥83.5% guaranteed dete
 
 **Cost-bounded safety routing.** Escalation router: screen with gpt-4o-mini, escalate ambiguous/non-English to gpt-5.1. At 12% escalation rate: $65/1M queries for 84.9% detection (vs $300/1M for always-gpt-5.1).
 
-**Honesty note on the scan martingale:** its value is operational simplicity (deploy once, guaranteed FAR ≤ α), not superior detection power. With proper per-condition calibrated KS thresholds, KS matches or exceeds the martingale at all mixing levels.
+**Honesty note on the scan martingale:** its value is operational simplicity (deploy once, guaranteed FAR ≤ α, no per-classifier tuning). For instantaneous step-onset shift with proper per-condition calibrated KS thresholds, KS matches or exceeds scan. But for ramped-onset adversaries (the realistic case: gradual contamination injection), scan substantially outperforms KS (37% vs 3% detection at 15% mixing, 67% vs 7% at 20% mixing). The tradeoff: KS wins on step-onset with careful tuning; scan wins on gradual onset and requires zero calibration.
 
 ## What I built
 
