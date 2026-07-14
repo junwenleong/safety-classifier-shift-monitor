@@ -1,0 +1,14 @@
+# Minimal pre-commit config for sentry (research repo — deliberately lightweight)
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+#
+# Only ai-doctor runs on commit. ruff remains manual (see AGENTS.md Commands).
+
+repos:
+  - repo: local
+    hooks:
+      - id: ai-doctor
+        name: ai-doctor (AI IDE config consistency)
+        entry: ai-doctor
+        language: system
+        pass_filenames: false

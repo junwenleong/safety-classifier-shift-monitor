@@ -64,5 +64,8 @@ results/*_log.txt
 .ai/
 .claude/
 .kiro/
+.roo/
 CLAUDE.md
+.opencode/
+opencode.json
 AGENTS.md
