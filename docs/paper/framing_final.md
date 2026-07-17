@@ -200,6 +200,6 @@ to expensive, constrained multi-objective search).
 
 ## Venue & timeline
 
-**Target:** SaTML 2026 (check deadline) or AISec @ CCS 2025
+**Target:** SaTML 2027 cycle — submission deadline Sep 29, 2026, 11:59 PM AoE (verified via satml.org/call-for-papers; the SaTML 2026 conference's Sep 24, 2025 deadline has already passed, so that cycle is closed). Full CFP/LaTeX template for this cycle not yet published as of this writing (~2.5 months lead time from today). Backup: AISec @ CCS 2025
 **Backup:** NeurIPS SafeGenAI workshop 2025
 **arXiv v2:** push after paper draft is complete (same ID: 2606.11949)

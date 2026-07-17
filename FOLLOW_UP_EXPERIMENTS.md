@@ -591,7 +591,7 @@ Key framing (corrected after benign specificity check):
 
 ### Venue Strategy
 
-**Primary target: SaTML 2026** (IEEE Conference on Secure and Trustworthy Machine Learning)
+**Primary target: SaTML next cycle** (IEEE Conference on Secure and Trustworthy Machine Learning) — the SaTML 2026 conference's submission deadline (Sep 24, 2025) has already passed; the currently open target is the next cycle, deadline Sep 29, 2026, 11:59 PM AoE, per satml.org/call-for-papers. That cycle's full CFP/LaTeX template has not yet been published ("will be announced soon" as of this writing) — ~2.5 months lead time from today.
 - Full conference (published proceedings), acceptance ~25-30%
 - Perfect scope: ML security + trustworthiness, adversarial evaluation of defenses
 - Our strengths: factorial scale, threat model, honest self-correction, practical guidance
@@ -632,9 +632,9 @@ Key framing (corrected after benign specificity check):
 3. Revise existing sections per v2 plan — 1 day
 4. Make 4 key figures — 1 day
 5. Push arXiv v2
-6. Submit to SaTML (check deadline)
+6. Submit to SaTML next cycle (deadline Sep 29, 2026, 11:59 PM AoE; template not yet published)
 
-**Venue:** Submit complete v2 to SaTML 2026. arXiv update + LinkedIn/GitHub auto-update.
+**Venue:** Submit complete v2 to SaTML's next open cycle (Sep 29, 2026 deadline). arXiv update + LinkedIn/GitHub auto-update.
 
 ---
 **Parent work:** arXiv:2606.11949 (Shift Detection Monitor). The 980-cell factorial + post-factorial additions (CS growing-window, MMD, PCA-conformal, gradual drift, mechanistic n=4) are *complete and submitted*. This document plans the next phase.
@@ -1736,4 +1736,4 @@ All done (2026-06-29 21:24 SGT). Final numbers integrated below.
 1. ✅ Paper numbers updated
 2. Final compile
 3. Upload arXiv v2
-4. Submit to SaTML 2026 (check deadline)
+4. Submit to SaTML next cycle (deadline Sep 29, 2026, 11:59 PM AoE; template not yet published)
