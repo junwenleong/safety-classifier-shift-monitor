@@ -25,31 +25,11 @@ Anonymous Institution(s)
 \maketitle
 
 \begin{abstract}
-Gradient-based evasion is the residual threat class against deployed safety classifiers:
-template jailbreaks fail at 99\%, but GCG-optimized suffixes flip encoder decisions reliably.
-We give the first adversarial characterization of \emph{score-disagreement monitoring}
-as a canary defense, derive the exact security boundary---a confidence-gated equilibrium
-at which a monitor-aware attacker stalls (validated gap~$= 1/(2\lambda)$, within 95\% CI
-of the theoretical prediction)---and identify a previously undocumented failure mode in
-post-shift conformal adaptation.
+Reasoning models deployed as safety monitors exhibit a systematic vulnerability under adversarial load: \emph{reasoning-token budget starvation}. Adversarial inputs require 3.3$\times$ more reasoning tokens than benign inputs to produce valid safety scores ($T_{50,\text{adv}}{=}154$ vs.\ $T_{50,\text{benign}}{=}46$ tokens for o3), so standard low-budget deployments silently starve the monitor on exactly the inputs it must catch. This compounds, rather than replaces, the central failure mode we characterize: gradient-based evasion remains the residual threat class against deployed safety classifiers---template jailbreaks fail at 99\%, but GCG-optimized suffixes flip encoder decisions reliably.
 
-Three contributions. \textbf{(1)~Factorial drift benchmark.} A pre-registered 800-cell
-evaluation (4~classifiers $\times$ 5~shift types $\times$ 20~seeds $\times$ 2~windows)
-reveals that detection difficulty is dominated by a classifier$\times$shift interaction:
-encoders detect paraphrase drift in 28~steps but miss adversarial suffixes for 37;
-decoders show the opposite pattern. One-size-fits-all monitoring fails.
-\textbf{(2)~Conformal collapse in generative embeddings.} Weighted conformal prediction,
-the standard post-shift coverage recovery method, fails silently on decoder classifiers:
-logistic density-ratio estimation achieves perfect source/target separability in
-3584--4096-dimensional space, clipping all importance weights to zero. Projecting to
-$\leq$32~dimensions restores coverage (up to +33pp recovery).
-\textbf{(3)~Adversarial canary threat model.} We falsify three assumptions about
-score-disagreement canaries---that architectural diversity drives detection (false),
-that they are generic OOD detectors (false; GCG-specific, $p < 10^{-12}$), and that
-an adaptive attacker can suppress the signal (false while the canary is confident).
-A 4-tier threat model with quantitative bounds at each tier, validated across 35~frontier
-models, yields a deployment blueprint with Wilson~CI guarantees ($\geq$71\% detection,
-$<$1.5\% FPR at $N{=}1000$).
+We give the first adversarial characterization of \emph{score-disagreement monitoring} as a canary defense, derive the exact security boundary---a confidence-gated equilibrium at which a monitor-aware attacker stalls (validated gap~$= 1/(2\lambda)$, within 95\% CI of the theoretical prediction)---and identify a previously undocumented failure mode in post-shift conformal adaptation.
+
+Three contributions. \textbf{(1)~Factorial drift benchmark.} A pre-registered 800-cell evaluation (4~classifiers $\times$ 5~shift types $\times$ 20~seeds $\times$ 2~windows) reveals that detection difficulty is dominated by a classifier$\times$shift interaction ($\eta^2 = 0.185$): encoders detect paraphrase drift in 28~steps but miss adversarial suffixes for 37; decoders show the opposite pattern. One-size-fits-all monitoring fails. \textbf{(2)~Conformal collapse in generative embeddings.} Weighted conformal prediction, the standard post-shift coverage recovery method, fails silently on decoder classifiers: logistic density-ratio estimation achieves perfect source/target separability in 3584--4096-dimensional space, clipping all importance weights to zero. Projecting to $\leq$32~dimensions restores coverage (up to +33pp recovery). \textbf{(3)~Adversarial canary threat model with budget-aware deployment guarantees.} We falsify three assumptions about score-disagreement canaries---that architectural diversity drives detection (false), that they are generic OOD detectors (false; GCG-specific, $p < 10^{-12}$), and that an adaptive attacker can suppress the signal (false while the canary is confident). Reasoning-token budget starvation intensifies this equilibrium: adversaries force longer deliberation precisely where classifier confidence is least reliable. Across 35~frontier models under corrected token budgets, a 4-tier threat model with quantitative bounds at each tier yields a deployment blueprint with Wilson~CI guarantees ($\geq$71\% detection, $<$1.5\% FPR at $N{=}1000$).
 \end{abstract}
 
 %==============================================================================

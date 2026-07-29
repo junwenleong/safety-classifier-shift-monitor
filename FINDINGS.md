@@ -2,7 +2,9 @@
 
 ## Summary
 
-An online monitoring system detects distributional shift in deployed safety classifiers with 86.6% detection rate across 800 pre-registered factorial cells (4 classifiers x 5 shift conditions x 20 seeds x 2 window sizes). Score-disagreement monitoring detects gradient-based evasion (p<10^-12, n=49) with a formally characterized confidence-gated security boundary: when the canary is confident, a divergence-minimising attacker stalls at a predicted equilibrium (gap=1/(2lambda)=0.250; 14/20 prompts blocked). A calibration-free scan martingale achieves FAR<=1% uniformly across all classifiers with zero per-model calibration, providing operational simplicity over empirical KS thresholds (which vary 2-9.5% across classifiers). The "Deployment Configuration Trap" reveals that apparent ceiling-clipping in frontier/reasoning models is a token-budget parsing artifact, not a capability limit: with max_tokens>=200, all 35 tested models discriminate correctly. Weighted conformal prediction recovers coverage for discriminative classifiers (+16 pp for DeBERTa) but fails for generative classifiers due to density-ratio collapse in high-dimensional embedding spaces; a PCA diagnostic (projection to <=32 dimensions) breaks the separability and restores coverage, confirming a curse-of-dimensionality mechanism.
+Reasoning models deployed as safety monitors suffer **reasoning-token budget starvation**: adversarial inputs require 3.3x more reasoning tokens than benign inputs to produce valid safety scores (T50_adv=154 vs T50_benign=46 for o3), so standard low-budget deployments silently starve the monitor on exactly the inputs it must catch. This compounds the central threat we characterize: gradient-based evasion remains the residual threat class against deployed safety classifiers, and score-disagreement monitoring detects it with a formally characterized confidence-gated security boundary (gap=1/(2*lambda)=0.250, validated within 95% CI).
+
+An online monitoring system detects distributional shift in deployed safety classifiers with 86.6% detection rate across 800 pre-registered factorial cells (4 classifiers x 5 shift conditions x 20 seeds x 2 window sizes). A calibration-free scan martingale achieves FAR<=1% uniformly across all classifiers with zero per-model calibration. Weighted conformal prediction recovers coverage for discriminative classifiers (+16 pp for DeBERTa) but fails for generative classifiers due to density-ratio collapse in high-dimensional embedding spaces; a PCA diagnostic (projection to <=32 dimensions) breaks the separability and restores coverage (+33pp), confirming a curse-of-dimensionality mechanism.
 
 ## The Problem
 
@@ -179,7 +181,11 @@ ESS reduction at dim=32 generalizes to paraphrase shift: Llama Guard ESS=32, Shi
 
 **Dual-channel cross-lingual mechanism.** The 15-25% cross-lingual degradation is asymmetric: explicit-harm prompts (direct violence, slurs) degrade 19-29pp, while ambiguous/roleplay prompts degrade only 10-15pp. Two safety channels: (i) lexical keyword matching (language-specific, fails under translation), (ii) structural intent recognition (language-invariant, transfers natively). For gpt-5.1: 84% of detections are structural (hold cross-lingually), 16% are lexical (leak when translated). Multilingual suffix transfer: mean delta = +0.022 (suffix completely inert across languages).
 
-**Cross-lingual N=49 (Spanish, gpt-4o-mini).** Confirmed at N=49: 63.3% detection (31/49, Wilson CI [49.3%, 75.3%]) vs 83.7% English (41/49, CI [71.0%, 91.5%]). Drop: 20.4pp. Tightens CI from +/-20pp (N=20) to +/-13pp. Mandarin/Arabic remain at N=20.
+**Cross-lingual N=49 (all three languages, 3 canary models).** Confirmed at N=44-49 per language:
+- Spanish (gpt-4o-mini): 63.3% detection (31/49) vs 83.7% English (41/49). Drop: 20.4pp. Wilson CI [49.3%, 75.3%].
+- Mandarin (claude-sonnet-4-5): 61.4% detection (27/44) vs 81.1% English (36/44). Drop: 19.7pp.
+- Arabic (claude-sonnet-4-5): 73.3% detection (33/45) vs 81.6% English (37/45). Drop: 8.3pp.
+Arabic shows notably less cross-lingual degradation than Spanish/Mandarin, consistent with structural-intent recognition dominating over lexical matching for Arabic script (fewer shared subwords with English training corpus). All CIs now +/-13pp or tighter (previously +/-20pp at N=20).
 
 **Monitorability law falsified (Track C).** The n=4 correlation (r=0.97) between null-score std and detection latency was an encoder/decoder gap artifact. Within-family evaluation (n=6 encoder variants, epoch-{1,3,5,10} + 2 originals) yields r=0.21, p=0.70. Monitorability is not a predictable intrinsic property of score-distribution geometry.
 
