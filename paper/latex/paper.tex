@@ -25,7 +25,31 @@ Anonymous Institution(s)
 \maketitle
 
 \begin{abstract}
-Safety classifiers deployed in production operate under a stationarity assumption that fails silently: when input distributions drift, accuracy degrades with no error signal until ground-truth labels arrive. We present an online monitor that detects distributional shift in classifier scores via a sliding-window KS statistic with empirically calibrated alarm thresholds. In a pre-registered factorial evaluation (4 classifiers $\times$ 5 shift conditions $\times$ 20 seeds $\times$ 2 window sizes; 800 cells), the monitor achieves 86.6\% valid detection (mean latency 39.5 steps) across synthetic-onset, real-jailbreak, and adversarial regimes; a classifier $\times$ shift interaction ($\eta^2 = 0.185$) shows that monitoring must be tuned per classifier. Attempting to recover post-detection coverage via weighted conformal prediction exposes a failure mode: density-ratio estimation collapses for generative classifiers because logistic regression separates source from target perfectly in 3584--4096-dimensional embedding space, clipping all importance weights to zero; projecting to $\leq 32$ dimensions restores coverage. We then extend the framework to gradient-based evasion and give the first threat-model characterisation of score-disagreement monitoring as a canary. We falsify three assumptions: that architectural diversity drives the signal (false, $\eta^2 = 0.011$), that it is generic out-of-distribution detection (false, GCG-specific, $p < 10^{-12}$), and that an adaptive attacker can suppress it (false while the canary is confident). We derive the exact security boundary, a confidence-gated equilibrium at which a monitor-aware attacker stalls at gap $= 1/(2\lambda)$, and provide a calibration-free scan martingale achieving false-alarm rate $\leq 1\%$ across all classifiers with no per-model tuning.
+Gradient-based evasion is the residual threat class against deployed safety classifiers:
+template jailbreaks fail at 99\%, but GCG-optimized suffixes flip encoder decisions reliably.
+We give the first adversarial characterization of \emph{score-disagreement monitoring}
+as a canary defense, derive the exact security boundary---a confidence-gated equilibrium
+at which a monitor-aware attacker stalls (validated gap~$= 1/(2\lambda)$, within 95\% CI
+of the theoretical prediction)---and identify a previously undocumented failure mode in
+post-shift conformal adaptation.
+
+Three contributions. \textbf{(1)~Factorial drift benchmark.} A pre-registered 800-cell
+evaluation (4~classifiers $\times$ 5~shift types $\times$ 20~seeds $\times$ 2~windows)
+reveals that detection difficulty is dominated by a classifier$\times$shift interaction:
+encoders detect paraphrase drift in 28~steps but miss adversarial suffixes for 37;
+decoders show the opposite pattern. One-size-fits-all monitoring fails.
+\textbf{(2)~Conformal collapse in generative embeddings.} Weighted conformal prediction,
+the standard post-shift coverage recovery method, fails silently on decoder classifiers:
+logistic density-ratio estimation achieves perfect source/target separability in
+3584--4096-dimensional space, clipping all importance weights to zero. Projecting to
+$\leq$32~dimensions restores coverage (up to +33pp recovery).
+\textbf{(3)~Adversarial canary threat model.} We falsify three assumptions about
+score-disagreement canaries---that architectural diversity drives detection (false),
+that they are generic OOD detectors (false; GCG-specific, $p < 10^{-12}$), and that
+an adaptive attacker can suppress the signal (false while the canary is confident).
+A 4-tier threat model with quantitative bounds at each tier, validated across 35~frontier
+models, yields a deployment blueprint with Wilson~CI guarantees ($\geq$71\% detection,
+$<$1.5\% FPR at $N{=}1000$).
 \end{abstract}
 
 %==============================================================================
@@ -53,7 +77,15 @@ Beyond drift detection, deployed classifiers face a second threat: gradient-base
 
 \paragraph{RQ5 (Adversarial Robustness).} Can an adaptive, monitor-aware attacker suppress the disagreement signal while evading the target classifier?
 
-\paragraph{Contributions.} We contribute: (1)~a pre-registered factorial evaluation (800 cells) establishing detection baselines across 4 classifiers $\times$ 5 shift types; (2)~a calibration-free scan martingale replacing empirical threshold tuning (FAR spread reduced from $5\times$ to $<2\times$); (3)~the first adversarial characterisation of score-disagreement monitoring across 4 threat tiers, including a formal equilibrium bound (gap $= 1/(2\lambda)$, validated within 95\% CI); (4)~empirical falsification of three assumptions: architecture diversity as detection mechanism ($\eta^2 = 0.011$), reversed scaling in frontier models (a token-budget artifact), and monitorability as intrinsic classifier property ($r = 0.21$, $p = 0.70$ within-family); and (5)~a deployment blueprint across 35 frontier models with Wilson CI performance guarantees ($\geq 71\%$ detection at $< 1.5\%$ FPR; $N{=}1000$ FPR validation on 10 Pareto-dominant models).
+\paragraph{Contributions.} Our contributions are organized around three pillars:
+
+\begin{enumerate}
+\item \textbf{Factorial drift benchmark.} An 800-cell pre-registered evaluation establishing detection baselines across 4~classifiers $\times$ 5~shift types, revealing a crossover interaction ($\eta^2 = 0.185$) invisible to single-classifier studies: monitoring must be tuned per classifier--shift pair. A calibration-free scan martingale replaces empirical threshold tuning (FAR spread reduced from $5\times$ to $<2\times$ across classifiers).
+
+\item \textbf{Conformal failure mode.} The first diagnosis of density-ratio collapse in high-dimensional generative safety-classifier embeddings: logistic regression achieves perfect linear separability between source and target, driving all importance weights to the clip floor. This silently disables weighted conformal prediction---the standard post-shift coverage recovery method---on exactly the classifier architectures (8B+ decoders) most widely deployed. PCA to $\leq$32 dimensions restores coverage (+21--33pp).
+
+\item \textbf{Adversarial canary characterization.} The first threat-model characterization of score-disagreement monitoring against gradient-based evasion. We falsify three assumptions (architecture diversity as mechanism, generic OOD detection, suppression by adaptive attacker), derive a formal equilibrium bound (gap $= 1/(2\lambda)$, validated within 95\% CI at $n{=}20$), and provide a deployment blueprint across 35~frontier models with Wilson~CI performance guarantees ($\geq$71\% detection at $<$1.5\% FPR; $N{=}1000$ FPR validation on 10 Pareto-dominant models).
+\end{enumerate}
 
 %==============================================================================
 \section{Related Work}
