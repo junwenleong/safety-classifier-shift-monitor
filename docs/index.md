@@ -131,7 +131,7 @@ For safety-critical deployments, pay 9× for `gpt-5.1` (≥83.5% guaranteed dete
 
 **Temperature sensitivity.** Detection rate varies by <5pp across T∈{0, 0.3, 1.0} (5 models × 20 adv + 20 benign, 3 reps per non-zero T). Within-prompt SD at T=1.0: 0.03–0.11. T=0 recommended for reproducibility.
 
-**CoT Suffocation phase transition.** Response probability follows a sigmoid: P(response|T_r) = σ(k·(T_r - T_50)). For o3: T_50(benign)=46 tokens, T_50(adversarial)=154 tokens. The 3.3× gap explains why standard configs fail on complex inputs. Deploy with max_completion_tokens ≥ 200 for adversarial coverage.
+**CoT Suffocation phase transition.** Response probability follows a sigmoid: $P(\text{response} \mid T_r) = \sigma(k \cdot (T_r - T_{50}))$. For o3: $T_{50}(\text{benign})=46$ tokens, $T_{50}(\text{adversarial})=154$ tokens. The 3.3× gap explains why standard configs fail on complex inputs. Deploy with max_completion_tokens ≥ 200 for adversarial coverage.
 
 **Monitorability law falsified.** The n=4 correlation (r=0.97) between null-score std and detection latency was an encoder/decoder gap artifact. Within-family (n=6 encoder variants): r=0.21, p=0.70; not a predictable property.
 
