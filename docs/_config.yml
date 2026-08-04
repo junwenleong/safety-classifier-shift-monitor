@@ -1,5 +1,5 @@
 title: "Jun Wen Leong"
-description: "Your safety classifier is drifting. Here's how to know. 86.6% detection across 800 pre-registered factorial cells."
+description: "Your safety classifier is drifting. Here is how to know. 86.6% detection across 800 pre-registered factorial cells."
 theme: minima
 url: "https://junwenleong.github.io"
 baseurl: "/safety-classifier-shift-monitor"
@@ -7,5 +7,6 @@ markdown: kramdown
 exclude:
   - pre_registration.md
   - pre_registration_amendment_2.md
+  - paper/
 twitter:
   card: summary_large_image
