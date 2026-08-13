@@ -8,8 +8,12 @@
 % included as a supplementary appendix.
 % =============================================================================
 
-\section{Certified Robustness via Randomized Smoothing}
+\section{Certified Robustness via Randomized Smoothing (Exploratory)}
 \label{sec:smsr-connection}
+
+\paragraph{Scope and status.} This appendix presents a preliminary certified-robustness extension using a different model (RoBERTa-base, $n{=}10$ prompts) than the main paper's classifiers. It is included as a theoretical complement to the empirical equilibrium (\S\ref{sec:divergence-min}), not as a validated component of the monitoring system. The $\sigma/2$ union-bound correction is conservative (loose); the certified radius applies to $L_2$-bounded embedding-space perturbations, not to discrete token-level attacks. Integration on the primary DeBERTa classifiers at adequate scale is deferred to future work.
+
+\medskip
 
 We extend the divergence-minimisation equilibrium (Proposition~1, Appendix~\ref{app:derivation}) to derive a certified robustness guarantee for the canary detection system. The connection uses the SMSR (Smoothed Model for Safe Responses) framework~\citep{cohen2019certified,salman2019provably}: if the canary classifier's decision is stable under Gaussian perturbation in embedding space, then randomized smoothing certifies a radius within which detection is provably maintained.
 

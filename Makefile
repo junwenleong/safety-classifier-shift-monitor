@@ -16,3 +16,17 @@ finetune:
 
 build-paraphrase:
 	.venv/bin/python -c "from pathlib import Path; from shift_detection_monitor.stream.dataset_builder import ShiftDatasetBuilder; b = ShiftDatasetBuilder(use_bedrock=True); b.build('paraphrase', Path('data/reference/source.jsonl'), Path('data/shifted/paraphrase/output.jsonl'), seed=42)"
+
+# v5 reproducibility targets
+reproduce:
+	@echo "=== Reproducing v5 headline numbers from cached data ==="
+	@echo "1. Sub-threshold detection (Table subthreshold)..."
+	.venv/bin/python scripts/exp_subthreshold_detection.py --quick
+	@echo ""
+	@echo "2. Paper number verification (101 assertions)..."
+	.venv/bin/python scripts/verify_paper_numbers.py
+	@echo ""
+	@echo "=== All reproduced successfully ==="
+
+verify:
+	.venv/bin/python scripts/verify_paper_numbers.py
