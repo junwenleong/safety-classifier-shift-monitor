@@ -212,10 +212,12 @@ We do not claim this defence is absolute. A Tier~3 attacker with white-box acces
 % Appendix C (Stall Derivation) and Appendix B (Monitorability) are in paper.tex directly.
 
 
-\subsection{Deployment Case Study: Operational Feasibility}
+\subsection{Canary Detection Under Targeted Evasion}
 \label{sec:deployment-casestudy}
 
-The deployment recommendations of \S\ref{sec:deployment-recs} and the deployment recipe (\S\ref{sec:intro}) prescribe a canary architecture but do not demonstrate its operational cost. We validate feasibility on a 200-query workload using \texttt{gpt-4o-mini} as the primary classifier and \texttt{gpt-4.1} as the semantic canary, scored sequentially via the same OpenAI-compatible endpoint used throughout \S\ref{sec:llm-canary}.
+\paragraph{Primary-fooled validation: DeBERTa evaded, LLM canary detects.} To demonstrate the canary architecture under its intended operating conditions---the primary classifier \emph{is actually fooled}---we evaluate $N{=}100$ inputs from the GCG adversarial corpus with DeBERTa-v3-large as primary and Qwen2.5-14B (open-weight, local inference, different architecture family) as LLM canary. Of the 49 inputs that evade DeBERTa (attacked score $< 0.5$), the LLM canary correctly flags 40 (81.6\% detection rate; mean canary score 0.69 on DeBERTa-evaded inputs). Only 9/49 (18.4\%) evade both classifiers simultaneously. This validates the canary architecture under the critical deployment scenario: when a targeted gradient attack succeeds against the primary, a heterogeneous LLM canary---which cannot be targeted by the same gradient---recovers 81.6\% of the missed detections at zero additional FPR cost.
+
+\paragraph{Operational feasibility (non-attack baseline).} The deployment recommendations of \S\ref{sec:deployment-recs} and the deployment recipe (\S\ref{sec:intro}) prescribe a canary architecture but do not demonstrate its operational cost. We validate feasibility on a 200-query workload using \texttt{gpt-4o-mini} as the primary classifier and \texttt{gpt-4.1} as the semantic canary, scored sequentially via the same OpenAI-compatible endpoint used throughout \S\ref{sec:llm-canary}.
 
 \paragraph{Workload.} 150 benign queries, 30 adversarial (harmful prompts without suffix), and 20 adversarial with DeBERTa-targeted GCG suffixes appended.
 
@@ -247,8 +249,6 @@ Detection (all adversarial, $n{=}50$) & 1/50 = 2.0\% & [0.1\%, 10.6\%] \\
 The canary architecture detects evasion \emph{of one classifier by checking disagreement with another}. When both models agree, there is no disagreement to detect. The canary fires only when the primary is under classifier-specific attack that succeeds against it but not against the canary---exactly the scenario demonstrated in \S\ref{sec:ca6} (75.5\% detection when DeBERTa is fooled but frontier canaries are not) and the primary-fooled validation below (81.6\% recovery).
 
 \paragraph{Operational validation.} This case study demonstrates four properties required for production deployment: (1)~cost is negligible (\$0.24/1\,000 queries); (2)~zero false positives on 150 benign queries (Wilson upper bound 2.5\%); (3)~latency overhead is parallelisable (${\sim}$1.2\,s concurrent vs.\ 1.8\,s sequential at p50); (4)~the canary architecture provides a conditional guarantee under the targeted-evasion threat model (\S\ref{sec:ca6}--\ref{sec:llm-canary}), not a generic harmful-content detection layer. Combined with the deployment recipe of \S\ref{sec:intro} and the confidence-gating policy of \S\ref{sec:deployment-recs}, these numbers complete the operational blueprint: a practitioner can deploy the full canary stack at sub-cent cost with sub-second additional latency.
-
-\paragraph{Primary-fooled validation: DeBERTa evaded, LLM canary detects.} The case study above shows the canary under conditions where both models agree. To demonstrate detection under the critical deployment scenario---the primary classifier \emph{is actually fooled}---we evaluate $N{=}100$ inputs from the GCG adversarial corpus with DeBERTa-v3-large as primary and Qwen2.5-14B (open-weight, local inference, different architecture family) as LLM canary. Of the 49 inputs that evade DeBERTa (attacked score $< 0.5$), the LLM canary correctly flags 40 (81.6\% detection rate; mean canary score 0.69 on DeBERTa-evaded inputs). Only 9/49 (18.4\%) evade both classifiers simultaneously. This validates the canary architecture under its intended operating conditions: when the deployed primary \emph{is fooled} by a targeted gradient attack, a heterogeneous LLM canary---which cannot be targeted by the same gradient---recovers 81.6\% of the missed detections at zero additional FPR cost.
 
 
 %==============================================================================
