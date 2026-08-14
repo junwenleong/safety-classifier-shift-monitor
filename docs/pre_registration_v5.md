@@ -38,10 +38,18 @@ The divergence-minimisation equilibrium stall gap tracks the theoretical predict
 
 ### Primary Endpoints
 
-1. **Slope of observed vs predicted stall gap**: Deming regression of mean(stall_gap) on 1/(2λ). Success: slope 95% CI includes 1.0.
+1. **Slope of observed vs predicted stall gap**: Deming regression of mean(stall_gap) on 1/(2λ). Success: slope 95% CI includes 1.0. Also report intercept CI (success: includes 0.0).
 2. **Block rate by λ**: Proportion of prompts where target score remains ≥ 0.5. Report Wilson 95% CI per λ.
 3. **Stall gap precision**: Fraction of blocked cases with gap within ±0.05 of 1/(2λ).
 4. **Monotonicity**: Jonckheere-Terpstra test for monotone increasing block rate with λ.
+5. **Saturation ceiling (P2)**: Block rate is predicted to saturate at the confident-canary fraction (proportion of prompts where f_B(orig) ≥ 0.99), NOT at 1.0. On the primary pair (epoch-1/epoch-5), this ceiling is approximately 70% (14/20 from the original n=20 evaluation). A plateau at 70–75% for λ≥4 is CONFIRMATION of confidence-gating, not theory failure. Block rate approaching 100% would indicate the theory is wrong (the defence would work even when the canary is not confident).
+
+### Paired Design
+
+The same 20 prompts are used at every λ value (deterministic selection via seed=42 from GCG prompt pool). This enables:
+- Prompt-clustered bootstrap (prompt_id consistent across λ)
+- Removal of prompt-difficulty variance from the block-rate curve
+- Per-prompt stall trajectory visualization across λ
 
 ### Stratification
 

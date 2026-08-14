@@ -361,11 +361,22 @@ def main():
 
             if len(observed) >= 3:
                 slope, intercept, r, p, se = linregress(pred_filt, observed)
-                log(f"  Deming regression: observed = {slope:.3f} * predicted + {intercept:.3f}")
+                # Intercept CI (from residual variance)
+                n_pts = len(observed)
+                x_arr = np.array(pred_filt)
+                y_arr = np.array(observed)
+                residuals = y_arr - (slope * x_arr + intercept)
+                s_res = np.sqrt(np.sum(residuals**2) / (n_pts - 2)) if n_pts > 2 else 0
+                se_intercept = s_res * np.sqrt(1/n_pts + np.mean(x_arr)**2 / np.sum((x_arr - np.mean(x_arr))**2)) if n_pts > 2 else float("inf")
+
+                log(f"  Regression: observed = {slope:.3f} * predicted + {intercept:.3f}")
                 log(f"  R² = {r**2:.4f}, p = {p:.2e}")
                 log(f"  Slope 95% CI: [{slope - 1.96*se:.3f}, {slope + 1.96*se:.3f}]")
                 includes_one = (slope - 1.96*se) <= 1.0 <= (slope + 1.96*se)
-                log(f"  Includes 1.0: {'YES ✅' if includes_one else 'NO ❌'}")
+                log(f"  Slope includes 1.0: {'YES ✅' if includes_one else 'NO ❌'}")
+                log(f"  Intercept 95% CI: [{intercept - 1.96*se_intercept:.4f}, {intercept + 1.96*se_intercept:.4f}]")
+                includes_zero = (intercept - 1.96*se_intercept) <= 0.0 <= (intercept + 1.96*se_intercept)
+                log(f"  Intercept includes 0.0: {'YES ✅' if includes_zero else 'NO ❌'}")
 
         # Block rate monotonicity
         block_rates = [s["block_rate"] for s in all_summaries]
@@ -376,12 +387,24 @@ def main():
             log(f"    λ={s['lambda']:.1f}: block_rate={s['block_rate']:.1%} "
                 f"[{s['wilson_ci'][0]:.1%}, {s['wilson_ci'][1]:.1%}]")
 
+        # P2: Saturation ceiling analysis
+        high_lambda = [s for s in all_summaries if s["lambda"] >= 4.0]
+        if high_lambda:
+            max_block = max(s["block_rate"] for s in high_lambda)
+            log(f"  P2 saturation: max block rate at λ≥4 = {max_block:.1%}")
+            log(f"     Predicted ceiling: ~70% (confident-canary fraction)")
+            log(f"     {'CONFIRMS confidence-gating ✅' if max_block < 0.85 else 'EXCEEDS prediction ⚠️'}")
+
         # Save combined
         with open(RESULTS_DIR / "lambda_sweep_combined.json", "w") as f:
             json.dump({"summaries": all_summaries, "analysis": {
                 "slope": slope if len(observed) >= 3 else None,
+                "intercept": intercept if len(observed) >= 3 else None,
+                "intercept_ci": [intercept - 1.96*se_intercept, intercept + 1.96*se_intercept] if len(observed) >= 3 else None,
                 "includes_one": includes_one if len(observed) >= 3 else None,
+                "includes_zero": includes_zero if len(observed) >= 3 else None,
                 "monotone": monotone,
+                "max_block_rate_high_lambda": max_block if high_lambda else None,
             }}, f, indent=2)
 
     log("\nDone.")
