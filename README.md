@@ -1,6 +1,6 @@
 # Cheap Canaries
 
-Detecting targeted evasion attacks via classifier score disagreement, with online distributional shift monitoring for deployed safety classifiers.
+Online Shift Detection and Conformal Adaptation for Deployed Safety Classifiers.
 
 **Paper:** [arXiv:2606.11949](https://arxiv.org/abs/2606.11949) | **Live site:** [junwenleong.github.io/safety-classifier-shift-monitor](https://junwenleong.github.io/safety-classifier-shift-monitor)
 
@@ -12,9 +12,9 @@ Reasoning models deployed as safety monitors suffer **reasoning-token budget sta
 
 1. **Reasoning-token budget starvation.** Adversarial inputs require 3.3x more reasoning tokens than benign inputs to produce valid safety scores (sigmoid response curve: T50_adv=154 vs T50_benign=46 for o3). Standard low-budget deployments (`max_completion_tokens<=16`) silently starve the monitor, producing empty responses parsed as maximum-unsafe. With `max_tokens>=200`, all 35 tested models discriminate correctly (33 discriminators + 2 content-aware refusers). The optimal production choice is `gpt-4o-mini` ($0.033 per 1,000 calls, >=71% guaranteed detection, <1.5% FPR at N=1000) due to cost, not capability.
 
-2. **Score-disagreement monitoring detects gradient-based evasion.** Any un-targeted classifier detects when the primary is under GCG attack (p<10^-12, n=49). The divergence is attack-specific (not generic OOD) and confidence-gated: when the canary is confident, a divergence-minimising attacker stalls at the predicted equilibrium (gap=1/(2*lambda)=0.250; empirical mean 0.2499). Architecture diversity is not required for detection (eta-squared=0.011) but provides transfer robustness (0% cross-family transfer vs 30% within-family).
+2. **Score-disagreement monitoring detects gradient-based evasion.** Any un-targeted classifier detects when the primary is under GCG attack (p<10^-12, n=49). The divergence is attack-specific (not generic OOD) and confidence-gated: when the canary is confident, a divergence-minimising attacker stalls at the predicted equilibrium (gap=1/(2*lambda); empirical mean 0.218, median 0.250, n=20 at lambda=2.0). Architecture diversity is not required for detection (eta-squared=0.011) but provides transfer robustness (0% cross-family transfer vs 30% within-family). The defence is not absolute: 18.4% of adversarial inputs (9/49) evade both primary and canary simultaneously.
 
-3. **Density-ratio collapse in high-dimensional embeddings.** Weighted conformal correction fails for generative classifiers (Llama Guard, ShieldGemma) because logistic regression achieves perfect separability in 3584-4096-d embedding space, driving all density ratios to zero. This is a dimensionality artifact: projecting to 32 dimensions via PCA breaks separability and restores coverage (+33pp Llama Guard, +20.5pp ShieldGemma).
+3. **Density-ratio collapse in high-dimensional embeddings.** Weighted conformal correction fails for 3 of 4 tested classifiers because logistic regression achieves perfect separability in 768-4096-d embedding space, driving all density ratios to zero. Only DeBERTa-v3-large (1024-d) avoids collapse. This is a dimensionality artifact: projecting to 32 dimensions via PCA breaks separability and restores coverage (+33pp Llama Guard, +20.5pp ShieldGemma).
 
 4. **Calibration-free monitoring via scan martingale.** A conformal test martingale replaces empirical threshold tuning, achieving FAR<=1% uniformly across all 4 classifiers with no per-model calibration (vs 2-9.5% spread under empirical KS calibration). The value is operational simplicity: deploy once, guaranteed FAR. For ramped-onset adversaries, scan substantially outperforms KS (37% vs 3% detection at 15% mixing). With proper per-condition calibrated KS, KS matches or exceeds scan for instantaneous step-onset shift.
 
@@ -23,6 +23,10 @@ Reasoning models deployed as safety monitors suffer **reasoning-token budget sta
 6. **Black-box optimization hits a hard floor.** 500-step coordinate-ascent attacks against `gpt-4o-mini` (n=10 prompts, hardest-case selection): 9/10 show zero improvement after step 50, 1/10 shows one small reduction still above threshold. Mean final score: 0.90 (threshold: 0.5). No prompt breaches 0.5. Increasing attacker budget provides no advantage.
 
 7. **Monitorability is not a predictable intrinsic property.** The n=4 correlation (r=0.97) between null-score std and detection latency was an encoder/decoder gap artifact. Within-family evaluation (n=6 encoder variants) yields r=0.21, p=0.70.
+
+8. **CUSUM/EWMA close the sub-threshold blind spot (v5).** Persistent low-rate contamination (4-12% mixing) that evades both KS and scan martingale is detectable by long-memory sequential detectors. CUSUM (k=0.5) and EWMA (lambda=0.05) detect down to 4% mixing at 100% detection rate (MDM=4%), at the cost of increased latency (~1,000 steps vs ~100 for KS at higher mixing). At 12% mixing (the v4 blind-spot boundary), CUSUM detects at 74 steps with 100% power.
+
+9. **KS is catastrophically sensitive to benign heterogeneity (v5).** Under production-like traffic drawn from multiple benign sources (code, creative writing, chat), KS FAR inflates from 3% to 100% because it detects any distributional difference, not only adversarial shift. CUSUM and EWMA are robust (inflation <1pp). Recalibrating KS on representative production traffic immediately recovers controlled FAR.
 
 ## Verification
 
