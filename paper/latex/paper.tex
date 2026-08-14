@@ -37,7 +37,7 @@ We present an online monitoring system for deployed safety classifiers that dete
 
 The system's centrepiece is a score-disagreement canary: any un-targeted classifier detects when the primary is under gradient-based attack. We derive the security boundary---a confidence-gated equilibrium at which a monitor-aware attacker stalls (gap $= 1/(2\lambda)$, validated within 95\% CI)---and provide a 4-tier threat model with quantitative bounds across 35 frontier models ($\geq$71\% detection for the best-value model, $<$1.5\% FPR across 10 models validated at $N{=}1000$). The defence is not absolute: 18.4\% of adversarial inputs evade both primary and canary simultaneously, and the blocked rate is confidence-dependent.
 
-Additional contributions: (1)~weighted conformal prediction collapses silently for 3/4 classifiers due to density-ratio estimation failure in high-dimensional embeddings; PCA to 32~dimensions restores coverage (+33pp). (2)~CUSUM/EWMA detectors close a previously identified sub-threshold blind spot, detecting persistent contamination down to 4\% mixing. (3)~KS false alarm rates inflate 4.3$\times$ under heterogeneous production traffic; CUSUM is unaffected. (4)~Reasoning-token budget starvation: adversarial inputs require 3.3$\times$ more tokens than benign inputs for valid safety scoring, creating a silent failure zone in standard deployments.
+Additional contributions: (1)~weighted conformal prediction collapses silently for 3/4 classifiers due to density-ratio estimation failure in high-dimensional embeddings; PCA to 32~dimensions restores coverage (+33pp on temporal shift). (2)~CUSUM/EWMA detectors close a previously identified sub-threshold blind spot, detecting persistent contamination down to 4\% mixing. (3)~KS false alarm rates inflate 4.3$\times$ under heterogeneous production traffic; CUSUM is unaffected. (4)~Reasoning-token budget starvation: adversarial inputs require 3.3$\times$ more tokens than benign inputs for valid safety scoring, creating a silent failure zone in standard deployments.
 \end{abstract}
 
 %==============================================================================
@@ -339,6 +339,17 @@ The factorial design, including all hyperparameters, was committed before execut
 \label{sec:deviations}
 
 The only scope reduction from the pre-registration is window sizes: 100 and 200 were executed; $w{=}500$ was dropped because it produces insufficient post-shift observations with 300 shifted examples. Seeds (20), ground-truth regimes (A, B, C), and all hyperparameters ($\alpha{=}0.05$, calibration percentile${=}97$, reference size${=}500$) match the pre-registration exactly.
+
+\paragraph{v5 experiment deviations.} The v5 pre-registration (commit \texttt{9e871d3}) specifies six experiments. Deviations from the registered protocols:
+\begin{itemize}
+\item \textbf{Experiment 1 (lambda sweep):} Pre-registered at $n{=}100$ per $\lambda$; executed at $n{=}20$ (primary pair only). Replication pair and budget-sensitivity arms deferred due to GCG compute cost (${\sim}$8 hours per $\lambda$ on Apple Silicon).
+\item \textbf{Experiment 2 (sub-threshold):} Pre-registered at 500 null streams $\times$ 100 shifted streams; executed at 50 null $\times$ 20 shifted per mixing rate (DeBERTa only). Llama Guard arm deferred (Mac Studio scheduling).
+\item \textbf{Experiment 3 (heterogeneous):} Pre-registered at $n{\geq}5{,}000$ prompts; executed at $n{=}3{,}768$ (after filtering). DeBERTa only; other classifiers deferred.
+\item \textbf{Experiment 4 (PAIR):} Pre-registered at 100 prompts $\times$ 100 iterations; executed at 30 prompts $\times$ 20 iterations. Nested budget ablation not performed.
+\item \textbf{Experiment 5 (SMSR):} Decision rule triggered ``excise to appendix'' (DeBERTa SMSR not run; RoBERTa-only preliminary results placed in exploratory appendix as specified).
+\item \textbf{Experiment 6 (reproducibility):} \texttt{make reproduce} implemented and cross-hardware validation completed. Raw data deposited on GitHub Releases.
+\end{itemize}
+All deviations reduce sample size, not scope: the same endpoints and analysis procedures are applied. Results are reported with Wilson confidence intervals reflecting the actual $n$.
 
 \subsection{Reproducibility}
 \label{sec:reproducibility}

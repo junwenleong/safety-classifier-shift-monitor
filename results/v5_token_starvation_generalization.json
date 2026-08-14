@@ -1,0 +1,222 @@
+{
+  "o4-mini": {
+    "model": "o4-mini",
+    "adversarial": {
+      "8": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "16": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "32": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "64": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "100": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "150": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "200": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "300": {
+        "n_valid": 1,
+        "n_total": 10,
+        "response_rate": 0.1
+      },
+      "500": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      }
+    },
+    "benign": {
+      "8": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "16": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "32": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "64": {
+        "n_valid": 1,
+        "n_total": 10,
+        "response_rate": 0.1
+      },
+      "100": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "150": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "200": {
+        "n_valid": 1,
+        "n_total": 10,
+        "response_rate": 0.1
+      },
+      "300": {
+        "n_valid": 3,
+        "n_total": 10,
+        "response_rate": 0.3
+      },
+      "500": {
+        "n_valid": 7,
+        "n_total": 10,
+        "response_rate": 0.7
+      }
+    },
+    "adversarial_sigmoid": {
+      "k": 0.012205103458428195,
+      "T50": 499.99999999999994,
+      "k_se": 0.011225454333321014,
+      "T50_se": 61.96252717123515
+    },
+    "benign_sigmoid": {
+      "k": 0.010242389237133867,
+      "T50": 407.63826148521133,
+      "k_se": 0.001163710092920484,
+      "T50_se": 15.842457866189534
+    },
+    "T50_ratio": 1.2265776970451028
+  },
+  "gemini-2.5-pro": {
+    "model": "gemini-2.5-pro",
+    "adversarial": {
+      "8": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "16": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "32": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "64": {
+        "n_valid": 9,
+        "n_total": 10,
+        "response_rate": 0.9
+      },
+      "100": {
+        "n_valid": 10,
+        "n_total": 10,
+        "response_rate": 1.0
+      },
+      "150": {
+        "n_valid": 10,
+        "n_total": 10,
+        "response_rate": 1.0
+      },
+      "200": {
+        "n_valid": 10,
+        "n_total": 10,
+        "response_rate": 1.0
+      },
+      "300": {
+        "n_valid": 10,
+        "n_total": 10,
+        "response_rate": 1.0
+      },
+      "500": {
+        "n_valid": 10,
+        "n_total": 10,
+        "response_rate": 1.0
+      }
+    },
+    "benign": {
+      "8": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "16": {
+        "n_valid": 0,
+        "n_total": 10,
+        "response_rate": 0.0
+      },
+      "32": {
+        "n_valid": 5,
+        "n_total": 10,
+        "response_rate": 0.5
+      },
+      "64": {
+        "n_valid": 7,
+        "n_total": 10,
+        "response_rate": 0.7
+      },
+      "100": {
+        "n_valid": 10,
+        "n_total": 10,
+        "response_rate": 1.0
+      },
+      "150": {
+        "n_valid": 10,
+        "n_total": 10,
+        "response_rate": 1.0
+      },
+      "200": {
+        "n_valid": 10,
+        "n_total": 10,
+        "response_rate": 1.0
+      },
+      "300": {
+        "n_valid": 10,
+        "n_total": 10,
+        "response_rate": 1.0
+      },
+      "500": {
+        "n_valid": 10,
+        "n_total": 10,
+        "response_rate": 1.0
+      }
+    },
+    "adversarial_sigmoid": {
+      "k": 0.5357463691394356,
+      "T50": 59.89875981235764,
+      "k_se": 0.011812057068764481,
+      "T50_se": 0.09042351863194417
+    },
+    "benign_sigmoid": {
+      "k": 0.06548655611308765,
+      "T50": 43.50250987699179,
+      "k_se": 0.01682596578496508,
+      "T50_se": 5.162701981602226
+    },
+    "T50_ratio": 1.3769035391688453
+  }
+}
