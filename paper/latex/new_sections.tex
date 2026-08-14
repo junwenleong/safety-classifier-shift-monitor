@@ -97,9 +97,12 @@ The four tiers separate two orthogonal knowledge axes: (1) whether the attacker 
 1 & Monitor-ignorant (single-target GCG) & 98\% detection (48/49) & $k{=}2$ canaries sufficient \\
 2 & Knows canary exists (hopes for transfer) & 93.9\% detection (46/49) & Monitor canary confidence \\
 3 & Has canary weights (joint optimisation) & 45\% blocked (9/20, $n{=}20$) & Cross-family canary \\
-4 & Stealth-aware (divergence minimisation) & 70\% blocked [48\%, 85\%] ($n{=}20$) & Confidence gating \\
+4 & Stealth-aware (divergence minimisation) & 70\% blocked [48\%, 85\%] ($n{=}20$)\textsuperscript{$\dagger$} & Confidence gating \\
 \bottomrule
 \end{tabular}
+\vspace{2pt}
+
+{\footnotesize \textsuperscript{$\dagger$}Primary pair only (canary confidence $f_B{=}0.97$). Lower-confidence replication pair: 30\% blocked (3/10).}
 \end{table}
 
 Tier~1 is the baseline from \S\ref{sec:canary}. Tiers~2--4 represent progressively stronger adversaries. We evaluate Tiers~2--4 below.
