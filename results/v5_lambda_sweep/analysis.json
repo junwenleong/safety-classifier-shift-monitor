@@ -1,0 +1,56 @@
+{
+  "per_lambda": {
+    "0.5": {
+      "n": 20,
+      "blocked": 5,
+      "block_rate": 0.25,
+      "wilson_ci": [
+        0.11186170140766569,
+        0.468700877618744
+      ],
+      "mean_gap": 0.16326000000000002,
+      "median_gap": 0.0902,
+      "predicted_gap": 1.0
+    },
+    "1.0": {
+      "n": 19,
+      "blocked": 9,
+      "block_rate": 0.47368421052631576,
+      "wilson_ci": [
+        0.2732980516117956,
+        0.6829219075488682
+      ],
+      "mean_gap": 0.2686222222222222,
+      "median_gap": 0.3198,
+      "predicted_gap": 0.5
+    },
+    "2.0": {
+      "n": 5,
+      "blocked": 2,
+      "block_rate": 0.4,
+      "wilson_ci": [
+        0.11762077423264783,
+        0.769275718723987
+      ],
+      "mean_gap": 0.27444999999999997,
+      "median_gap": 0.27444999999999997,
+      "predicted_gap": 0.25
+    }
+  },
+  "regression": {
+    "slope": -0.15717777777777772,
+    "intercept": 0.32713111111111104,
+    "r_squared": 0.9199251135755167,
+    "std_err": 0.04637277362131078
+  },
+  "monotonicity": {
+    "spearman_rho": 0.5,
+    "spearman_p": 0.6666666666666667,
+    "is_monotone": false
+  },
+  "p2_ceiling": {
+    "max_block_rate": 0.47368421052631576,
+    "predicted_ceiling": 0.7,
+    "confirmed": true
+  }
+}
