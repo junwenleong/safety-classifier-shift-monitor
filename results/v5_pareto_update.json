@@ -1,0 +1,58 @@
+{
+  "gpt-5.5": {
+    "det_point": 0,
+    "det_lower": 0.0,
+    "det_upper": 1.0,
+    "n_adv": 0,
+    "k_detected": 0,
+    "fpr_point": 0,
+    "fpr_upper": 1.0,
+    "n_benign": 0,
+    "n_fp": 0,
+    "cost": 0.225,
+    "mean_adv_score": null,
+    "mean_clean_score": null
+  },
+  "claude-sonnet-5": {
+    "det_point": 0.4166666666666667,
+    "det_lower": 0.2884966777841157,
+    "det_upper": 0.5571866771602373,
+    "n_adv": 48,
+    "k_detected": 20,
+    "fpr_point": 0.40816326530612246,
+    "fpr_upper": 0.5475268060815286,
+    "n_benign": 49,
+    "n_fp": 20,
+    "cost": 0.225,
+    "mean_adv_score": 0.42770833333333336,
+    "mean_clean_score": 0.42040816326530617
+  },
+  "gemini-3.6-flash": {
+    "det_point": 0.2978723404255319,
+    "det_lower": 0.18651250504604835,
+    "det_upper": 0.4397767391904607,
+    "n_adv": 47,
+    "k_detected": 14,
+    "fpr_point": 0.23255813953488372,
+    "fpr_upper": 0.37744520297809003,
+    "n_benign": 43,
+    "n_fp": 10,
+    "cost": 0.010499999999999999,
+    "mean_adv_score": 0.2978723404255319,
+    "mean_clean_score": 0.2302325581395349
+  },
+  "o4-mini": {
+    "det_point": 0.0,
+    "det_lower": 0,
+    "det_upper": 0.7934506856227626,
+    "n_adv": 1,
+    "k_detected": 0,
+    "fpr_point": 0,
+    "fpr_upper": 1.0,
+    "n_benign": 0,
+    "n_fp": 0,
+    "cost": 0.077,
+    "mean_adv_score": 0.0,
+    "mean_clean_score": null
+  }
+}
