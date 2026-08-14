@@ -26,7 +26,7 @@ Reasoning models deployed as safety monitors suffer **reasoning-token budget sta
 
 8. **CUSUM/EWMA close the sub-threshold blind spot (v5).** Persistent low-rate contamination (4-12% mixing) that evades both KS and scan martingale is detectable by long-memory sequential detectors. CUSUM (k=0.5) and EWMA (lambda=0.05) detect down to 4% mixing at 100% detection rate (MDM=4%), at the cost of increased latency (~1,000 steps vs ~100 for KS at higher mixing). At 12% mixing (the v4 blind-spot boundary), CUSUM detects at 74 steps with 100% power.
 
-9. **KS is catastrophically sensitive to benign heterogeneity (v5).** Under production-like traffic drawn from multiple benign sources (code, creative writing, chat), KS FAR inflates from 3% to 100% because it detects any distributional difference, not only adversarial shift. CUSUM and EWMA are robust (inflation <1pp). Recalibrating KS on representative production traffic immediately recovers controlled FAR.
+9. **KS is catastrophically sensitive to benign heterogeneity (v5).** Under production-like traffic drawn from multiple benign sources (code, creative writing, chat), KS FAR inflates from 5% to 22.5% (4.3x) because it detects any distributional difference, not only adversarial shift. CUSUM is unaffected (FAR actually decreases). Recalibrating KS on representative production traffic immediately recovers controlled FAR (2.4%). Validated with real DeBERTa-v3-large scoring of 3,768 prompts from 5 sources.
 
 ## Verification
 
