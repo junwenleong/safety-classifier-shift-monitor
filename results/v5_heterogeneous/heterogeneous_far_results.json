@@ -1,0 +1,28 @@
+{
+  "KS (w=100)": {
+    "homogeneous_far": 0.031,
+    "heterogeneous_far": 1.0,
+    "recalibrated_far": 0.03,
+    "inflation": 0.969,
+    "recalibration_recovers": true
+  },
+  "CUSUM (k=0.5)": {
+    "homogeneous_far": 0.061,
+    "heterogeneous_far": 0.066,
+    "recalibrated_far": 0.05,
+    "inflation": 0.005,
+    "recalibration_recovers": true
+  },
+  "EWMA (\u03bb=0.05)": {
+    "homogeneous_far": 0.055,
+    "heterogeneous_far": 0.052,
+    "recalibrated_far": 0.052,
+    "inflation": -0.003,
+    "recalibration_recovers": true
+  },
+  "source_wildguardmix_safe_ks": 0.05,
+  "source_general_chat_ks": 1.0,
+  "source_code_technical_ks": 1.0,
+  "source_creative_writing_ks": 1.0,
+  "source_multi_turn_ks": 1.0
+}
