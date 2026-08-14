@@ -1,0 +1,16 @@
+{
+  "method": "real_deberta_scoring_mac_studio",
+  "n_heterogeneous": 3768,
+  "n_homogeneous": 500,
+  "ks": {
+    "homo_far": 0.052,
+    "hetero_far": 0.225,
+    "recal_far": 0.024,
+    "inflation": 0.173
+  },
+  "cusum": {
+    "homo_far": 0.054,
+    "hetero_far": 0.007,
+    "inflation": -0.047
+  }
+}
