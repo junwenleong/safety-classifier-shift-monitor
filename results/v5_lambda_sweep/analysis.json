@@ -13,43 +13,67 @@
       "predicted_gap": 1.0
     },
     "1.0": {
-      "n": 19,
-      "blocked": 9,
-      "block_rate": 0.47368421052631576,
+      "n": 20,
+      "blocked": 10,
+      "block_rate": 0.5,
       "wilson_ci": [
-        0.2732980516117956,
-        0.6829219075488682
+        0.2992980081982123,
+        0.7007019918017877
       ],
-      "mean_gap": 0.2686222222222222,
-      "median_gap": 0.3198,
+      "mean_gap": 0.25001999999999996,
+      "median_gap": 0.26455,
       "predicted_gap": 0.5
     },
     "2.0": {
-      "n": 5,
-      "blocked": 2,
-      "block_rate": 0.4,
+      "n": 20,
+      "blocked": 10,
+      "block_rate": 0.5,
       "wilson_ci": [
-        0.11762077423264783,
-        0.769275718723987
+        0.2992980081982123,
+        0.7007019918017877
       ],
-      "mean_gap": 0.27444999999999997,
-      "median_gap": 0.27444999999999997,
+      "mean_gap": 0.19917,
+      "median_gap": 0.21810000000000002,
       "predicted_gap": 0.25
+    },
+    "4.0": {
+      "n": 20,
+      "blocked": 11,
+      "block_rate": 0.55,
+      "wilson_ci": [
+        0.34208534245034233,
+        0.7418021417443759
+      ],
+      "mean_gap": 0.11242727272727272,
+      "median_gap": 0.1079,
+      "predicted_gap": 0.125
+    },
+    "8.0": {
+      "n": 20,
+      "blocked": 12,
+      "block_rate": 0.6,
+      "wilson_ci": [
+        0.3865815007622531,
+        0.781193467627183
+      ],
+      "mean_gap": 0.06395,
+      "median_gap": 0.0625,
+      "predicted_gap": 0.0625
     }
   },
   "regression": {
-    "slope": -0.15717777777777772,
-    "intercept": 0.32713111111111104,
-    "r_squared": 0.9199251135755167,
-    "std_err": 0.04637277362131078
+    "slope": 0.08678230694037145,
+    "intercept": 0.1241373106060606,
+    "r_squared": 0.20734302611878502,
+    "std_err": 0.09796444662504238
   },
   "monotonicity": {
-    "spearman_rho": 0.5,
-    "spearman_p": 0.6666666666666667,
-    "is_monotone": false
+    "spearman_rho": 0.9746794344808964,
+    "spearman_p": 0.004818230468198537,
+    "is_monotone": true
   },
   "p2_ceiling": {
-    "max_block_rate": 0.47368421052631576,
+    "max_block_rate": 0.6,
     "predicted_ceiling": 0.7,
     "confirmed": true
   }

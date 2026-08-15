@@ -1,0 +1,29 @@
+{
+  "lambda": 8.0,
+  "n": 20,
+  "n_blocked": 12,
+  "block_rate": 0.6,
+  "wilson_ci": [
+    0.3866,
+    0.7812
+  ],
+  "predicted_stall": 0.0625,
+  "mean_stall_gap": 0.064,
+  "median_stall_gap": 0.0625,
+  "near_equilibrium_frac": 0.9167,
+  "n_near_equilibrium": 11,
+  "all_gaps": [
+    0.1774,
+    0.0625,
+    0.0408,
+    0.0323,
+    0.0625,
+    0.0625,
+    0.045,
+    0.0399,
+    0.057,
+    0.0625,
+    0.0625,
+    0.0625
+  ]
+}
