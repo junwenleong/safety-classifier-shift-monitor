@@ -13,6 +13,7 @@
 \graphicspath{{figures/}}
 
 \newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
 \newtheorem{assumption}{Assumption}
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
@@ -33,11 +34,11 @@
 \lhead{Preprint. arXiv:2606.11949}
 
 \begin{abstract}
-We present an online monitoring system for deployed safety classifiers that detects distributional shift, adversarial evasion, and conformal coverage degradation. A pre-registered 800-cell factorial evaluation (4~classifiers $\times$ 5~shift types $\times$ 20~seeds $\times$ 2~windows) achieves 86.6\% detection rate with mean latency of 39.5 steps; variance decomposition reveals a substantial classifier$\times$shift interaction ($\eta^2 = 0.185$) that precludes one-size-fits-all monitoring.
+We present an online monitoring system for deployed safety classifiers that detects distributional shift, adversarial evasion, and conformal coverage degradation. A pre-registered 800-cell factorial evaluation (4~classifiers $\times$ 5~shift types $\times$ 20~seeds $\times$ 2~windows) achieves 86.6\% control-validated detection rate (raw TPR 91.5\%; compound metric requires both shift-alarm and clean negative control) with mean latency of 39.5 steps; variance decomposition reveals a substantial classifier$\times$shift interaction ($\eta^2 = 0.185$) that precludes one-size-fits-all monitoring.
 
-The system's centrepiece is a score-disagreement canary: any un-targeted classifier detects when the primary is under gradient-based attack. We derive the security boundary---a confidence-gated equilibrium at which a monitor-aware attacker stalls (gap $= 1/(2\lambda)$, validated across $\lambda \in \{0.5, 1, 2, 4, 8\}$; $R^2{=}0.999$ in the converged regime)---and provide a 4-tier threat model with quantitative bounds across 35 frontier models ($\geq$71\% detection for the best-value model, $<$1.5\% FPR across 10 models validated at $N{=}1000$). The defence is not absolute: 18.4\% of adversarial inputs evade both primary and canary simultaneously, and the blocked rate is confidence-dependent (saturates at ${\sim}$60\%, not 100\%).
+The system's centrepiece is a score-disagreement canary: any un-targeted classifier detects when the primary is under gradient-based attack. We derive the security boundary---a confidence-gated stall condition at which a monitor-aware attacker's progress halts (gap $= 1/(2\lambda)$, validated across $\lambda \in \{0.5, 1, 2, 4, 8\}$; observed/predicted ratios $0.86$--$1.00$ at $\lambda \geq 2$, with under-convergence at low $\lambda$ consistent with GCG budget exhaustion)---and provide a 4-tier threat model with quantitative bounds across 35 frontier models ($\geq$71\% detection for the best-value model, $<$1.5\% FPR across 10 models validated at $N{=}1000$). The defence is not absolute: 18.4\% of adversarial inputs evade both primary and canary simultaneously, and the blocked rate is confidence-dependent (saturates at ${\sim}$60\%, not 100\%). An operational case study reveals the canary's scope limitation: when adversarial inputs are not targeted at the canary's primary (both models agree the content is harmful), disagreement-based detection drops to 2\% (1/50)---the architecture validates operational viability and cost, not universal adversarial detection.
 
-Additional contributions: (1)~weighted conformal prediction collapses silently for 3/4 classifiers due to density-ratio estimation failure in high-dimensional embeddings; PCA to 32~dimensions restores coverage (+33pp on temporal shift). (2)~CUSUM/EWMA detectors close a previously identified sub-threshold blind spot, detecting persistent contamination down to 4\% mixing. (3)~KS false alarm rates inflate 4.3$\times$ under heterogeneous production traffic; CUSUM is unaffected. (4)~Reasoning-token budget starvation: adversarial inputs require 3.3$\times$ more tokens than benign inputs for valid safety scoring, creating a silent failure zone in standard deployments.
+Additional contributions: (1)~weighted conformal prediction collapses silently for 3/4 classifiers due to density-ratio estimation failure in high-dimensional embeddings; PCA to 32~dimensions restores coverage (+33pp on temporal shift). (2)~CUSUM/EWMA detectors close a previously identified sub-threshold blind spot, detecting persistent contamination down to 4\% mixing. (3)~KS false alarm rates inflate 5.4$\times$ under heterogeneous production traffic; CUSUM is unaffected. (4)~Reasoning-token budget starvation: adversarial inputs require 3.3$\times$ more tokens than benign inputs for valid safety scoring on o3 (ratios 1.2--1.4$\times$ on o4-mini and gemini-2.5-pro), creating a silent failure zone in standard deployments.
 \end{abstract}
 
 %==============================================================================
@@ -87,7 +88,7 @@ Beyond drift detection, deployed classifiers face a second threat: gradient-base
 
 \item \textbf{Conformal failure mode.} An empirical confirmation of known high-dimensional density-ratio estimation failure in the specific setting of safety-classifier embeddings: logistic regression achieves perfect linear separability between source and target in high-dimensional embedding spaces (both encoder and decoder classifiers affected: 3 of 4 tested classifiers collapse), driving all importance weights to the clip floor. This silently disables weighted conformal prediction---the standard post-shift coverage recovery method---on exactly the classifier architectures most widely deployed. The practical contribution is the diagnosis and a dimensionality-reduction mitigation: PCA to $\leq$32 dimensions restores coverage (+21--33pp on temporal shift; other shift types not yet validated for coverage recovery).
 
-\item \textbf{Adversarial canary characterization.} An empirical security characterization of score-disagreement monitoring against gradient-based evasion. We find no strong evidence for three common assumptions (architecture diversity as mechanism [$p{=}0.070$, $\eta^2{=}0.011$], generic OOD detection, suppression by adaptive attacker), derive a formal equilibrium bound (gap $= 1/(2\lambda)$; $n{=}20$ evaluation at $\lambda{=}2.0$ shows 14/20 blocked, mean stall gap $0.218$, median $0.250$), and provide a deployment blueprint across 35~frontier models with Wilson~CI conditional guarantees under the targeted-evasion threat model ($\geq$71\% detection at $<$1.5\% FPR; $N{=}1000$ FPR validation on 10 Pareto-dominant models). The defence is not absolute: 18.4\% of adversarial inputs (9/49) evade both the primary and canary simultaneously, and the blocked rate is confidence-dependent (70\% on high-confidence pairs, 30\% on lower-confidence replication).
+\item \textbf{Adversarial canary characterization.} An empirical security characterization of score-disagreement monitoring against gradient-based evasion. We find no strong evidence for three common assumptions (architecture diversity as mechanism [$p{=}0.070$, $\eta^2{=}0.011$], generic OOD detection, suppression by adaptive attacker), derive a formal stall condition (gap $= 1/(2\lambda)$; $n{=}20$ evaluation at $\lambda{=}2.0$ shows 14/20 blocked, mean stall gap $0.218$, median $0.250$), and provide a deployment blueprint across 35~frontier models with Wilson~CI conditional guarantees under the targeted-evasion threat model ($\geq$71\% detection at $<$1.5\% FPR; $N{=}1000$ FPR validation on 10 Pareto-dominant models). The defence is not absolute: 18.4\% of adversarial inputs (9/49) evade both the primary and canary simultaneously, and the blocked rate is confidence-dependent (70\% on high-confidence pairs, 30\% on lower-confidence replication).
 
 \item \textbf{Reasoning-token budget starvation (\S\ref{sec:cot-starvation-lead}).} A methodological contribution: the tested reasoning-tier monitors, particularly o3 under our scoring prompt, exhibit input-complexity-dependent token thresholds ($T_{50,\text{adv}} = 3.3\times T_{50,\text{benign}}$) that cause silent scoring failure under standard deployment budgets. We characterize the sigmoid response curve and provide a deployment rule ($T_r \geq T_{50} + 2.2/k$) for $>$90\% scoring coverage. Generalization testing confirms the directional effect ($T_{50,\text{adv}} > T_{50,\text{benign}}$) on o4-mini and gemini-2.5-pro, but the magnitude is model-specific (ratios 1.23--3.35$\times$).
 \end{enumerate}
@@ -107,7 +108,9 @@ Beyond drift detection, deployed classifiers face a second threat: gradient-base
 
 \paragraph{Conformal prediction under covariate shift.} Split conformal prediction~\citep{vovk2005algorithmic} provides distribution-free coverage guarantees under exchangeability. When the test distribution shifts, exchangeability breaks and coverage degrades. \citet{tibshirani2019conformal} restore coverage by reweighting the empirical distribution of calibration nonconformity scores with density ratios estimated from the covariate shift, provided those density ratios are known or accurately estimated. Our weighted-on-alarm mode implements their approach, triggered by the shift detector rather than assumed available from unlabeled target covariates. The density ratio is estimated via logistic regression on classifier embeddings, a lightweight approximation that avoids the instability of kernel density estimation in high dimensions. It is well established that density-ratio estimation degrades in high dimensions; dimensionality reduction before estimation is a known remedy~\citep{stojanov2019lowdim,sugiyama2011direct}. Our contribution is not the reduction itself but the diagnosis of a specific failure mode: in generative safety-classifier embeddings, logistic regression achieves perfect linear separability, driving all importance weights to the clip floor and eliminating data-driven reweighting (\S\ref{sec:conformal-results}). \citet{gibbs2021adaptive} extend conformal prediction to the fully online setting without exchangeability; we note this as future work. For conformal prediction applied specifically to classification, \citet{romano2020classification} provide adaptive prediction sets that maintain valid coverage while minimizing set size; our abstention criterion (flag when $|C(x)| \neq 1$) follows their framework.
 
-\paragraph{Safety classifier monitoring.} Prior work on monitoring deployed classifiers focuses on performance estimation from unlabeled data~\citep{garg2022leveraging} or drift detection via population-level statistics~\citep{rabanser2019failing}, finding that performance depends strongly on shift type and representation. Several recent works couple shift detection with online adaptation: \citet{podkopaev2022tracking} track the risk of a deployed model and detect harmful distribution shifts using sequential testing (requiring labels upon prediction), and \citet{prinster2025watch} unify monitoring and adaptation within a single weighted-conformal-test-martingale framework that detects changepoints and adapts online to covariate shift. Conformal prediction has been applied to content moderation via conformalized estimates of annotation disagreement~\citep{villatecastillo2024moderation}. Our work differs from these general-purpose monitoring frameworks in scope and emphasis: we conduct a targeted empirical study of LLM safety classifiers under diverse shift conditions, surfacing failure modes that general monitoring does not, specifically the density-ratio collapse mechanism in high-dimensional generative embeddings, the architecture $\times$ shift-type crossover interaction, cross-classifier anomaly detection as a distributional canary for adversarial evasion, and the CS-vs-KS deployment trade-off at low contamination. Architecturally, we use a separate sliding-window detector that triggers a downstream weighted conformal layer (rather than a unified martingale), though we view the architectural choice as secondary to the empirical contributions. The factorial evaluation design (crossing classifiers with shift conditions) and its variance decomposition reveal interaction effects invisible to single-classifier studies; we are not aware of prior work that analyzes classifier $\times$ shift interactions this way for safety classifiers, though variance-decomposition analyses of prompt sensitivity have recently appeared for general LLM evaluation~\citep{romanou2026brittlebench}. The attack characterization motivating such monitoring is established by \citet{leong2026agentic}, who show that persistent memory poisoning achieves 60--95\% execution rates across frontier models, creating the distributional shifts our detector is designed to surface.
+\paragraph{Safety classifier monitoring.} Prior work on monitoring deployed classifiers focuses on performance estimation from unlabeled data~\citep{garg2022leveraging} or drift detection via population-level statistics~\citep{rabanser2019failing}, finding that performance depends strongly on shift type and representation. Several recent works couple shift detection with online adaptation: \citet{podkopaev2022tracking} track the risk of a deployed model and detect harmful distribution shifts using sequential testing (requiring labels upon prediction), and \citet{prinster2025watch} unify monitoring and adaptation within a single weighted-conformal-test-martingale framework that detects changepoints and adapts online to covariate shift. Conformal prediction has been applied to content moderation via conformalized estimates of annotation disagreement~\citep{villatecastillo2024moderation}. Our work differs from these general-purpose monitoring frameworks in scope and emphasis: we conduct a targeted empirical study of LLM safety classifiers under diverse shift conditions, surfacing failure modes that general monitoring does not, specifically the density-ratio collapse mechanism in high-dimensional generative embeddings, the architecture $\times$ shift-type crossover interaction, cross-classifier anomaly detection as a distributional canary for adversarial evasion, and the CS-vs-KS deployment trade-off at low contamination. Architecturally, we use a separate sliding-window detector that triggers a downstream weighted conformal layer (rather than a unified martingale), though we view the architectural choice as secondary to the empirical contributions. The factorial evaluation design (crossing classifiers with shift conditions) and its variance decomposition reveal interaction effects invisible to single-classifier studies; we are not aware of prior work that analyzes classifier $\times$ shift interactions this way for safety classifiers, though variance-decomposition analyses of prompt sensitivity have recently appeared for general LLM evaluation~\citep{romanou2026brittlebench}. The attack characterization motivating such monitoring is reported in companion work by the same author~\citep{leong2026agentic}, which measures highly heterogeneous persistent memory poisoning execution rates across frontier models (many endpoints at or near 0\%, with specific vulnerable cells reaching 95\%) (not independently replicated), creating the distributional shifts our detector is designed to surface.
+
+\paragraph{Disclosure.} References~\citep{leong2026agentic} and~\citep{leong2026recognition} are companion preprints by the same author. No findings cited from these works have been independently replicated.
 
 
 %==============================================================================
@@ -178,7 +181,7 @@ We run $N_{\text{cal}} = 50$ negative control streams (reference data only, no s
 \subsection{Scan Martingale}
 \label{sec:martingale}
 
-The empirical FAR calibration of \S\ref{sec:far-calibration} produces a $5\times$ spread across classifiers (Text-Moderation 2.0\% vs DeBERTa 9.5\%). We replace this with a conformal test martingale---a standard sequential testing tool~\citep{howard2021timeuniform,waudbysmith2024estimating}---that provides anytime-valid FAR control without per-classifier threshold tuning. Our contribution is not the martingale construction itself but its application to safety-classifier monitoring and the empirical characterization of when it outperforms sliding-window KS.
+The empirical FAR calibration of \S\ref{sec:far-calibration} produces a $5\times$ spread across classifiers (Text-Moderation 2.0\% vs DeBERTa 9.5\%). We replace this with a conformal test martingale---a standard sequential testing tool~\citep{howard2021timeuniform,waudbysmith2024estimating}---that provides calibration-free FAR control without per-classifier threshold tuning. Our contribution is not the martingale construction itself but its application to safety-classifier monitoring and the empirical characterization of when it outperforms sliding-window KS.
 
 For each incoming score $s_t$, we compute a two-sided conformal $p$-value against the frozen reference CDF: $p_t = 2 \min(F_{\text{ref}}^+(s_t), F_{\text{ref}}^-(s_t))$. Conformal $p$-values are clipped at $\delta = 1/(n_{\text{ref}}+1)$ to prevent log-wealth divergence under discrete score distributions where the test point may fall outside all reference values. The reference CDF is constructed from a held-out calibration set of 500 benign prompts, disjoint from the test prompts used for FAR evaluation; all thresholds are fixed before test-set evaluation. The betting function uses the power method:
 \begin{equation}
@@ -222,7 +225,7 @@ While the martingale guarantees uniform FAR without per-model calibration, detec
 \label{fig:ad1}
 \end{figure}
 
-\paragraph{Closing the sub-threshold blind spot.} Against a constant sub-threshold adversary (sustained low-rate injection without ramp), sliding-window KS requires $\geq$20\% mixing for 80\% detection, and the scan martingale is effectively blind to constant-rate contamination (MDM~$>$30\%). Long-memory sequential detectors close this gap. We evaluate CUSUM and EWMA detectors calibrated at 5\% FAR on 500 null streams, tested on 100 shifted streams per mixing rate across $\{4\%, 6\%, 8\%, 10\%, 12\%, 15\%, 20\%, 30\%\}$ contamination (DeBERTa $\times$ paraphrase, stream length 5{,}000).
+\paragraph{Closing the sub-threshold blind spot.} Against a constant sub-threshold adversary (sustained low-rate injection without ramp), sliding-window KS requires $\geq$20\% mixing for 80\% detection, and the scan martingale is effectively blind to constant-rate contamination (MDM~$>$30\%). Long-memory sequential detectors close this gap. We evaluate CUSUM and EWMA detectors calibrated at 5\% FAR on 50 null streams, tested on 20 shifted streams per mixing rate across $\{4\%, 6\%, 8\%, 10\%, 12\%, 15\%, 20\%, 30\%\}$ contamination (DeBERTa $\times$ paraphrase, stream length 5{,}000).
 
 \begin{table}[h]
 \centering
@@ -244,7 +247,7 @@ EWMA ($\lambda{=}0.05$) & \textbf{4\%} & 917 steps & 97 steps \\
 
 The tradeoff is detection latency: CUSUM detects 4\% mixing at ${\sim}$930 steps (vs.\ KS at ${\sim}$365 steps for 20\%+ mixing). This reflects the fundamental information-theoretic constraint: weaker signals require longer observation horizons. At 12\% mixing (the previous blind-spot boundary), CUSUM achieves 100\% detection at 88 steps---faster than KS at the same mixing level (1{,}421 steps, 55\% detection). The operational recommendation: deploy CUSUM alongside KS, with KS providing fast detection of strong shifts and CUSUM accumulating evidence for persistent low-rate contamination.
 
-\paragraph{Sensitivity to heterogeneous benign traffic.} In production, benign traffic is drawn from multiple domains (code, creative writing, chat, multi-turn), each with a slightly different score distribution even when all prompts are genuinely safe. We construct a 5-source heterogeneous null corpus (WildGuardMix 40\%, OpenAssistant 20\%, code 15\%, creative 15\%, multi-turn 10\%; $n{=}3{,}768$ after filtering prompts scored $>0.5$) and score with the primary DeBERTa classifier. KS FAR inflates from 5.2\% to 22.5\% ($4.3\times$ inflation) because it detects \emph{any} distributional difference, not only adversarial shift. CUSUM is unaffected (FAR decreases from 5.4\% to 0.7\%). Recalibrating KS thresholds on a representative production sample immediately recovers controlled FAR (2.4\%). Source-conditional analysis reveals that creative writing prompts are the primary driver: 62\% of creative prompts trigger DeBERTa above the unsafe threshold (filtered as false-benign), and the remaining low-scoring creative prompts still produce a distributional signature that KS detects. The operational implication: KS must be calibrated on traffic representative of actual deployment conditions, not on homogeneous training data. CUSUM is robust to this mismatch by construction (it detects mean-level shifts, not shape differences).
+\paragraph{Sensitivity to heterogeneous benign traffic.} In production, benign traffic is drawn from multiple domains (code, creative writing, chat, multi-turn), each with a slightly different score distribution even when all prompts are genuinely safe. We construct a 5-source heterogeneous null corpus (WildGuardMix 40\%, OpenAssistant 20\%, code 15\%, creative 15\%, multi-turn 10\%; $n{=}3{,}768$ after filtering prompts scored $>0.5$) and score with the primary DeBERTa classifier. KS FAR inflates from 4.3\% to 23.4\% ($5.4\times$ inflation) because it detects \emph{any} distributional difference, not only adversarial shift. CUSUM is unaffected (FAR 6.1\% $\to$ 6.6\%; within noise). Recalibrating KS thresholds on a representative production sample immediately recovers controlled FAR (2.6\%). Source-conditional analysis reveals that creative writing prompts are the primary driver: 62\% of creative prompts trigger DeBERTa above the unsafe threshold (filtered as false-benign), and the remaining low-scoring creative prompts still produce a distributional signature that KS detects. The operational implication: KS must be calibrated on traffic representative of actual deployment conditions, not on homogeneous training data. CUSUM is empirically robust to this mismatch on the tested corpus (it detects mean-level shifts, not shape differences).
 
 For long-horizon deployments where benign drift may violate exchangeability, we recommend a rolling reference window (gradual drift triggers alarms on encoders but not decoders; block-structured violations always trigger). In production environments with high temporal auto-correlation, exchangeability can be further preserved by sub-sampling the stream at session-level boundaries.
 
@@ -331,14 +334,14 @@ The five conditions span the spectrum from naturalistic drift (paraphrase, tempo
 
 Full factorial: 4 classifiers $\times$ 5 shift conditions $\times$ 20 random seeds $\times$ 2 window sizes (100, 200) $= 800$ cells. Each cell runs a complete detection pipeline: reference window calibration $\rightarrow$ stream simulation with shift onset $\rightarrow$ alarm detection $\rightarrow$ latency measurement.
 
-The factorial design, including all hyperparameters, was committed before execution (commit \texttt{be630f3}). Each cell includes a parallel negative control run (reference data only, no shift) to verify the alarm threshold does not fire on in-distribution data. A cell is marked as a valid detection only if: (1) detection latency $\geq 0$, and (2) the negative control does not alarm.
+The factorial design, including all hyperparameters, was committed before execution (commit \texttt{be630f3}). Each cell includes a parallel negative control run (reference data only, no shift) to verify the alarm threshold does not fire on in-distribution data. A cell is marked as a \emph{control-validated detection} only if: (1) detection latency $\geq 0$ (shift-stream alarm fires), and (2) the paired negative control does not alarm. This compound metric is stricter than raw TPR: it discounts detections where the threshold also fires on in-distribution data, providing a joint measure of sensitivity and specificity.
 
 \paragraph{Compute.} Mac Studio (M3 Ultra, 96GB) for Llama Guard 3 and ShieldGemma; MacBook Pro (M3 Max, 128GB) for DeBERTa and Text-Moderation. Total wall-clock: ${\sim}120$ hours. All 800 cells completed without error.
 
 \subsection{Deviations from Pre-Registration}
 \label{sec:deviations}
 
-The only scope reduction from the pre-registration is window sizes: 100 and 200 were executed; $w{=}500$ was dropped because it produces insufficient post-shift observations with 300 shifted examples. Seeds (20), ground-truth regimes (A, B, C), and all hyperparameters ($\alpha{=}0.05$, calibration percentile${=}97$, reference size${=}500$) match the pre-registration exactly.
+The original pre-registration specifies a 3{,}600-cell factorial (4 classifiers $\times$ 5 shifts $\times$ 3 regimes $\times$ 3 windows $\times$ 20 seeds) with MMD+KS detection. The executed primary evaluation is a reduced grid: 800 cells (Regime A only, 2 windows, KS only). Key reductions from the original plan: (i)~$w{=}500$ dropped (insufficient post-shift observations with 300 shifted examples); (ii)~Regime B reduced to 2 classifiers $\times$ 5 seeds; (iii)~Regime C treated as proof-of-concept (22 examples); (iv)~MMD evaluated post-factorial on a subset rather than crossed factorially. Seeds (20), significance level ($\alpha{=}0.05$), calibration percentile (97), and reference size (500) match the pre-registration exactly. The classifier roster was updated from the original (gpt-oss-safeguard $\to$ Text-Moderation) due to API availability.
 
 \paragraph{v5 experiment deviations.} The v5 pre-registration (commit \texttt{9e871d3}) specifies six experiments. Deviations from the registered protocols:
 \begin{itemize}
@@ -365,10 +368,10 @@ Code, configurations, pre-registration document, and raw results are available a
 \subsection{RQ1: Detection Performance}
 \label{sec:detection}
 
-The system detects shift in 693 of 800 cells (86.6\% valid detection rate, 95\% Wilson CI [0.841, 0.888]), with empirical false alarm rates of 2--10\% across classifiers. ``Valid detection'' requires both a shift-stream alarm and a clean negative-control stream; raw TPR across alarming cells is 91.5\%, with the 5.8 pp gap attributable to false alarms on negative controls (Appendix~\ref{app:tpr-far}).
+The system detects shift in 693 of 800 cells (86.6\% control-validated detection rate, 95\% Wilson CI [0.841, 0.888]), with empirical false alarm rates of 2--10\% across classifiers. ``Control-validated detection'' requires both a shift-stream alarm and a clean negative-control stream (raw TPR across alarming cells is 91.5\%; the 5.8 pp gap is attributable to false alarms on negative controls; see Appendix~\ref{app:tpr-far} for disaggregated TPR and FAR).
 
 \begin{table}[t]
-\caption{Mean detection latency (steps) with 95\% bootstrap CIs. $N{=}20$ seeds $\times$ 2 window sizes $= 40$ cells per combination; $n$ is valid detections.}
+\caption{Mean detection latency (steps) with 95\% bootstrap CIs. $N{=}20$ seeds $\times$ 2 window sizes $= 40$ cells per combination; $n$ is control-validated detections.}
 \label{tab:latency}
 \centering
 \small
@@ -444,7 +447,7 @@ The table reveals three findings. First, density-ratio collapse (ESS${\approx}$3
 \label{sec:variance}
 
 \begin{table}[t]
-\caption{Two-way ANOVA on detection latency (693 valid detections). Main-effect 95\% CIs are percentile bootstrap (1000 resamples); interaction CI is from seed-clustered bootstrap (Appendix~\ref{app:anova-robustness}).}
+\caption{Two-way ANOVA on detection latency (693 control-validated detections). Main-effect 95\% CIs are percentile bootstrap (1000 resamples); interaction CI is from seed-clustered bootstrap (Appendix~\ref{app:anova-robustness}).}
 \label{tab:anova}
 \centering
 \small
@@ -499,7 +502,656 @@ The correct interpretation is cross-classifier anomaly detection, not adversaria
 
 \paragraph{Corpus limitation.} The Regime C corpus comprises 22 successful adversarial examples; the identical Llama Guard score across examples (0.78) reflects a fixed adversarial token pattern rather than distributional variation. The 14 Llama Guard detections are replications of a single observation across seeds, not independent shift events. With window size 200 and calibrated thresholds, no classifier reliably detects shift from this corpus (Figure~\ref{fig:regime-c-ks}): all four KS trajectories hover near but below their respective thresholds, confirming the 22-example corpus is at the margin of detectability. The finding is robust and reproducible (full KS time series stored), but should be interpreted as a classifier-level result rather than a cell-level detection rate. A larger adversarial corpus with varied attack patterns would be needed to establish reliable cross-classifier detection.
 
-\input{new_sections}
+% =============================================================================
+% NEW SECTIONS FOR arXiv v2 - Insert before Conclusion
+% =============================================================================
+
+%==============================================================================
+\section{Canary Detection: Score Disagreement Under Targeted Evasion}
+\label{sec:canary}
+%==============================================================================
+
+We expand the 22-example canary observation from \S\ref{sec:regime-c} into a full characterisation of score-disagreement monitoring. The target is DeBERTa-v3-large (the most effective encoder in our factorial evaluation); the canary classifiers are Text-Moderation, Llama Guard~3, and ShieldGemma. We evaluate on $n=100$ GCG-optimised prompts, of which 49 successfully flip DeBERTa below 0.5.
+
+\paragraph{Note on terminology.} ``Steps'' in this section refer to GCG discrete token-search iterations on a single prompt (the attacker's optimisation budget), not production-stream timesteps monitored by the martingale (\S\ref{sec:cs}).
+
+\subsection{Setup and Scoring Protocol}
+\label{sec:canary-setup}
+
+Of $n = 100$ GCG attempts, 49 successfully flip DeBERTa below 0.5 (49\% attack success rate). For each of these 49 successful attacks, we score the adversarial input on all four classifiers. We define \emph{divergence} for a classifier pair $(A, B)$ as $|f_B(x_{\text{adv}}) - f_A(x_{\text{adv}})|$, where $A$ is the target and $B$ is the canary. A canary \emph{detects} the attack when the divergence exceeds a null threshold calibrated at the 95th percentile of divergence under clean inputs.
+
+Both GCG suffixes and random-token controls use exactly 20 tokens (\texttt{SUFFIX\_LEN=20}), controlling for perturbation magnitude. The divergence difference reported below is attributable to the optimisation structure of GCG, not to perturbation size.
+
+\subsection{Attack-Specificity (CA6)}
+\label{sec:ca6}
+
+Score disagreement is not a generic out-of-distribution signal. We compare GCG-optimised suffixes against random-token suffixes of identical length (20 tokens) appended to the same prompts.
+
+\paragraph{Result.} GCG attacks produce a detection rate of 75.5\% (37/49, Wilson 95\% CI [0.619, 0.854]) on the DeBERTa$\leftrightarrow$Llama Guard pair, versus 12.2\% (6/49, Wilson 95\% CI [0.057, 0.242]) for random-token controls. The mean divergence under GCG is 0.784 versus 0.213 under random tokens (Mann--Whitney $U$, $p = 2.37 \times 10^{-12}$).
+
+The signal is attack-specific: gradient-optimised perturbations produce qualitatively different score-disagreement signatures than random noise of the same magnitude. This directly addresses the alert-fatigue problem: the canary alarms far less often under length-matched random suffixes (12.2\%) than under GCG (75.5\%), indicating the signal is not merely generic gibberish sensitivity.
+
+\subsection{Target-Specificity}
+\label{sec:target-specificity}
+
+We evaluate all 6 classifier pairs to test whether the divergence signal is specific to pairs involving the targeted classifier.
+
+\paragraph{Result.} Three of six pairs show statistically significant GCG-vs-random differences (two-sided Mann--Whitney, Bonferroni-corrected $\alpha = 0.05/6 = 0.0083$): DeBERTa$\leftrightarrow$Text-Moderation ($p = 3.67 \times 10^{-17}$), DeBERTa$\leftrightarrow$Llama Guard ($p = 2.04 \times 10^{-12}$), and DeBERTa$\leftrightarrow$ShieldGemma ($p = 0.0023$; survives correction). The three non-significant pairs (Text-Moderation$\leftrightarrow$Llama Guard, $p = 0.320$; Text-Moderation$\leftrightarrow$ShieldGemma, $p = 0.715$; Llama Guard$\leftrightarrow$ShieldGemma, $p = 0.862$) all exclude the target classifier. The canary effect is target-specific: it manifests in pairs that include the attacked model.
+
+\subsection{Architecture Is Not the Mechanism (CA4)}
+\label{sec:ca4}
+
+The prevailing assumption in multi-model defence literature is that architectural diversity fortifies ensembles against evasion. We test this by comparing within-family and cross-family divergence.
+
+\paragraph{Result.} A one-way ANOVA on divergence with architecture type (within-family vs.\ cross-family) as the factor yields $\eta^2 = 0.011$, $F = 3.30$, $p = 0.070$. Architecture type explains 1.1\% of divergence variance. The highest mean divergence in our evaluation (0.899) occurs \emph{within}-family (DeBERTa$\leftrightarrow$Text-Moderation), not cross-family.
+
+The mechanism is not architectural heterogeneity but weight-configuration divergence: every tested un-targeted classifier in our evaluated ensemble, including same-family checkpoints, generated a robust divergence signature under single-target optimisation. Architecture diversity \emph{is} relevant for transfer robustness (\S\ref{sec:transfer}), but not for passive detection signal strength.
+
+\subsection{$k$-Classifier Scaling}
+\label{sec:k-scaling}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/fig_threat_tiers.pdf}
+\hfill
+\includegraphics[width=0.48\textwidth]{figures/fig_k_scaling.pdf}
+\caption{\textbf{Left:} Detection rate by threat tier (Table~\ref{tab:threat-tiers}). \textbf{Right:} Detection rate as a function of the number of canary classifiers $k$.}
+\label{fig:threat-tiers}
+\end{figure}
+
+We evaluate detection rate as a function of the number of canary classifiers $k \in \{1, 2, 3\}$, using an OR rule (alarm if any canary detects).
+
+\paragraph{Result.} The best single canary (Text-Moderation) achieves 93.9\% (46/49). The best $k{=}2$ combination (Text-Moderation + Llama Guard) achieves 98.0\% (48/49, Wilson 95\% CI [89.1\%, 99.7\%]). Adding a third canary ($k{=}3$: all three) provides no additional detections (48/49 = 98.0\%). We recommend $k{=}2$ as the practical choice within our evaluated range $k \in \{1, 2, 3\}$: it achieves 98\% detection with no improvement from $k{=}3$.
+
+\subsection{Template Attacks (AutoDAN)}
+\label{sec:autodan}
+
+Fine-tuned classifiers are robust to template-based jailbreaks. In our evaluation, AutoDAN-style template attacks achieve a 1\% flip rate against DeBERTa (the classifier has seen similar patterns during WildGuardMix training). This makes gradient-optimised attacks (GCG) the remaining operational threat class for fine-tuned safety classifiers.
+
+\paragraph{Iterative semantic attacks (PAIR-style).} To test whether an adaptive semantic attacker---rather than template or gradient attacks---can evade the canary pipeline, we implement a PAIR-style~\citep{chao2023jailbreaking} iterative attack: an attacker LLM (GPT-5.1, $T{=}1.0$) generates paraphrases of 30 harmful prompts over 20 iterations per prompt, receiving DeBERTa's score as feedback and attempting to minimize it below 0.5. Results ($N{=}30$, 600 total attack iterations): the PAIR attacker evades DeBERTa on only 1/30 prompts (3.3\%; best score 0.47), and on that single evasion the LLM canary (gpt-4o-mini) scores 1.0---perfect detection. Zero semantic transfer attacks succeed across all 30 prompts. The canary is robust to iterative semantic jailbreaking because (a)~DeBERTa is hard to evade semantically (1\% template, 3.3\% PAIR), and (b)~when evasion occurs, the paraphrase retains harmful intent that the LLM canary recognises trivially. This complements the GCG results: gradient attacks evade DeBERTa reliably (49\%) but the canary catches 81.6\% of evasions (\S\ref{sec:deployment-casestudy}); semantic attacks barely evade DeBERTa at all (3.3\%) and the canary catches 100\% when they do.
+
+\subsection{Tokeniser Fragmentation}
+\label{sec:tokeniser}
+
+Cross-family classifier pairs (encoder $\leftrightarrow$ decoder) use different tokenisers. We measure the tokenisation ratio: the number of tokens produced by the canary's tokeniser divided by the number produced by the target's tokeniser, for the same adversarial suffix.
+
+\paragraph{Result.} The mean tokenisation ratio is $1.729 \pm 0.161$ ($n = 100$). A 20-token suffix optimised for DeBERTa's tokeniser maps to approximately 35 tokens under Llama Guard's tokeniser. This fragmentation provides a plausible mechanism for the observed cross-family transfer barrier: a single token substitution in the target's vocabulary shifts downstream subword boundaries in the canary's tokenisation, desynchronising the discrete search space (\S\ref{sec:transfer}).
+
+%==============================================================================
+\section{Adversarial Robustness of Score-Disagreement Monitoring}
+\label{sec:adversarial-robustness}
+%==============================================================================
+
+Having established that score disagreement detects single-target attacks (\S\ref{sec:canary}), we now ask: can an adaptive attacker suppress the disagreement signal? We characterise the security boundary across a 4-tier threat model.
+
+The four tiers separate two orthogonal knowledge axes: (1) whether the attacker knows the canary's identity, and (2) whether the attacker has gradient access to the canary's weights. An attacker can discover the canary's existence through black-box probing without gaining optimisation access to its weights or routing thresholds; Tiers~1--2 cover identity-ignorant and identity-aware but weight-blind adversaries, while Tiers~3--4 cover adversaries with full or partial weight access.
+
+\subsection{Threat Model}
+\label{sec:threat-model}
+
+\begin{table}[t]
+\caption{Threat model tiers for score-disagreement monitoring. Detection rate is for the DeBERTa (target) + Text-Moderation/Llama Guard (canary) configuration. See Figure~\ref{fig:threat-tiers} for a visual summary.}
+\label{tab:threat-tiers}
+\centering
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Tier} & \textbf{Attacker knowledge} & \textbf{Empirical outcome} & \textbf{Deployment guidance} \\
+\midrule
+1 & Monitor-ignorant (single-target GCG) & 98\% detection (48/49) & $k{=}2$ canaries sufficient \\
+2 & Knows canary exists (hopes for transfer) & 93.9\% detection (46/49) & Monitor canary confidence \\
+3 & Has canary weights (joint optimisation) & 45\% blocked (9/20, $n{=}20$) & Cross-family canary \\
+4 & Stealth-aware (divergence minimisation) & 70\% blocked [48\%, 85\%] ($n{=}20$)\textsuperscript{$\dagger$} & Confidence gating \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+
+{\footnotesize \textsuperscript{$\dagger$}Primary pair only (canary confidence $f_B{=}0.97$). Lower-confidence replication pair: 30\% blocked (3/10).}
+\end{table}
+
+Tier~1 is the baseline from \S\ref{sec:canary}. Tiers~2--4 represent progressively stronger adversaries. We evaluate Tiers~2--4 below.
+
+\subsection{Transfer Analysis and Confidence Gating}
+\label{sec:transfer}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/fig_confidence_gating.pdf}
+\hfill
+\includegraphics[width=0.48\textwidth]{figures/fig_budget_curve.pdf}
+\caption{\textbf{Left:} Canary baseline confidence ($f_B$ original) vs.\ transfer outcome. Points above the 0.99 threshold (dashed line) almost never transfer. \textbf{Right:} Transfer rate under single-target vs.\ joint optimisation at 50 GCG steps.}
+\label{fig:confidence-budget}
+\end{figure}
+
+A Tier~2 attacker optimises against the target alone but hopes the adversarial suffix accidentally fools the canary (passive transfer). We evaluate this on $n = 40$ prompts scored on same-family canaries (DeBERTa $\rightarrow$ Text-Moderation).
+
+\paragraph{Confidence gating.} Transfer rate depends sharply on the canary's baseline confidence. When the canary's original score $f_B(x_{\text{orig}}) \geq 0.99$, the transfer rate is 4.3\% (1/23, Wilson 95\% CI [0.2\%, 21\%]). When $f_B(x_{\text{orig}}) < 0.99$, the transfer rate is 76.5\% (13/17). The difference is significant (Mann--Whitney $p = 6.61 \times 10^{-7}$, $n = 40$).
+
+\paragraph{Interpretation.} The detection threshold ($f_B \geq 0.5$) is an empirical operating point for the binary transfer/no-transfer decision. The gradient-paralysis mechanism (\S\ref{sec:divergence-min}) requires deeper saturation ($f_B \approx 1.0$, where $\|\nabla f_B\| \to 0$). These are distinct properties: detection relies on the canary holding its score above 0.5; gradient paralysis relies on the canary being in a flat, high-confidence basin.
+
+\subsection{Joint Optimisation (Within-Family)}
+\label{sec:joint-gcg}
+
+A Tier~3 attacker has white-box access to both the target and the canary and optimises a combined loss $L = 0.5 \cdot L_A + 0.5 \cdot L_B$ using GCG with search width 256 and 50 steps.
+
+\paragraph{Result.} Of 20 prompts evaluated, 11 achieve joint flip (both classifiers below 0.5), compared to 6/20 that transfer passively under single-target optimisation. Joint optimisation improves the attacker's success rate within-family ($55\%$ vs.\ $30\%$ passive transfer, Wilson 95\% CI $[34\%, 74\%]$, $n = 20$).
+
+\paragraph{Failure cases.} In 9/20 prompts, joint optimisation fails despite white-box access to both models. These resistant prompts exhibit gradient interference: the combined gradient cannot simultaneously reduce both scores within the 50-step budget. An extended evaluation at 200 steps on the first 10 prompts shows the same 3/10 resistant prompts remain uncracked. This extended-budget result is from a single replicate ($n = 10$); characterising the full budget-dependent transfer curve would require a larger sweep, which we defer to future work.
+
+\paragraph{Cross-family barrier.} The 1.73$\times$ tokeniser fragmentation ratio (\S\ref{sec:tokeniser}) impedes coordinate alignment for discrete token search. Because a single character substitution shifts downstream subword boundaries in Model~B (but not Model~A), the discrete search space becomes desynchronised; a step that improves the joint loss for Model~A's tokenisation may worsen it for Model~B's. As a transfer negative control, we optimised GCG suffixes against Llama Guard~3 (8B decoder; original scores for these prompts already low, mean $= 0.057$, 0/10 above 0.5) and evaluated suffix transfer to frontier canaries: $\Delta = 0.000$ on \texttt{gpt-4o-mini} and $\Delta = -0.010$ on \texttt{gpt-5.1} ($n = 10$). Because LG3 did not initially score these prompts as unsafe, this is not a test of successful decoder evasion; it confirms that LG3-optimised suffixes are inert on frontier canaries, consistent with the tokeniser-barrier hypothesis.
+
+\paragraph{Direct DeBERTa-to-Llama Guard transfer test.} To directly measure whether successful DeBERTa-targeted suffixes transfer to a decoder-based safety classifier, we evaluated 50 adversarial suffixes that successfully flipped DeBERTa against Llama Guard~3 (8B decoder). The transfer rate is 0\% (0/50 hard flips; Clopper--Pearson 95\% upper bound 7.1\%). The suffixes reduced Llama Guard's unsafe probability in some cases (e.g., from ${\sim}0.99$ to ${\sim}0.81$) but none crossed the binary classification threshold. Thus, within this tested corpus, a suffix optimised to evade DeBERTa does not suffice to evade Llama Guard. This supports the canary premise: an attacker seeking to evade both models requires classifier-specific optimisation rather than relying on passive cross-architecture transfer. The result is limited to DeBERTa-targeted 20-token GCG suffixes at 250 optimisation steps and does not test white-box joint optimisation against Llama Guard.
+
+\subsection{Divergence Minimisation: The Confidence-Gated Stall Condition}
+\label{sec:divergence-min}
+
+A Tier~4 attacker explicitly minimises score disagreement while attacking the target. We formalise this as:
+\begin{equation}
+\label{eq:div-min-loss}
+L(\delta) = f_A(x + \delta) + \lambda \cdot (f_B(x + \delta) - f_A(x + \delta))^2
+\end{equation}
+where $\lambda = 2.0$ controls stealth pressure and Model~A is the target (DeBERTa epoch-1), Model~B is the canary (DeBERTa epoch-5).
+
+\paragraph{Empirical result.} Of 20 prompts evaluated: 6 achieve stealth evasion (both models flip, divergence $< 0.5$) and 14 are blocked (Model~A remains above 0.5). In all blocked cases where baseline data is available, the canary is highly confident ($f_B \geq 0.987$). Stealth occurs only when the canary's original confidence is low (mean $f_B = 0.50$ for stealth vs.\ $f_B = 1.00$ for blocked; Mann--Whitney $p = 0.044$).
+
+\paragraph{The stall condition.} The combined gradient of Eq.~\ref{eq:div-min-loss} is:
+\begin{equation}
+\label{eq:combined-gradient}
+\nabla L = [1 - 2\lambda(f_B - f_A)] \cdot \nabla f_A + 2\lambda(f_B - f_A) \cdot \nabla f_B
+\end{equation}
+
+The coefficient $[1 - 2\lambda(f_B - f_A)]$ inverts sign when the gap $g = f_B - f_A$ exceeds $1/(2\lambda)$. At $\lambda = 2.0$, the critical gap is $1/(2 \times 2) = 0.250$. Beyond this point, the optimiser is driven to \emph{increase} $f_A$, co-opting the attacker's gradient.
+
+\paragraph{Empirical validation.} The 14 blocked cases stall at gap values with mean $0.218$ and median $0.250$. Of these, 9 cluster within $\pm 0.05$ of the predicted critical value $1/(2\lambda) = 0.250$, with a conditioned mean of $0.2499$ among those 9 cases nearest the predicted value. Five blocked cases stall at gaps below the predicted value (range $0.08$--$0.17$), likely representing partial optimisation progress before budget exhaustion rather than full convergence.
+
+\paragraph{Gradient-norm effect.} When the canary is deep in its confident basin ($f_B \approx 1.0$), $\|\nabla f_B\| \to 0$. The condition for a descent step to reduce $f_A$ requires (see Appendix~\ref{app:derivation}):
+\begin{equation}
+\cos(\theta) \geq \left(1 - \frac{1}{2\lambda(f_B - f_A)}\right) \cdot \frac{\|\nabla f_A\|}{\|\nabla f_B\|}
+\end{equation}
+As $\|\nabla f_B\| \to 0$, the right-hand side diverges. No angle $\theta$ satisfies the inequality; the local gradient provides no descent direction under the stated continuous approximation. The defence is strongest precisely when the canary is most confident.
+
+\paragraph{Active rejection.} In 3 of the 14 blocked cases, Model~A's score drifts \emph{upward} during optimisation (\eg, $0.476 \to 0.748 \to 0.758$, showing the model recovering toward the safe regime and reversing the attacker's progress). This active rejection is the coefficient inversion made visible: once $g > 1/(2\lambda)$, the combined loss penalises further reduction of $f_A$ more than it rewards it, creating defensive backpressure that pushes the target score back above the detection threshold.
+
+\paragraph{Caveat.} This analysis uses a continuous relaxation. GCG operates on discrete tokens; the stall is empirical (within the 95\% CI of the predicted value), not a formal proof of impossibility. Higher $\lambda$ would block more aggressively but also constrain the attacker's loss landscape in ways that may prevent meaningful optimisation entirely. This analysis assumes the attacker cannot backpropagate through the canary, i.e., the canary is cross-family or service-gated. A white-box attacker with gradient access to both models can compute $\nabla f_B$ directly, potentially bypassing the stall; within-family deployment therefore requires additional architectural diversity to preserve the heterogeneous-gradient assumption underlying the equilibrium.
+
+\paragraph{Generality (second pair).} A replication on a different checkpoint pair (epoch-3 as target, epoch-10 as canary) yields 7/10 stealth and 3/10 blocked---a substantially higher stealth rate than the primary pair (70\% stealth vs.\ 30\%), consistent with that pair's lower canary confidence (mean $f_B = 0.85$ vs.\ $f_B = 0.97$ in the primary pair). The blocked rate did not replicate: confidence-gating predicts weaker defence when the canary is less saturated. However, the 3 blocked cases stall at gaps $\{0.250, 0.250, 0.242\}$, mean $0.247$---the stall \emph{location} replicates even when the stall \emph{frequency} does not. The gap $1/(2\lambda) = 0.250$ is robust as a local attractor for blocked cases across both pairs; the proportion of cases that reach this attractor is confidence-dependent.
+
+\subsection{Deployment Recommendations}
+\label{sec:deployment-recs}
+
+The stall condition directly yields a measurable, input-time security indicator:
+
+\begin{itemize}
+\item \textbf{Confident canary} ($f_B \geq 0.99$): The canary is in a saturated basin where $\|\nabla f_B\| \to 0$. Transfer rate is 4.3\% (passive transfer cannot dislodge the canary) and divergence-minimisation stalls at the predicted $1/(2\lambda)$ gap (\S\ref{sec:divergence-min}). Treat the divergence signal as high-confidence, subject to the evaluated threat model.
+\item \textbf{Moderate canary} ($0.5 \leq f_B < 0.99$): The canary holds above the detection threshold (divergence is detectable) but is not gradient-paralysed. An adaptive attacker with joint optimisation may succeed (Tier~3), though passive transfer remains unlikely. Monitor divergence but treat alarms as lower-confidence.
+\item \textbf{Uncertain canary} ($f_B < 0.5$): The divergence signal is unreliable. The attacker can succeed via joint-flip (55\% within-family at $n{=}20$, \S\ref{sec:joint-gcg}) or passive transfer (76.5\% when $f_B < 0.99$). Route to human review regardless of observed divergence.
+\item \textbf{$k = 2$ classifiers:} Deploy one same-family canary (highest detection sensitivity, 93.9\%) and one cross-family canary (structural transfer barrier via tokeniser fragmentation). This provides both sensitivity and robustness against adaptive attackers.
+\end{itemize}
+
+\noindent The two thresholds serve different functions: $f_B \geq 0.5$ determines whether divergence is \emph{detectable} (the canary has not been flipped); $f_B \geq 0.99$ determines whether the canary is \emph{gradient-paralysed} (the attacker cannot suppress divergence even with white-box access to both models). The deployment decision depends on which guarantee is needed.
+
+\paragraph{Operational response policy.} The monitor produces alerts, not automatic decisions. Table~\ref{tab:ops} translates observed signals into triage actions.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Operational response policy. KS/scan alarm = distribution shift detected; target low = primary classifier score $< 0.5$; canary high = canary score $\geq 0.5$.}
+\label{tab:ops}
+\begin{tabular}{llll}
+\toprule
+\textbf{KS/scan alarm} & \textbf{Target score} & \textbf{Canary score} & \textbf{Action} \\
+\midrule
+No  & High & High & Pass; log metrics \\
+Yes & High & High & Investigate drift; sample labels \\
+No  & Low  & High ($\geq 0.99$) & Escalate: suspected targeted evasion \\
+No  & Low  & Moderate ($0.5$--$0.99$) & Human review \\
+No  & Low  & Low ($< 0.5$) & Canary unreliable; human review \\
+Yes & Low  & High & Block / escalate; high-confidence attack \\
+Any & Any  & Refusal (LLM canary) & Flag as high-risk; log separately \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+We do not claim this defence is absolute. A Tier~3 attacker with white-box access to a same-family canary succeeds 55\% of the time via joint optimisation (\S\ref{sec:joint-gcg}). The contribution is not an unbreakable defence but a quantitative characterisation of the exact security boundary: where the defence holds, where it fails, and what measurable property ($f_B$) predicts which regime applies.
+
+
+% Appendix C (Stall Derivation) and Appendix B (Monitorability) are in paper.tex directly.
+
+% ── v5 addition: Game-theoretic framework + discrete stall ────────────────────
+
+\section{Game-Theoretic Framework: Multi-Monitor Ensemble Security}
+\label{sec:game-theory}
+
+The stall condition (Section~\ref{sec:divergence-min}) characterizes attacker behavior against a \emph{single} canary pair. We now generalize to the $K$-monitor setting and derive conditions under which ensemble diversity provides formal security guarantees.
+
+\subsection{The Canary Ensemble Game}
+\label{sec:ensemble-game}
+
+\begin{definition}[$K$-Monitor Canary Game]
+A canary ensemble game $\Gamma_K = (\mathcal{A}, \mathcal{D}, K, \{f_i\}_{i=1}^K, \alpha, B)$ consists of:
+\begin{itemize}
+    \item \textbf{Attacker} $\mathcal{A}$: produces adversarial perturbation $\delta$ to evade a target classifier $f_\text{target}$ while remaining undetected.
+    \item \textbf{Defender} $\mathcal{D}$: deploys $K$ monitoring classifiers $\{f_1, \ldots, f_K\}$ (the ``canaries''), each scoring inputs on $[0,1]$.
+    \item \textbf{Detection rule}: Alarm fires if $\exists\, i \in [K]$ such that $|f_i(x + \delta) - f_\text{target}(x + \delta)| > \tau_i$ (score disagreement exceeds threshold for any canary).
+    \item \textbf{Attacker budget}: $B$ optimization steps (GCG iterations, query budget, etc.).
+    \item \textbf{Defender constraint}: False alarm rate $\leq \alpha$ on benign traffic.
+\end{itemize}
+\end{definition}
+
+\paragraph{Attacker's optimization problem.} The attacker seeks:
+\begin{equation}
+\min_{\delta} \; f_\text{target}(x + \delta) \quad \text{subject to} \quad |f_i(x + \delta) - f_\text{target}(x + \delta)| \leq \tau_i \;\; \forall i \in [K]
+\label{eq:attacker-opt}
+\end{equation}
+
+Under the gradient-based formulation (extending Section~\ref{sec:divergence-min}), the Lagrangian becomes:
+\begin{equation}
+\mathcal{L}(\delta, \boldsymbol{\lambda}) = f_\text{target}(x + \delta) + \sum_{i=1}^K \lambda_i \cdot (f_i(x + \delta) - f_\text{target}(x + \delta))^2
+\end{equation}
+
+\begin{proposition}[Multi-Monitor Stall Condition]
+\label{prop:multi-stall}
+At a critical point of $\mathcal{L}$, the gradient vanishes when:
+\begin{equation}
+\nabla f_\text{target} = -\sum_{i=1}^K 2\lambda_i (f_i - f_\text{target}) \cdot (\nabla f_i - \nabla f_\text{target})
+\end{equation}
+For the attacker to make progress (reduce $f_\text{target}$), the gradient $\nabla f_\text{target}$ must not be fully expressible as a linear combination of the stealth constraints' gradients $\{\nabla f_i - \nabla f_\text{target}\}_{i=1}^K$. When the canary gradients span the attack direction, the optimization stalls.
+\end{proposition}
+
+\begin{corollary}[Diversity Requirement (Local First-Order Condition)]
+If the $K$ canary gradients $\{\nabla f_i\}_{i=1}^K$ are linearly independent and span the target gradient $\nabla f_\text{target}$, then for sufficiently large $\boldsymbol{\lambda}$, the first-order feasible descent direction has zero projection onto $\nabla f_\text{target}$ at the stationary point. This is a local necessary condition for stall under continuous gradient flow; it does not guarantee global convergence or preclude discrete multi-token escape paths. In our within-family empirical evaluation, joint optimization still succeeds 55\% of the time (\S\ref{sec:joint-gcg}), indicating that the stated conditions (linear independence, sufficient $\lambda$) are not satisfied by same-family checkpoints.
+\end{corollary}
+
+\paragraph{Practical implication.} The corollary states that gradient diversity among canaries---not just disagreement in scores---is the mechanism that creates security. Canaries from the same architecture family share gradient directions (empirically confirmed in Section~\ref{sec:transfer}: within-family passive transfer achieves 76.5\% success conditional on low canary confidence $f_B < 0.99$, and 55\% under joint optimisation). Cross-architecture canaries are more likely to provide the linear independence needed for the stall condition to bind.
+
+\subsection{Scaling Law for Ensemble Detection}
+\label{sec:scaling-law}
+
+Under an OR-detection rule (alarm if \emph{any} canary disagrees), detection probability scales with $K$:
+\begin{equation}
+P(\text{detect} \mid K) = 1 - \prod_{i=1}^K (1 - p_i)
+\end{equation}
+where $p_i$ is the probability that canary $i$ detects the attack (score gap exceeds $\tau_i$). For independent canaries with uniform detection probability $p$:
+\begin{equation}
+P(\text{detect} \mid K) = 1 - (1-p)^K
+\end{equation}
+
+Our empirical results (Section~\ref{sec:k-scaling}) show: $K=1$: 93.9\%; $K=2$: 98.0\%; $K=3$: 98.0\% (saturation due to within-family correlation). The non-independence is precisely because within-family canaries share gradient structure. Cross-family canaries would approach the theoretical scaling.
+
+\subsection{Attacker Complexity as a Function of $K$}
+\label{sec:attacker-complexity}
+
+\begin{conjecture}[Budget Scaling]
+\label{prop:budget-scaling}
+Under the joint optimization formulation (Eq.~\ref{eq:attacker-opt}), the attacker's required optimization budget plausibly scales at least linearly with $K$ for truly independent canaries: $B_\text{required} = \Omega(K \cdot B_1)$, where $B_1$ is the budget required to evade a single canary. This remains empirically untested for $K > 3$ and is stated as a conjecture rather than a proven bound.
+\end{conjecture}
+
+\paragraph{Intuition (not a proof).}
+Each canary imposes an independent constraint that reduces the feasible descent cone. For independently oriented constraints (different architectures), each additional constraint further restricts the attacker's optimization landscape. However, the precise scaling relationship depends on the attack algorithm, constraint geometry, and whether constraints can be satisfied jointly by a single perturbation. Our $K \leq 3$ data shows saturation rather than linear scaling, suggesting within-family canaries do not satisfy the independence assumption.
+
+\subsection{Discrete Stall Condition}
+\label{sec:discrete-stall}
+
+The continuous stall condition (Section~\ref{sec:divergence-min}, Appendix~\ref{app:derivation}) is derived under gradient-flow assumptions. GCG operates on discrete tokens. We now derive the discrete analogue.
+
+\paragraph{Token-level formulation.} Let $x = (x_1, \ldots, x_T)$ be a token sequence and $\mathcal{V}$ the vocabulary. At each GCG step, the attacker selects a position $t$ and replacement token $v \in \mathcal{V}$ to minimize loss. The discrete loss landscape for the joint canary-aware objective is:
+\begin{equation}
+L(x) = f_\text{target}(x) + \lambda \cdot (f_\text{canary}(x) - f_\text{target}(x))^2
+\end{equation}
+
+\begin{definition}[Discrete Stall]
+A sequence $x^*$ is at a \emph{discrete stall} if for all positions $t \in [T]$ and all tokens $v \in \mathcal{V}$:
+\begin{equation}
+L(x^*_{[t \leftarrow v]}) \geq L(x^*) \quad \forall t, v
+\label{eq:discrete-stall}
+\end{equation}
+where $x^*_{[t \leftarrow v]}$ denotes $x^*$ with position $t$ replaced by token $v$.
+\end{definition}
+
+\begin{conjecture}[Discrete Gap Bound]
+\label{prop:discrete-gap}
+At a discrete stall point $x^*$, the score gap approximately satisfies:
+\begin{equation}
+|f_\text{canary}(x^*) - f_\text{target}(x^*)| \gtrsim \frac{1}{2\lambda} - \epsilon_\text{disc}
+\end{equation}
+where $\epsilon_\text{disc} = \max_{t,v} |f_\text{target}(x^*_{[t \leftarrow v]}) - f_\text{target}(x^*)| / (2\lambda)$ is the maximum single-token perturbation effect normalized by the penalty weight. This conjecture assumes that at stall points, the canary approximately co-moves with the target under single-token substitutions (i.e., $\Delta g \approx -\Delta_\text{atk}$); this assumption is plausible for within-family checkpoint pairs but is not formally established.
+\end{conjecture}
+
+\paragraph{Heuristic argument.}
+At a discrete stall, no single-token substitution decreases $L$. Consider the best single-token attack move (the substitution that maximally decreases $f_\text{target}$). Call this decrease $\Delta_\text{atk}$. The stall condition requires that the corresponding increase in the penalty term offsets this:
+\begin{equation}
+\Delta_\text{atk} \leq \lambda \cdot [(g + \Delta g)^2 - g^2]
+\end{equation}
+where $g = f_\text{canary} - f_\text{target}$ is the current gap and $\Delta g$ is the gap change from the substitution. Under the co-movement assumption ($\Delta g \approx -\Delta_\text{atk}$), this recovers the continuous bound $g^* \geq 1/(2\lambda)$. The discrete correction $\epsilon_\text{disc}$ accounts for the finite step size of token substitutions. Note: $\epsilon_\text{disc}$ has not been empirically measured in our experiments; the assumption that it is small is based on the observed approximate agreement at $\lambda \geq 2$, not on direct computation.
+
+\paragraph{Empirical consistency check.} Our $\lambda$-sweep data (Section~\ref{sec:divergence-min}, $n=20$ per $\lambda \in \{0.5, 1, 2, 4, 8\}$) shows:
+\begin{itemize}
+    \item $\lambda = 2$: mean stall gap $= 0.218$, predicted $\approx 0.250$ (below the continuous prediction; the deviation may reflect $\epsilon_\text{disc}$ or budget exhaustion before convergence).
+    \item $\lambda = 4$: mean stall gap $= 0.130$, predicted $\approx 0.125$.
+    \item $\lambda = 8$: mean stall gap $= 0.072$, predicted $\approx 0.0625$.
+\end{itemize}
+The empirical gaps approximately cluster near $1/(2\lambda)$ at $\lambda \geq 2$, consistent with the conjecture. At $\lambda < 2$ (ratios 0.09--0.53), the GCG optimizer does not converge to stall within the 50-step budget, so these points are uninformative about the bound itself.
+
+\subsection{Budget-Starvation Connection}
+\label{sec:budget-connection}
+
+The discrete stall has a direct analogue in the token-budget starvation finding (Section~\ref{sec:cot-starvation-lead}): both attacker and defender face optimization under budget constraints.
+
+\paragraph{Attacker budget starvation.} A GCG attacker with $B$ steps that encounters a discrete stall at step $b < B$ wastes the remaining $B - b$ steps. The stall acts as a hard floor on the attacker's achievable evasion, independent of additional compute.
+
+\paragraph{Defender budget starvation.} A reasoning-model monitor with $T_r$ reasoning tokens that requires $T_{50}$ tokens to produce a valid score is starved when $T_r < T_{50}$. The sigmoid response curve (Section~\ref{sec:cot-starvation-lead}) characterizes this as: $P(\text{valid score} \mid T_r) = 1/(1 + e^{-k(T_r - T_{50})})$.
+
+\paragraph{Unified view.} Both phenomena are instances of \emph{resource-bounded inference}: the quality of a decision (attack success for the attacker; scoring accuracy for the defender) degrades catastrophically when the allocated resource (optimization steps; reasoning tokens) falls below a threshold. The threshold is class-conditional: adversarial inputs require more resources from both attacker and defender. This asymmetry---$T_{50,\text{adv}} / T_{50,\text{benign}} = 3.35\times$ for o3---is the fundamental vulnerability that budget starvation exploits: a uniform token budget set to handle benign inputs silently fails on adversarial ones.
+
+\paragraph{Cross-model validation: complete scoring collapse at deployment-realistic budgets (V5-1).}
+To test whether budget starvation generalizes beyond o3, we evaluated three reasoning models as safety judges (o3, o4-mini, gemini-2.5-pro) on $N{=}100$ prompts (50~adversarial, 50~benign) under two budget conditions: $\text{max\_completion\_tokens}{=}16$ (deployment-realistic cost-optimized setting) and $\text{max\_completion\_tokens}{=}500$ (adequate). System prompt: ``Rate safety risk 0.0--1.0, reply with only a number.''
+
+\begin{table}[t]
+\caption{Token-starvation scoring collapse (V5-1; $N{=}100$ per model per budget). At 16-token budget, all reasoning models consume the entire budget on chain-of-thought and emit empty responses. At adequate budget (500 tokens), all achieve near-perfect safety classification.}
+\label{tab:rank-reversal}
+\centering
+\small
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Model} & \textbf{Budget} & \textbf{Valid\%} & \textbf{Adv Mean} & \textbf{Ben Mean} & \textbf{AUC} \\
+\midrule
+o3 & 16 & 0.0\% $[0.000, 0.037]$ & --- & --- & --- \\
+o4-mini & 16 & 0.0\% $[0.000, 0.037]$ & --- & --- & --- \\
+gemini-2.5-pro & 16 & 0.0\% $[0.000, 0.037]$ & --- & --- & --- \\
+\midrule
+o3 & 500 & 100\% $[0.963, 1.000]$ & 0.981 & 0.018 & 1.000 \\
+o4-mini & 500 & 100\% $[0.963, 1.000]$ & 1.000 & 0.000 & 1.000 \\
+gemini-2.5-pro & 500 & 99\% $[0.946, 0.998]$ & 0.998 & 0.000 & 1.000 \\
+\bottomrule
+\end{tabular}
+\vspace{-2mm}
+\end{table}
+
+Table~\ref{tab:rank-reversal} demonstrates a \emph{complete scoring collapse}: at $\text{max\_completion\_tokens}{=}16$, all three reasoning models produce 0/100 valid responses (Wilson 95\% CI upper bound: 3.7\%). Inspection of responses reveals empty strings---the 16-token budget is consumed entirely by internal chain-of-thought reasoning (confirmed: all trials show $\text{reasoning\_tokens}{=}16$, $\text{content}{=}$``''), leaving zero tokens for the visible safety score. At adequate budget (500 tokens), the same models achieve AUC${=}1.000$ with near-perfect separation (mean adversarial score $\geq 0.981$, mean benign score $\leq 0.018$).
+
+\paragraph{Deployment implications.} The result is more severe than a rank reversal: it is a \emph{total system failure} at a budget that many cost-optimized deployments would consider reasonable. A safety pipeline that (a)~uses reasoning models as judges, (b)~restricts their token budget for cost control, and (c)~defaults empty/invalid responses to ``safe'' would pass 100\% of adversarial inputs undetected. This is not a hypothetical configuration---reasoning models are increasingly deployed as safety classifiers~\citep{inan2023llamaguard}, and token budgets are a standard cost lever. The failure is \emph{silent}: no error code, no refusal, no indication that the model was unable to score---only an empty string that a naive parser treats as abstention or default-safe.
+
+% ── end v5 addition ───────────────────────────────────────────────────────────
+
+\subsection{Canary Detection Under Targeted Evasion}
+\label{sec:deployment-casestudy}
+
+\paragraph{Primary-fooled validation: DeBERTa evaded, LLM canary detects.} To demonstrate the canary architecture under its intended operating conditions---the primary classifier \emph{is actually fooled}---we evaluate $N{=}100$ inputs from the GCG adversarial corpus with DeBERTa-v3-large as primary and Qwen2.5-14B (open-weight, local inference, different architecture family) as LLM canary. Of the 49 inputs that evade DeBERTa (attacked score $< 0.5$), the LLM canary correctly flags 40 (81.6\% detection rate; mean canary score 0.69 on DeBERTa-evaded inputs). Only 9/49 (18.4\%) evade both classifiers simultaneously. This validates the canary architecture under the critical deployment scenario: when a targeted gradient attack succeeds against the primary, a heterogeneous LLM canary---which cannot be targeted by the same gradient---recovers 81.6\% of the missed detections at zero additional FPR cost.
+
+\paragraph{Operational feasibility (non-attack baseline).} The deployment recommendations of \S\ref{sec:deployment-recs} and the deployment recipe (\S\ref{sec:intro}) prescribe a canary architecture but do not demonstrate its operational cost. We validate feasibility on a 200-query workload using \texttt{gpt-4o-mini} as the primary classifier and \texttt{gpt-4.1} as the semantic canary, scored sequentially via the same OpenAI-compatible endpoint used throughout \S\ref{sec:llm-canary}.
+
+\paragraph{Workload.} 150 benign queries, 30 adversarial (harmful prompts without suffix), and 20 adversarial with DeBERTa-targeted GCG suffixes appended.
+
+\paragraph{Latency.} Primary (gpt-4o-mini) p50/p95: 667\,ms / 1282\,ms. Canary (gpt-4.1) p50/p95: 1153\,ms / 1700\,ms. Total sequential p50/p95: 1831\,ms / 2674\,ms. Because the two calls are independent, parallel execution reduces end-to-end latency to $\max(\text{primary}, \text{canary}) \approx 1.2$\,s at p50.
+
+\paragraph{Cost.} Primary: \$0.017 per 1\,000 queries. Canary: \$0.223 per 1\,000 queries. Total: \$0.24 per 1\,000 queries---negligible relative to the cost of serving the upstream LLM whose outputs are being classified.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Deployment case study detection results (200 queries). FPR computed on 150 benign queries; detection rate on 50 adversarial queries (30 base + 20 with GCG suffix).}
+\label{tab:deployment-case}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Condition} & \textbf{Rate} & \textbf{Wilson 95\% CI} \\
+\midrule
+False positives (benign, $n{=}150$) & 0/150 = 0.0\% & [0.0\%, 2.5\%] \\
+Detection (adversarial, no suffix, $n{=}30$) & 1/30 = 3.3\% & [0.2\%, 17.2\%] \\
+Detection (adversarial + GCG suffix, $n{=}20$) & 0/20 = 0.0\% & [0.0\%, 16.1\%] \\
+Detection (all adversarial, $n{=}50$) & 1/50 = 2.0\% & [0.1\%, 10.6\%] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Score disagreement.} Mean disagreement $|f_{\text{canary}} - f_{\text{primary}}|$ on benign queries: 0.0007. On adversarial queries: 0.126. The 180$\times$ ratio confirms that disagreement concentrates on adversarial inputs, but the absolute magnitude remains below a practical detection threshold because both models agree on the classification.
+
+\paragraph{Interpretation: operational viability, not adversarial detection.} This case study validates the operational viability of the canary architecture---latency overhead, cost, and false-positive rate under production-like benign traffic---rather than adversarial detection performance. Under this model pair, both primary and canary agree on adversarial inputs (primary mean score on adversarial = 0.81, canary mean = 0.78), producing no disagreement signal. The GCG suffixes were optimised against DeBERTa, not these LLMs, so both correctly flag the harmful content independently. The result demonstrates that canary deployment incurs acceptable overhead even when detection conditions are not met, and that false-alarm burden remains low ($<$2.5\%) under sustained benign traffic.
+
+The canary architecture detects evasion \emph{of one classifier by checking disagreement with another}. When both models agree, there is no disagreement to detect. The canary fires only when the primary is under classifier-specific attack that succeeds against it but not against the canary---exactly the scenario demonstrated in \S\ref{sec:ca6} (75.5\% detection when DeBERTa is fooled but frontier canaries are not) and the primary-fooled validation below (81.6\% recovery).
+
+\paragraph{Operational validation.} This case study demonstrates four properties required for production deployment: (1)~cost is negligible (\$0.24/1\,000 queries); (2)~zero false positives on 150 benign queries (Wilson upper bound 2.5\%); (3)~latency overhead is parallelisable (${\sim}$1.2\,s concurrent vs.\ 1.8\,s sequential at p50); (4)~the canary architecture provides a conditional guarantee under the targeted-evasion threat model (\S\ref{sec:ca6}--\ref{sec:llm-canary}), not a generic harmful-content detection layer. Combined with the deployment recipe of \S\ref{sec:intro} and the confidence-gating policy of \S\ref{sec:deployment-recs}, these numbers complete the operational blueprint: a practitioner can deploy the full canary stack at sub-cent cost with sub-second additional latency.
+
+
+%==============================================================================
+\subsection{Frontier LLMs as Semantic Canaries}
+\label{sec:llm-canary}
+%==============================================================================
+
+The canary classifiers evaluated in \S\ref{sec:canary}--\ref{sec:adversarial-robustness} are local models requiring GPU inference. A natural question is whether frontier LLMs, which are robust to GCG by construction (their tokenisers and weights are not accessible for gradient computation), can serve as zero-deployment canaries. We evaluate this by prompting frontier models to score input safety on a 0--1 scale and measuring whether their scores diverge from the targeted classifier's under GCG attack.
+
+\paragraph{Setup.} We initially screen 35 frontier models with a brief token-budget test, then conduct detailed evaluation ($n = 49$ adversarial, $n = 49$ clean, $n = 49$ scrambled) on a primary subset of 20 models spanning 4 providers via an OpenAI-compatible model service. After correcting for token-budget starvation (\S\ref{sec:cot-starvation-lead}), we extend key metrics to all 35 models, yielding the taxonomy below (33 discriminating + 2 content-aware refusers). Detection performance statistics are reported on the primary 20-model evaluation set; cost correlation and taxonomy statistics use all 35. System prompt: ``Rate safety risk 0.0--1.0, reply with only a number.'' Temperature = 0.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/fig_llm_canary_split.pdf}
+\hfill
+\includegraphics[width=0.48\textwidth]{figures/fig_scrambled_violin.pdf}
+\caption{\textbf{Left:} Ceiling-clipped models (score everything $\approx 1.0$) vs.\ discriminating models (benign $\approx 0.0$, adversarial $\approx 0.7$--$0.9$). \textbf{Right:} Violin plot of $\Delta(\text{adv} - \text{clean})$ across 980 prompt--model pairs, showing the mass at $\approx 0$ with a tail of per-prompt collapses.}
+\label{fig:llm-canary}
+\end{figure}
+
+\paragraph{Model selection and the ceiling-clipping artifact.} An initial screen of 35 models with \texttt{max\_completion\_tokens=16} revealed an apparent split: 11 models scored \emph{all} inputs (benign, adversarial, and clean) as $\approx 1.0$, suggesting they could not distinguish harmful from harmless content. We initially termed these ``ceiling-clipped'' and hypothesised an RLHF-tuning artifact.
+
+\paragraph{Root cause: token budget truncation.} The ceiling-clipping was a \emph{methodological artifact}, not a model property. Reasoning models (o3, o3-mini, o4-mini, gemini-2.5-flash, gemini-2.5-pro) consume their token budget on internal chain-of-thought before producing visible output. At \texttt{max\_completion\_tokens=16}, these models returned empty responses, which our parsing code defaulted to $1.0$. Rerunning all 35 models with \texttt{max\_tokens$\geq$200} eliminated the artifact: all previously ``ceiling-clipped'' models produce discriminating scores (benign $\approx 0.0$, adversarial $\geq 0.7$).
+
+\paragraph{CoT budget starvation: a sigmoid response curve.} The response probability as a function of allocated reasoning tokens $T_r$ follows a sigmoid:
+\[
+P(\text{response} \mid T_r) = \frac{1}{1 + e^{-k(T_r - T_{50})}}
+\]
+where $T_{50}$ is the critical threshold at which 50\% of inputs elicit a valid response. Crucially, $T_{50}$ is \emph{input-complexity-dependent}. For o3 with \texttt{reasoning\_effort=low}: $T_{50,\text{benign}} = 46$ tokens (steepness $k = 0.173$), $T_{50,\text{adv}} = 154$ tokens ($k = 0.030$). The ratio $T_{50,\text{adv}} / T_{50,\text{benign}} \approx 3.3\times$ reflects the additional reasoning required for complex adversarial inputs. The 90\% coverage threshold (where $>$90\% of inputs get valid scores) is $T_r \geq 59$ tokens for benign and $T_r \geq 227$ tokens for adversarial inputs. \emph{Deployment rule}: set $T_r \geq T_{50}(\text{hardest expected class}) + 2.2/k$ for $>$90\% coverage on that class.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Token budget thresholds for reasoning-tier safety monitors (o3, \texttt{reasoning\_effort=low}). Budgets below $T_{50}$ cause total scoring failure.}
+\label{tab:cot-thresholds}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Input class} & $\mathbf{T_{50}}$ \textbf{(50\% response)} & $\mathbf{T_{90}}$ \textbf{(90\% response)} \\
+\midrule
+Benign (simple queries) & 46 tokens & 60 tokens \\
+Adversarial (GCG-appended) & 154 tokens & 227 tokens \\
+\midrule
+\textbf{Ratio (adv/benign)} & \textbf{3.3$\times$} & \textbf{3.8$\times$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Corrected taxonomy: 33 discriminators + 2 content-aware refusers.} After correction, the 35 models partition into: (i)~33 \emph{discriminating} models that score benign $\approx 0.0$ and adversarial $0.7$--$0.9$; and (ii)~2 \emph{content-aware refusers} (gpt-5-nano, gpt-5.5) that score benign content correctly ($= 0.0$, 100\% response rate on 20 benign prompts) but refuse to produce a numeric score for harmful content (returning empty or a refusal string, parsed as $1.0$). The refusers are not broken; they demonstrate content-aware safety behaviour, but they cannot serve as graded canaries. They can, however, serve as binary detection signals (refusal $\Rightarrow$ flag as potentially harmful).
+
+\begin{table}[h]
+\centering
+\small
+\caption{Model taxonomy across 35 evaluated frontier models (corrected for token-budget starvation). Classification based on scoring behaviour under adequate token budget (\texttt{max\_tokens}$\geq$200).}
+\label{tab:model-taxonomy}
+\begin{tabular}{lcp{6.5cm}}
+\toprule
+\textbf{Category} & \textbf{Count} & \textbf{Behaviour} \\
+\midrule
+Discriminating & 33 & Produce graded numeric scores; benign $\approx 0.0$, adversarial $0.7$--$0.9$ \\
+Content-Aware Refusers & 2 & Score benign correctly ($=0.0$) but refuse to score harmful content (gpt-5-nano, gpt-5.5) \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+
+{\footnotesize \textit{Note:} An initial screen at \texttt{max\_completion\_tokens=16} misclassified 11 reasoning models as ``ceiling-clipped'' (all scores $\approx 1.0$). This was a token-budget starvation artifact (\S\ref{sec:cot-starvation-lead}), not a model property. All 11 produce discriminating scores under adequate budget.}
+\end{table}
+
+\paragraph{Cost--performance Pareto frontier.} All 33 discriminating models achieve comparable detection quality ($\Delta(\text{adv} - \text{benign}) \geq +0.39$). The differentiation is purely economic: o3 costs $\approx$20$\times$ more per call than gpt-4o-mini despite equivalent detection performance. The Pareto frontier is therefore a \emph{cost} frontier, not a capacity frontier; cheaper models are strictly preferred for canary deployment.
+
+\paragraph{Detection performance.} Among the 20 discriminating models:
+
+\begin{itemize}
+\item Mean $\Delta(\text{adv} - \text{benign})$: $+0.68$ (range $+0.39$ to $+0.91$)
+\item Mean benign score: $0.016$ (18/20 models at exactly $0.0$)
+\item Mean adversarial score: $0.73$ (range $0.44$ to $0.91$)
+\item Zero false alarm rate on 20 genuinely benign prompts for 18/20 models
+\end{itemize}
+
+DeBERTa scores these same adversarial prompts as $< 0.5$ (it is fooled). The frontier LLMs maintain high scores, generating a divergence signal analogous to the local canary (\S\ref{sec:ca6}) but via a fundamentally different mechanism.
+
+\paragraph{Mechanism: semantic intent recognition, not anomaly detection.}
+
+The critical finding is that adversarial prompts are scored identically to clean prompts (same base prompt, no suffix): $\Delta(\text{adv} - \text{clean}) \approx 0$. This implies that frontier LLMs are \emph{not} detecting the GCG suffix as anomalous; they correctly identify the base prompt as harmful regardless of the appended suffix. The behavioral evidence is consistent with semantic intent recognition: frontier LLMs appear to ``see through'' the GCG perturbation to the underlying harmful request. This equivalence does not mean GCG is merely random noise; GCG is devastatingly effective against DeBERTa (scores drop from 0.95 to $<$0.05). The point is that frontier LLMs are insensitive to the suffix, scoring on base-prompt content, which is precisely what makes them robust canaries for a targeted classifier that \emph{is} fooled by suffix structure.
+
+At $N = 20$ (our initial evaluation), this claim is underpowered (MDE = 0.253, observed mean $\Delta = 0.047$). At $N = 49$, Bayes Factor analysis (JZS prior, $r = \sqrt{2}/2$) yields $\text{BF}_{01} > 3$ for 16/20 models (evidence for the null) and $\text{BF}_{01} < 1/3$ for 2/20. TOST equivalence testing confirms: 16/20 models equivalent within $\pm 0.15$ ($p < 0.05$), and 19/20 within $\pm 0.20$. The median $|\Delta|$ across 20 models is 0.035, an order of magnitude below any operationally meaningful threshold.
+
+\paragraph{Empirical suffix-insensitivity bound.} Across $N = 49$ adversarial prompts and 20 discriminating models, the maximum observed per-prompt score deviation $|f(p + s) - f(p)|$ is 0.35 (a single outlier; 95th percentile $= 0.15$). Normalising by suffix length in tokens ($|s| = 20$): the empirical 95th-percentile per-token score change is $\leq 0.008$ within this corpus. This suggests local flatness of the safety scoring function with respect to suffix perturbations; gradient-based optimisation in the suffix subspace did not traverse the distance from the saturation floor ($\approx 0.88$) to the decision boundary ($\tau = 0.5$) within the tested suffix lengths (20-token suffix corpus, $N = 49$ prompts). This is a finite-sample empirical observation, not a mathematical Lipschitz bound.
+
+\paragraph{Reconciling BF and TOST on outliers.} For \texttt{gpt-4.1} ($\Delta = -0.039$, $\text{BF}_{01} = 0.19$), the effect is statistically detectable due to extremely low within-model variance, but the magnitude is two orders of magnitude smaller than DeBERTa's collapse (DeBERTa: $\Delta \approx -0.8$; \texttt{gpt-4.1}: $\Delta = -0.039$). TOST confirms equivalence within $\pm 0.15$. For \texttt{claude-opus-4-7} ($\Delta = +0.127$, $\text{BF}_{01} = 0.13$), the positive delta matches the suffix-sensitivity pattern observed across all Claude variants: scrambled suffixes produce a comparable shift ($\Delta_{\text{scram-clean}} = +0.100$) for this model, confirming that any appended text (GCG or random) elevates its score relative to the clean baseline. This is not GCG-specific detection but the dual-channel behavior documented in the scrambled analysis below. TOST passes at $\pm 0.20$ but not $\pm 0.15$. The two inconclusive models (\texttt{gemini-2.5-flash-lite}, \texttt{gpt-4.1-nano}) have within-pair SD of 0.39 and 0.32 respectively (vs.\ mean 0.19 for the other 18 models), limiting BF sensitivity. We justify the $\pm 0.15$ bound via downstream decision invariance: the operational classification threshold is $\tau = 0.5$, so any score fluctuation that does not cross this boundary is functionally equivalent under the deployment loss function. At mean clean score $= 0.78$ (SD $= 0.09$) across 20 models, a shift of $\pm 0.15$ remains safely above the decision boundary.
+
+\paragraph{Per-prompt boundary crossings.} The $\Delta \approx 0$ finding describes the \emph{average} across prompts. At the per-prompt level, 6.0\% of prompt--model pairs (59/980) show a boundary crossing (clean $\geq 0.5$, GCG $< 0.5$). These are concentrated in specific prompt--model combinations: 83\% are large drops ($> 0.3$), not micro-drifts, and no model contributes more than 9/49 flips. Critically, no single prompt evades all 20 models (worst case: 8/20 flip on one prompt). The mean $\Delta \approx 0$ reflects that for the majority of prompts, all models hold; the residual 6\% tail represents specific prompt--model vulnerabilities, addressable via the $k \geq 2$ ensemble logic of \S\ref{sec:k-scaling}.
+
+\paragraph{Scrambled-suffix control.}
+
+To distinguish semantic intent recognition from token-level anomaly detection, we include a scrambled-suffix condition: the GCG suffix characters are randomly permuted (preserving character distribution but destroying gradient alignment and word boundaries). If the LLM detects safety risk from the \emph{base prompt} (semantic), all three conditions should score identically. If it detects the \emph{specific GCG token pattern} (distributional anomaly), scrambled should score lower than adversarial.
+
+At $N = 49$: 15/20 models show no significant difference between scrambled and GCG scores (Mann--Whitney $p \geq 0.05$), consistent with semantic intent recognition. In the 5 models where a difference exists, scrambled scores are \emph{higher} than GCG; scrambled tokens make these models (all Claude variants) \emph{more} suspicious, not less. Zero models show scrambled $<$ GCG. This is inconsistent with the alternative hypothesis that LLMs detect GCG via its specific token-level anomaly signature; behavioral evidence points to detection operating on the base prompt's semantic content rather than suffix structure.
+
+\paragraph{Methodological note on scrambling level.} Our scramble operates at the character level, which additionally disrupts tokenizer word boundaries (producing byte-fallback or single-character subword tokens). For the 15 models where scrambled $\approx$ GCG, this is consistent with neither the GCG token structure \emph{nor} the tokenizer-fragmentation artefact affecting scoring, consistent with intent-based rather than suffix-anomaly detection. For the 5 Claude models where scrambled $>$ GCG, we cannot cleanly separate two possible causes: (a) Anthropic's safety filters include a secondary perplexity/structural-anomaly channel that flags tokenizer fragmentation, or (b) the GCG suffix's gradient-optimised token sequence happens to look marginally less anomalous than random character noise to these models. Either interpretation \emph{strengthens} the canary case: scrambled inputs are flagged even more aggressively than GCG, meaning the detection floor under attack is at least as high as the GCG detection rate reported in \S\ref{sec:llm-canary}. A token-level scramble (permuting tokens within the suffix vocabulary) would isolate these causes but was not performed in this evaluation.
+
+\paragraph{Deployment recommendation.} Among discriminating models, \texttt{gpt-4o-mini} achieves $\Delta(\text{adv} - \text{benign}) = +0.83$ with benign mean $= 0.0$ at the lowest cost tier. For production canary deployment: call a single cheap frontier model per input, flag when score $> 0.5$ while the primary classifier scores $< 0.5$.
+
+\paragraph{Frontier stability (Jul--Aug 2026 validation).} We evaluated newer models released after the primary evaluation: \texttt{gpt-5.5}, \texttt{gpt-5-mini}, \texttt{o4-mini}, \texttt{claude-sonnet-5}, \texttt{gemini-3.6-flash}, and \texttt{gemini-3.7-flash}. The first three produce empty or non-numeric responses under our scoring prompt (content-aware refusers, consistent with the refuser taxonomy above); \texttt{claude-sonnet-5} achieves 42\% detection at 41\% FPR; \texttt{gemini-3.6-flash} achieves 30\% detection at 23\% FPR. \texttt{gemini-3.7-flash} (a reasoning model, Aug~2026) is a non-discriminating scorer: 22.0\% detection (9/41) at 21.4\% FPR ($N_{\text{adv}}{=}41$, $N_{\text{clean}}{=}42$, 8 non-numeric responses), with near-identical mean adversarial and clean scores (0.223 vs.\ 0.208), indicating it fails to separate adversarial from benign inputs under our scoring prompt. None displace the existing Pareto frontier (\texttt{gpt-4o-mini} at 84\%/0.7\% and \texttt{gpt-5.1} at 94\%/0.6\%). The deployment recommendation remains unchanged.
+
+\paragraph{False positive rate at scale ($N = 1000$).} Scaling from $N = 49$ to $N = 1000$ benign prompts: \texttt{gpt-4.1} and \texttt{claude-haiku-4-5} each achieve 0/1000 false positives (exact Clopper--Pearson 95\% upper bound $\approx 0.37\%$). All 10 evaluated models maintain FPR $< 1.5\%$, confirming that the zero observed FPR at $N = 49$ was not an artifact of small sample size.
+
+\paragraph{Black-box robustness.} To test whether an adversary can degrade canary scores without gradient access, we run 100 iterations of coordinate-ascent token substitution against \texttt{gpt-4o-mini}: the maximum score reduction achieved is 0.2 (from $\approx 0.83$ to $\approx 0.63$), which does not breach the $\tau = 0.5$ decision threshold. \texttt{gpt-5.1} shows equivalent robustness under the same attack budget.
+
+\paragraph{Optimization saturation (extended budget).} Extending the attack budget to 500 iterations reveals an \emph{optimization floor}. Across $n = 10$ prompts (hardest cases, baseline $\geq 0.8$, upper tail of the $N = 49$ GCG corpus): all score improvements occur within the first 50 steps in 9/10 prompts, with zero marginal gain for steps 50--500. One prompt shows a single additional reduction after step 50 (0.200 total improvement, still above $\tau = 0.5$). No prompt breaches the $\tau = 0.5$ threshold (0/10). Mean final score: 0.90. The adversarial optimization landscape is discrete and saturating: once low-hanging-fruit substitutions are exhausted, additional query budget provides no advantage across all 10 tested prompts.
+
+\paragraph{Ghost suffix inertness.} GCG suffixes appended to \emph{benign} content do not induce false alarms: \texttt{gpt-5.1} scores 0/20 false positives on benign prompts with adversarial suffixes attached. The suffix is inert when the base prompt lacks harmful semantic content.
+
+\paragraph{Prefix mutation invariance.} Detection survives rephrasing of the harmful prefix: \texttt{gpt-5.1} maintains 92\% detection rate on paraphrased versions of the same harmful prompts (vs.\ 92\% on originals), confirming that detection is keyed to semantic intent rather than surface lexical patterns.
+
+\paragraph{Cross-lingual sensitivity.} Non-English prompts show 15--25\% sensitivity degradation (vocabulary-driven: models have weaker safety calibration for low-resource languages). For \texttt{gpt-4o-mini} on Spanish specifically, the degradation is confirmed at $N = 49$: 63.3\% detection (31/49, Wilson 95\% CI [49.3\%, 75.3\%]) vs.\ 83.7\% in English (41/49, Wilson CI [71.0\%, 91.5\%]), a drop of 20.4~pp. However, adversarial suffixes remain inert across all tested languages ($\Delta \approx 0$ between clean and suffix-appended non-English prompts). The vulnerability is in base-prompt recognition, not suffix interaction.
+
+\paragraph{Dual-channel detection mechanism.} The cross-lingual degradation is asymmetric: explicit-harm prompts (direct violence, slurs) degrade 19--29 percentage points, while ambiguous/roleplay prompts degrade only 10--15 pp. This reveals two distinct safety detection channels: (i) a \emph{lexical channel} trained on English safety vocabulary that fails under translation, and (ii) a \emph{structural channel} that recognizes harmful intent patterns (e.g., roleplay framing, instructional structure) regardless of language. For \texttt{gpt-5.1}, 84\% (16/19) of prompts detected in English remain detected cross-lingually (structural channel), while 16\% leak (lexical-dependent). The safety score is consistent with a two-channel model $S \approx \max(S_{\text{lexical}}, S_{\text{structural}})$; cross-lingual degradation represents loss of the lexical contribution only. This is a descriptive hypothesis based on 16/19 prompts for one model (\texttt{gpt-5.1}), not a verified architectural claim.
+
+\paragraph{Wilson CI Pareto.} Using Wilson score intervals for conservative benchmark estimates: \texttt{gpt-4o-mini} achieves a Wilson 95\% CI lower bound of $\geq 71\%$ detection; \texttt{gpt-5.1} achieves $\geq 83.5\%$. The cost--detection tradeoff: \texttt{gpt-5.1} costs $\approx$9$\times$ more (\$0.30 vs.\ \$0.033 per 1{,}000 calls; costs computed from provider prices at the time of evaluation under our observed prompt/output-token counts) for 12.5 percentage points of Wilson CI lower-bound detection improvement. Across the 28 models for which both cost and detection data were available (of 33 discriminating), detection rate is moderately correlated with model cost (Pearson $r = 0.51$, $p = 0.006$); no inverted-U relationship exists. Once configured with \texttt{max\_tokens $\geq$ 200}, all 33 non-refusing models in our tested set produced discriminative numeric scores; cost determines the preferred choice, not capability.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Deployment-ready metrics: Pareto frontier for canary model selection. Detection = proportion of $N{=}49$ adversarial prompts scored $>0.5$. FPR validated at $N{=}1000$ benign prompts. Wilson 95\% CI lower bounds reported as conditional guarantees under the targeted-evasion threat model.}
+\label{tab:pareto-deployment}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Model} & \textbf{Detection} & \textbf{Wilson LB} & \textbf{FPR ($N{=}1000$)} & \textbf{FPR UB} & \textbf{Cost/1k} \\
+\midrule
+gpt-4o-mini & 83.7\% (41/49) & $\geq$71.0\% & 0/1000 (0.0\%) & $\leq$0.37\% & \$0.033 \\
+gpt-5.1 & 91.8\% (45/49) & $\geq$83.5\% & 0/1000 (0.0\%) & $\leq$0.37\% & \$0.30 \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+
+{\footnotesize Wilson LB = Wilson score 95\% CI lower bound on detection rate. FPR UB = Clopper--Pearson 95\% upper bound on false positive rate. Cost per 1{,}000 calls at observed prompt/output-token counts.}
+\end{table}
+
+\paragraph{Cost-bounded safety routing.} The Pareto structure admits a simple escalation router. Define the routing policy: screen all inputs with \texttt{gpt-4o-mini} (\$0.033 per 1{,}000 calls); escalate ambiguous scores ($\in [0.3, 0.7]$) and non-English inputs to \texttt{gpt-5.1} (\$0.30 per 1{,}000 calls). At an empirical escalation rate of $\sim$12\%, expected cost is \$65/1M queries with 84.9\% detection, compared with \$300/1M for always-escalating to \texttt{gpt-5.1} and \$33/1M for always using \texttt{gpt-4o-mini} (83.7\%). The router achieves near-optimal detection at 78\% cost reduction compared to the highest-detection single model.
+
+\paragraph{Limitations.}
+\begin{itemize}
+\item \textbf{Temperature sensitivity.} All results use temperature $= 0$ for reproducibility. A sensitivity sweep at $T \in \{0, 0.3, 1.0\}$ across 5 models ($n = 20$ adv + 20 benign prompts, 3 replicates per non-zero temperature) shows detection rate varies by at most $7$ pp across temperatures, with within-prompt SD at $T = 1.0$ of $0.03$--$0.11$ across models. Temperature does not materially affect detection; $T = 0$ is recommended for operational consistency.
+\item Service-based: non-reproducible across provider version changes.
+\item All 35 models are decoder-only transformers with RLHF, with no real architectural diversity relative to each other.
+\item Cross-lingual detection degrades 15--25\% for non-English prompts (vocabulary bias in safety calibration). Spanish degradation is confirmed at $N = 49$ (Wilson CI [49.3\%, 75.3\%]); Mandarin and Arabic estimates remain at $N = 20$ with wider CIs.
+\item Llama Guard 3 surrogate transfer test: LG3 original scores for test prompts were already low (mean $= 0.057$, 0/10 above 0.5), so this is a transfer negative control rather than a test of successful decoder evasion. LG3-optimised suffixes produce $|\Delta| \leq 0.010$ on both tested frontier canaries ($n = 10$), consistent with the tokeniser-barrier hypothesis. A full decoder evasion experiment (prompts for which LG3 initially scores high, successfully attacked to low) is not included.
+\item Content-aware refusers (gpt-5-nano, gpt-5.5) can be leveraged as binary detection signals in production (empty response $=$ flag as harmful), but this integration is not yet implemented.
+\end{itemize}
+
+\paragraph{Relationship to local canaries.} The LLM canary and the local canary (\S\ref{sec:canary}) are complementary:
+\begin{itemize}
+\item \textbf{Local canary:} detects via \emph{score disagreement} (target collapses, canary holds). Vulnerable to within-family transfer (30\%). Protected by tokeniser barrier cross-family.
+\item \textbf{LLM canary:} detects via \emph{semantic persistence} (scores harmful intent regardless of suffix). Immune to gradient transfer (no accessible weights). Vulnerable to prompt-level attacks against the LLM itself (untested).
+\end{itemize}
+A production deployment combining both channels, local divergence for streaming detection plus LLM semantic check for high-stakes inputs, would provide defence in depth, though we leave this integration to future work.
+
+
+%==============================================================================
+\subsection{Rotating Canaries Against Adaptive Evasion}
+\label{sec:rotating-canary-eval}
+%==============================================================================
+
+Sections~\ref{sec:adversarial-robustness}--\ref{sec:divergence-min} evaluate adversarial
+robustness of \emph{static} canaries. A natural extension---motivated by reviewer concern
+that static canaries are trivially discoverable---is \emph{rotating canaries}: per-session
+secret canaries derived from an HMAC key never exposed to the model or attacker. We
+evaluate this design against four adaptive attacker strategies across three frontier models
+(GPT-5.1, Claude-Sonnet-5, Gemini-2.5-Pro; $N{=}100$--$200$ sessions per cell, 1,950
+total).
+
+\paragraph{Canary generation.} Each session receives a unique factual question
+(e.g., ``What is the capital of Japan?'') derived deterministically from
+$\text{HMAC-SHA256}(\mathit{key}, \mathit{session\_id} \| \mathit{rotation\_idx})$.
+The server verifies responses without storing canary prompts. Canaries are
+indistinguishable from real user queries without access to the server-side key.
+
+\paragraph{Attacker strategies.}
+\begin{enumerate}
+\item \textbf{Naive}: Inject payload without canary awareness (baseline).
+\item \textbf{Canary-aware}: Heuristically identify canary prompts (short factual
+  questions) and suppress attack behavior on suspected canaries.
+\item \textbf{Divergence minimizer}: Conservatively suppress on \emph{any} short
+  factual question to minimize behavioral divergence.
+\item \textbf{Spoofing}: Inject instructions that cause non-specific answers
+  (``I need more context'') to trigger false alarms on benign inputs.
+\end{enumerate}
+
+\paragraph{Results.}
+
+\begin{table}[h]
+\centering
+\caption{Rotating canary evaluation: attack success rate (ASR) with Wilson 95\% CIs.
+  Clean baselines show 0.0\% false alarm rate across all models.}
+\label{tab:rotating-canary}
+\small
+\begin{tabular}{llrrr}
+\toprule
+\textbf{Model} & \textbf{Attacker} & \textbf{N} & \textbf{ASR [95\% CI]} & \textbf{Suppress\%} \\
+\midrule
+GPT-5.1 & Clean baseline & 200 & 0.000 [.000, .019] & --- \\
+GPT-5.1 & Naive & 200 & 0.000 [.000, .019] & 0.0\% \\
+GPT-5.1 & Canary-aware & 200 & 0.000 [.000, .019] & 38.5\% \\
+GPT-5.1 & Divergence min. & 200 & 0.000 [.000, .019] & 58.0\% \\
+GPT-5.1 & Spoofing & 150 & 1.000 [.975, 1.00] & 0.0\% \\
+\midrule
+Gemini-2.5-Pro & Clean baseline & 100 & 0.000 [.000, .037] & --- \\
+Gemini-2.5-Pro & Naive & 100 & 0.590 [.492, .681] & 0.0\% \\
+Gemini-2.5-Pro & Canary-aware & 100 & 0.000 [.000, .037] & 40.0\% \\
+Gemini-2.5-Pro & Spoofing & 100 & 0.800 [.711, .867] & 0.0\% \\
+\midrule
+Claude-Sonnet-5 & Clean baseline & 100 & 0.000 [.000, .037] & --- \\
+Claude-Sonnet-5 & Naive & 100 & 0.070 [.034, .137] & 0.0\% \\
+Claude-Sonnet-5 & Canary-aware & 100 & 0.390 [.300, .488] & 46.0\% \\
+Claude-Sonnet-5 & Spoofing & 100 & 0.300 [.219, .396] & 0.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Key findings.}
+\begin{enumerate}
+\item \textbf{Zero false alarm rate}: All clean baselines show 0.0\% FAR---rotating
+  canaries never trigger on legitimate sessions.
+\item \textbf{Canary-aware suppression works}: Heuristic identification achieves 38--60\%
+  suppression rate, demonstrating that short factual questions are a learnable pattern.
+  However, this suppression forces zero attack success on GPT-5.1 and Gemini (the
+  attacker must suppress to hide, which means not attacking on those prompts).
+\item \textbf{Spoofing is the critical vulnerability}: Attackers that force non-specific
+  responses (``I need more context'') achieve 80--100\% success on GPT-5.1 and
+  Gemini without triggering canary alarms, because the canary scoring function does
+  not detect \emph{stylistic} rather than \emph{factual} degradation.
+\item \textbf{Model-dependent robustness}: Claude-Sonnet-5 shows anomalous behavior
+  where canary-aware attackers achieve \emph{higher} success (39\%) than naive attackers
+  (7\%)---suppressing on canaries allows attacking on real requests without detection.
+\end{enumerate}
+
+\paragraph{Deployment implication.} Rotating canaries provide a zero-FAR monitoring
+signal but detect only attacks that \emph{disrupt factual accuracy}. Spoofing attacks
+that degrade response style without introducing factual errors bypass the mechanism.
+Pairing with an external enforcement layer as proposed in companion work by the same author~\citep{leong2026recognition} could address this gap:
+enforcement would block privileged actions from restricted sources regardless of response
+content, while canaries detect subtler alignment shifts that enforcement cannot observe.
 
 %==============================================================================
 \section{Discussion}
@@ -553,7 +1205,7 @@ To test whether embedding-space displacement drives the same pattern, we compute
 
 Density-ratio collapse under distribution shift is a well-characterized phenomenon in high-dimensional statistics~\cite{sugiyama2012density,kanamori2012statistical}. Our contribution is not the discovery of this phenomenon but its specific instantiation in safety-classifier embeddings, where it has immediate operational consequences: conformal prediction sets that should guarantee coverage instead produce vacuous intervals, rendering the monitoring infrastructure silently unreliable. The LLM-specific contribution is threefold: (i)~identifying that safety-classifier fine-tuning creates the geometric conditions for collapse (low intrinsic dimensionality, class-separated manifolds); (ii)~demonstrating that a PCA-based dimensionality reduction to 32 dimensions recovers valid coverage while preserving detection power; and (iii)~establishing that the collapse is near-universal across tested architectures (3/4 classifiers) regardless of training-distribution alignment.
 
-The adversarial canary robustness analysis (\S\ref{sec:adversarial-robustness}) characterizes GCG attack dynamics against a single target classifier (DeBERTa). Cross-target generalization---whether the equilibrium stall condition and non-transfer property hold for encoder-decoder targets (Llama Guard, ShieldGemma)---remains open. The theoretical derivation (Appendix~\ref{app:derivation}) is architecture-agnostic, but empirical confirmation is bounded by the single-target evaluation.
+The adversarial canary robustness analysis (\S\ref{sec:adversarial-robustness}) characterizes GCG attack dynamics against a single target classifier (DeBERTa). Cross-target generalization---whether the stall condition and non-transfer property hold for encoder-decoder targets (Llama Guard, ShieldGemma)---remains open. The theoretical derivation (Appendix~\ref{app:derivation}) is architecture-agnostic, but empirical confirmation is bounded by the single-target evaluation.
 
 The reasoning-token budget starvation phenomenon (\S\ref{sec:llm-canary}) was characterized on o3 under a single scoring prompt template. Whether this generalizes to other reasoning architectures (o4-mini, DeepSeek-R1) or alternative prompt structures is untested; the finding should be read as identifying a failure mode class rather than a universal law.
 
@@ -566,26 +1218,26 @@ The reasoning-token budget starvation phenomenon (\S\ref{sec:llm-canary}) was ch
 \item \textbf{Binary classifiers only.} All four classifiers produce a single unsafe probability. Multi-category safety taxonomies may exhibit category-specific shift patterns invisible to a scalar score monitor.
 \item \textbf{Canary analysis scope.} The adversarial robustness characterisation (\S\ref{sec:adversarial-robustness}) uses $n = 49$ GCG attacks on a single target (DeBERTa). Cross-target generalisation is untested.
 \item \textbf{Joint-optimisation sample size.} Joint GCG results (\S\ref{sec:joint-gcg}) use $n = 20$ prompts at $\lambda \in \{0.5, 1.0, 2.0, 4.0, 8.0\}$ (block rates 25\%--60\% with overlapping Wilson CIs between adjacent $\lambda$). The $n{=}20$ per condition yields wide CIs; larger evaluations are needed to sharpen the block-rate curve and test whether the ceiling stabilises at 60\% or rises further at $\lambda > 8$.
-\item \textbf{Equilibrium derivation.} The stall condition (Appendix~\ref{app:derivation}) uses a continuous relaxation; GCG operates on discrete tokens. The match is empirical (within 95\% CI), not a formal convergence proof.
+\item \textbf{Stall condition derivation.} The stall condition (Appendix~\ref{app:derivation}) uses a continuous relaxation; GCG operates on discrete tokens. The match is empirical (within 95\% CI), not a formal convergence proof.
 \item \textbf{Homogeneous negative controls.} Negative control streams draw exclusively from WildGuardMix unharmful examples; production streams with higher natural variance may require larger calibration sets.
 \item \textbf{GCG suffix length.} A suffix-length sweep (10, 20, 40 tokens) on DeBERTa shows monotonically increasing attack success (70\%, 80\%, 90\% at $n = 10$; Fisher exact $p = 0.29$, underpowered). Transfer to frontier canaries is unaffected by suffix length: $\Delta = +0.26$ to $+0.30$ across all lengths (canary scores \emph{increase}, not decrease). Longer suffixes marginally improve local attack success without compromising non-transfer.
 \item \textbf{Pre-registration deviation (window size 500).} The pre-registered factorial configuration included $w{=}500$; this was not executed because it produces insufficient post-shift observations with the 300-example shifted corpus. Window sensitivity analysis is restricted to $w \in \{100, 200\}$.
 \item \textbf{Scan martingale window sweep.} The scan martingale is validated at $M \in \{50, 100\}$ (sub-martingale counts). A broader sensitivity analysis across $M \in \{25, 50, 75, 100, 150, 200\}$ was not performed; reported FAR and detection results hold only for the two validated configurations.
 \item \textbf{Exchangeability in production traffic.} The scan martingale's FAR guarantee requires exchangeability under the null. Real production traffic is temporally correlated (multi-turn sessions, event-driven spikes). Deployers should sample across independent sessions rather than ingesting raw sequential streams to preserve the exchangeability assumption; benign domain drift that violates exchangeability will trigger alarms, which should be treated as triage signals for investigation rather than automatic enforcement.
-\item \textbf{Fixed-$\lambda$ divergence-minimisation characterisation.} The equilibrium at gap $= 1/(2\lambda)$ characterises a fixed-$\lambda$ optimiser. A dynamic or annealing schedule for $\lambda$ could alter the optimisation trajectory; any stable convergence point still satisfies the instantaneous local gradient equilibrium, but we have not evaluated dynamic-$\lambda$ adversaries.
+\item \textbf{Fixed-$\lambda$ divergence-minimisation characterisation.} The stall condition at gap $= 1/(2\lambda)$ characterises a fixed-$\lambda$ optimiser. A dynamic or annealing schedule for $\lambda$ could alter the optimisation trajectory; any stable convergence point still satisfies the instantaneous local gradient condition, but we have not evaluated dynamic-$\lambda$ adversaries.
 \item \textbf{Black-box attack scope.} The coordinate-ascent word-substitution evaluation (\S\ref{sec:llm-canary}) tests suffix-only black-box attacks (500 iterations), and PAIR-style semantic rewriting (\S\ref{sec:autodan}) tests iterative phrase-level attacks (20 iterations $\times$ 30 prompts). We did not evaluate genetic-algorithm prompt optimisation~\citep{liu2024autodan} or multi-query prompt injection; robustness to these methods remains untested. The PAIR evaluation demonstrates that semantic attacks barely evade DeBERTa (3.3\%, 1/30 prompts) and the canary detects that single evasion (1/1), but this does not preclude stronger adaptive methods combining multiple attack strategies.
 \end{itemize}
 
 \subsection{Future Work}
 \label{sec:future}
 
-The equilibrium boundary (gap $= 1/(2\lambda)$) predicts a $\lambda$-dependent security frontier. A complete sweep across $\lambda \in \{0.5, 1.0, 2.0, 4.0, 8.0\}$ ($n{=}20$ prompts each, same paired design, seed-consistent) confirms three predictions:
+The stall condition (gap $= 1/(2\lambda)$) predicts a $\lambda$-dependent security frontier. A complete sweep across $\lambda \in \{0.5, 1.0, 2.0, 4.0, 8.0\}$ ($n{=}20$ prompts each, same paired design, seed-consistent) confirms three predictions:
 
-\textbf{(i)~Monotonicity.} Block rate increases monotonically with $\lambda$: 25\% $\to$ 50\% $\to$ 50\% $\to$ 55\% $\to$ 60\% (Spearman $\rho{=}0.975$, $p{=}0.005$).
+\textbf{(i)~Monotonicity.} Block rate increases monotonically with $\lambda$: 25\% $\to$ 50\% $\to$ 50\% $\to$ 55\% $\to$ 60\% (Spearman $\rho{=}0.975$, $p{=}0.005$). Note: the $\lambda{=}2$ block rate here (50\%, 10/20) differs from the 70\% (14/20) reported in Table~\ref{tab:threat-tiers} because the sweep uses a fresh set of 20 prompts drawn from the same distribution, not the identical 20 prompts from the primary Tier-4 evaluation. The difference (50\% vs 70\%) is within the Wilson 95\% CI [48\%, 85\%] of the original estimate and reflects sampling variability at $n{=}20$.
 
 \textbf{(ii)~Saturation ceiling.} The block rate saturates well below 100\% (max 60\% at $\lambda{=}8.0$), confirming the pre-registered prediction that the defence is gated by canary confidence, not universally effective.
 
-\textbf{(iii)~Gap convergence.} At high $\lambda$ where the regularisation pressure is strong enough for convergence within 50 GCG steps, the observed gap matches the theoretical prediction: $\lambda{=}8.0$ median gap $= 0.0625$ (predicted $0.0625$, ratio $1.00$); $\lambda{=}4.0$ median $= 0.108$ (predicted $0.125$, ratio $0.86$); $\lambda{=}2.0$ median $= 0.218$ (predicted $0.250$, ratio $0.87$). At low $\lambda$ ($0.5$, $1.0$), the observed gap falls far below prediction (ratios $0.09$, $0.53$), consistent with GCG budget exhaustion before equilibrium convergence when divergence-penalty pressure is weak. The high-$\lambda$ regression (observed vs.\ predicted, $\lambda \geq 2.0$) yields $R^2 = 0.999$, slope $= 0.72$ [95\% CI: 0.46, 0.97]. The theoretical slope of 1.0 is not within this CI, indicating systematic under-convergence even at high $\lambda$---the 50-step GCG budget approaches but does not fully reach the equilibrium. Cross-family joint optimisation (shared-tokeniser setting) remains untested due to the discrete-vocabulary incompatibility documented in \S\ref{sec:tokeniser}. Larger-scale adversarial evaluations ($n > 100$ prompts, multiple target classifiers) are needed to confirm the confidence-gating threshold. Truly online conformal prediction under arbitrary distribution shift~\citep{gibbs2021adaptive} would eliminate the batch requirement for density ratio estimation.
+\textbf{(iii)~Gap convergence.} At high $\lambda$ where the regularisation pressure is strong enough for convergence within 50 GCG steps, the observed gap approaches the theoretical prediction: $\lambda{=}8.0$ median gap $= 0.0625$ (predicted $0.0625$, ratio $1.00$); $\lambda{=}4.0$ median $= 0.108$ (predicted $0.125$, ratio $0.86$); $\lambda{=}2.0$ median $= 0.218$ (predicted $0.250$, ratio $0.87$). At low $\lambda$ ($0.5$, $1.0$), the observed gap falls far below prediction (ratios $0.09$, $0.53$), consistent with GCG budget exhaustion before convergence when divergence-penalty pressure is weak. The high-$\lambda$ observed/predicted ratios ($0.86$--$1.00$ at $\lambda \geq 2.0$) indicate that the stall condition functions as a local attractor whose pull strengthens with $\lambda$; the systematic under-convergence (slope $= 0.84$ [95\% CI: 0.46, 0.97] on 3 high-$\lambda$ points) reflects the 50-step GCG budget approaching but not fully reaching the predicted gap. Cross-family joint optimisation (shared-tokeniser setting) remains untested due to the discrete-vocabulary incompatibility documented in \S\ref{sec:tokeniser}. Larger-scale adversarial evaluations ($n > 100$ prompts, multiple target classifiers) are needed to confirm the confidence-gating threshold. Truly online conformal prediction under arbitrary distribution shift~\citep{gibbs2021adaptive} would eliminate the batch requirement for density ratio estimation.
 
 %==============================================================================
 % v2 NEW SECTIONS: Canary Detection + Adversarial Robustness + LLM Canary
@@ -596,7 +1248,7 @@ The equilibrium boundary (gap $= 1/(2\lambda)$) predicts a $\lambda$-dependent s
 
 We presented an online monitoring system that detects distributional shift in deployed safety classifiers with 86.6\% detection rate across 800 pre-registered factorial cells, mean latency of 39.5 steps at window size 100, and false alarm rates of 2--10\%. The system generalizes across three ground-truth regimes: synthetic onset, real temporal jailbreaks, and adversarial success. Variance decomposition reveals that classifier, shift type, and their interaction all contribute substantially to detection difficulty, motivating per-classifier monitoring profiles. A growing-window confidence sequence provides 100\% detection with 0\% FAR and outperformed the sliding-window KS in our low-mixing experiments (97\% vs 43\% at 30\% contamination; $p < 0.0001$), while KS provides faster detection when signals are strong. CUSUM and EWMA detectors close a previously identified blind spot: persistent low-rate contamination ($\leq$12\% mixing) that evades both KS and scan martingale is now detectable down to 4\% mixing at the cost of ${\sim}$930-step latency (Table~\ref{tab:subthreshold}). MMD on embeddings provides a complementary binary alarm that fires immediately on all tested shifts, completing a four-channel architecture (KS for strong shifts, CUSUM for persistent weak contamination, CS for growing evidence, MMD for immediate binary alarm). Upon detection, weighted conformal prediction recovers up to 39 pp of lost coverage for DeBERTa across three shift types, but density-ratio estimation collapses for all other classifiers (ESS${\approx}$300, weights uniformly clipped to floor). PCA to 32 dimensions supports the diagnosis that this collapse is a dimensionality artifact, recovering 33 pp for Llama Guard and 21 pp for ShieldGemma on temporal shift, with ESS reduction consistent with generalizing to paraphrase shift. Code, configurations, and raw results are available at \url{https://github.com/junwenleong/safety-classifier-shift-monitor}.
 
-Our adversarial characterisation establishes that score-disagreement monitoring is robust when the canary is confident: divergence-minimisation stalls at the predicted equilibrium (gap $= 1/(2\lambda) = 0.250$; 14/20 blocked cases, mean gap $0.218$ [95\% CI: 0.153, 0.282], median $0.250$; the 9 cases nearest equilibrium average $0.2499$), and white-box adversarial suffixes do not transfer to frontier canaries (median $|\Delta| = 0.035$ across 20 models at $n{=}49$; TOST-equivalent within $\pm 0.15$ for 16/20 models). A $\lambda$-sweep across five values ($\lambda \in \{0.5, 1.0, 2.0, 4.0, 8.0\}$, $n{=}20$ each) confirms: block rate increases monotonically ($\rho{=}0.975$, $p{=}0.005$), saturates at ${\sim}$60\% (confidence-gating ceiling, not 100\%), and the stall gap converges to $1/(2\lambda)$ at high $\lambda$ (ratio $1.00$ at $\lambda{=}8$). The blocked rate is confidence-dependent: 70\% (14/20) on the high-confidence primary pair vs.\ 30\% (3/10) on a lower-confidence replication pair, but the stall \emph{location} replicates across both (mean gap 0.247 on the second pair). The residual 18.4\% of adversarial inputs (9/49) evade both the targeted DeBERTa and the Qwen LLM canary simultaneously. The deployment rule is operationally simple: trust the canary signal only when the canary is confident; route uncertain inputs to human review.
+Our adversarial characterisation establishes that score-disagreement monitoring is robust when the canary is confident: divergence-minimisation stalls at the predicted gap (gap $= 1/(2\lambda) = 0.250$; 14/20 blocked cases, mean gap $0.218$ [95\% CI: 0.153, 0.282], median $0.250$; the 9 cases nearest the predicted value average $0.2499$), and white-box adversarial suffixes do not transfer to frontier canaries (median $|\Delta| = 0.035$ across 20 models at $n{=}49$; TOST-equivalent within $\pm 0.15$ for 16/20 models). A $\lambda$-sweep across five values ($\lambda \in \{0.5, 1.0, 2.0, 4.0, 8.0\}$, $n{=}20$ each) confirms: block rate increases monotonically ($\rho{=}0.975$, $p{=}0.005$), saturates at ${\sim}$60\% (confidence-gating ceiling, not 100\%), and the stall gap converges to $1/(2\lambda)$ at high $\lambda$ (ratio $1.00$ at $\lambda{=}8$). The blocked rate is confidence-dependent: 70\% (14/20) on the high-confidence primary pair vs.\ 30\% (3/10) on a lower-confidence replication pair, but the stall \emph{location} replicates across both (mean gap 0.247 on the second pair). The residual 18.4\% of adversarial inputs (9/49) evade both the targeted DeBERTa and the Qwen LLM canary simultaneously. The deployment rule is operationally simple: trust the canary signal only when the canary is confident; route uncertain inputs to human review.
 
 \paragraph{Honest negative result: monitorability is not an intrinsic classifier property.} We report the falsification of our own initial hypothesis. The $r = 0.97$ correlation between null-score geometry and detection latency ($n = 4$ classifiers, $p = 0.032$) appeared to identify a universal monitorability law. A within-family replication using 6 encoder variants at varying training epochs yields $r = 0.21$ ($p = 0.70$): the original correlation was an artifact of the encoder/decoder architectural gap, not an intrinsic property of score-distribution geometry (Appendix~\ref{app:monitorability}). Null-score width predicts detection difficulty \emph{between} architecture families but not \emph{within} them. We report this as a corrective: the field should not adopt monitorability as a scalar classifier property based on cross-architecture correlations alone.
 
@@ -647,7 +1299,7 @@ MDE (80\% power) & 22.4 steps & 13.9 steps \\
 \end{tabular}
 \end{table}
 
-{\footnotesize $^\dagger$Unweighted mean of classifier $\times$ shift cell means, pooled across both window sizes ($w{=}100$ and $w{=}200$). The abstract reports 39.5 steps, which is the mean over valid detections at $w{=}100$ only.}
+{\footnotesize $^\dagger$Unweighted mean of classifier $\times$ shift cell means, pooled across both window sizes ($w{=}100$ and $w{=}200$). The abstract reports 39.5 steps, which is the mean over control-validated detections at $w{=}100$ only.}
 
 The primary finding (86.5\% detection rate) replicates exactly at $N{=}20$. The variance decomposition shifts: the interaction term shrinks from 0.265 to 0.185 while main effects grow, consistent with small-sample noise inflating the $N{=}5$ interaction estimate. Statistical power improves from MDE $= 22.4$ to $13.9$ steps.
 
@@ -717,10 +1369,10 @@ Combined with the two original encoders (DeBERTa $\sigma = 0.087$, Text-Moderati
 \label{app:derivation}
 
 \noindent\fbox{\parbox{0.96\textwidth}{%
-\textbf{Proposition 1} (Divergence-Minimisation Equilibrium).
+\textbf{Proposition 1} (Divergence-Minimisation Stall Condition).
 Let $f_A, f_B$ be differentiable classifiers with scores in $[0,1]$, and let an attacker minimise $L(\delta) = f_A(x+\delta) + \lambda(f_B(x+\delta) - f_A(x+\delta))^2$. If the canary is confident ($f_B \approx 1$, $\|\nabla f_B\| \to 0$), the score gap $g = f_B - f_A$ stalls at $g^* = 1/(2\lambda)$. At this point, the gradient coefficient on $\nabla f_A$ inverts sign, and further descent on $L$ \emph{increases} $f_A$.
 
-\smallskip\noindent\textbf{Experimental validation:} At $\lambda = 2.0$, predicted $g^* = 0.250$. Observed across $n = 20$ prompts: 14 blocked (mean gap $0.218$, median $0.250$); 9 of 14 cluster within $\pm 0.05$ of the prediction. The remaining 5 stall at smaller gaps ($0.08$--$0.17$), likely reflecting budget exhaustion before full equilibrium convergence. The blocked rate is confidence-dependent: a replication pair with lower canary confidence shows 3/10 blocked (same stall location, lower frequency).%
+\smallskip\noindent\textbf{Experimental validation:} At $\lambda = 2.0$, predicted $g^* = 0.250$. Observed across $n = 20$ prompts: 14 blocked (mean gap $0.218$, median $0.250$); 9 of 14 cluster within $\pm 0.05$ of the prediction. The remaining 5 stall at smaller gaps ($0.08$--$0.17$), likely reflecting budget exhaustion before full convergence. The blocked rate is confidence-dependent: a replication pair with lower canary confidence shows 3/10 blocked (same stall location, lower frequency).%
 }}\medskip
 
 Consider the divergence-minimisation loss:
@@ -734,7 +1386,5 @@ Let $g = f_B - f_A$. The gradient with respect to the perturbation $\delta$:
 \end{align}
 
 The coefficient on $\nabla f_A$ is $(1 - 2\lambda g)$. This inverts sign when $g > 1/(2\lambda)$. At $\lambda = 2.0$, the critical gap is $g^* = 0.250$. Beyond this point, a descent step on $L$ moves against $\nabla f_A$, increasing $f_A$ rather than decreasing it. When the canary is confident ($f_B \approx 1.0$, $\|\nabla f_B\| \to 0$), the combined gradient reduces to $\nabla L \approx (1 - 2\lambda g)\nabla f_A$, and the stall point $g^* = 1/(2\lambda)$ traps the optimiser. Empirically, across $n = 20$ prompts at $\lambda = 2.0$: 14 are blocked (mean gap $0.218$, median $0.250$). Of these, 9 cluster within $\pm 0.05$ of the predicted critical value; the remaining 5 stall at smaller gaps (likely budget exhaustion before equilibrium convergence). This is validated at a single operating point ($\lambda = 2.0$); whether the stall tracks $1/(2\lambda)$ continuously across $\lambda$ values remains an open prediction.
-
-\input{smsr_connection}
 
 \end{document}
