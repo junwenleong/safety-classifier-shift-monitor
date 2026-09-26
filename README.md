@@ -146,4 +146,5 @@ shift_detection_monitor/
 
 ## License
 
-Research code. See LICENSE for details.
+Source code: MIT (`LICENSE`). Data, figures and documentation: CC BY 4.0 (`LICENSE-DATA`).
+Preregistrations are frozen, cited records and are not edited. Please cite arXiv:2606.11949.

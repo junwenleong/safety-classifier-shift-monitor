@@ -3,7 +3,7 @@
 [00:04:20] ============================================================
 [00:04:20] 
 --- TOKENIZER FRAGMENTATION ANALYSIS ---
-/Users/user/safety-classifier-shift-monitor/.venv/lib/python3.11/site-packages/transformers/convert_slow_tokenizer.py:561: UserWarning: The sentencepiece tokenizer that you are converting to a fast tokenizer uses the byte fallback option which is not implemented in the fast tokenizers. In practice this means that the fast version of the tokenizer can produce unknown tokens whereas the sentencepiece version would have converted these unknown tokens into a sequence of byte tokens matching the original piece of text.
+~/safety-classifier-shift-monitor/.venv/lib/python3.11/site-packages/transformers/convert_slow_tokenizer.py:561: UserWarning: The sentencepiece tokenizer that you are converting to a fast tokenizer uses the byte fallback option which is not implemented in the fast tokenizers. In practice this means that the fast version of the tokenizer can produce unknown tokens whereas the sentencepiece version would have converted these unknown tokens into a sequence of byte tokens matching the original piece of text.
   warnings.warn(
 [00:04:23]   100 random DeBERTa suffixes (20 tokens each):
 [00:04:23]   LG/DB token ratio: mean=1.73, std=0.16
@@ -31,7 +31,7 @@ huggingface/tokenizers: The current process just got forked, after parallelism h
 To disable this warning, you can either:
 	- Avoid using `tokenizers` before the fork if possible
 	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
-/Users/user/safety-classifier-shift-monitor/.venv/lib/python3.11/site-packages/transformers/generation/configuration_utils.py:818: UserWarning: `return_dict_in_generate` is NOT set to `True`, but `output_hidden_states` is. When `return_dict_in_generate` is not `True`, `output_hidden_states` is ignored.
+~/safety-classifier-shift-monitor/.venv/lib/python3.11/site-packages/transformers/generation/configuration_utils.py:818: UserWarning: `return_dict_in_generate` is NOT set to `True`, but `output_hidden_states` is. When `return_dict_in_generate` is not `True`, `output_hidden_states` is ignored.
   warnings.warn(
 Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.47s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:05<00:06,  3.04s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:12<00:04,  4.68s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  3.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  3.24s/it]
 [00:06:42]     [50/200] flipped so far: 1
@@ -77,7 +77,7 @@ The 'batch_size' attribute of HybridCache is deprecated and will be removed in v
 [00:14:57] 
   Saved: results/track_a_autodan_canary.json
 [00:15:00] CA8 JOINT: True joint GCG (L = 0.5*L_A + 0.5*L_B)
-/Users/user/safety-classifier-shift-monitor/.venv/lib/python3.11/site-packages/transformers/convert_slow_tokenizer.py:561: UserWarning: The sentencepiece tokenizer that you are converting to a fast tokenizer uses the byte fallback option which is not implemented in the fast tokenizers. In practice this means that the fast version of the tokenizer can produce unknown tokens whereas the sentencepiece version would have converted these unknown tokens into a sequence of byte tokens matching the original piece of text.
+~/safety-classifier-shift-monitor/.venv/lib/python3.11/site-packages/transformers/convert_slow_tokenizer.py:561: UserWarning: The sentencepiece tokenizer that you are converting to a fast tokenizer uses the byte fallback option which is not implemented in the fast tokenizers. In practice this means that the fast version of the tokenizer can produce unknown tokens whereas the sentencepiece version would have converted these unknown tokens into a sequence of byte tokens matching the original piece of text.
   warnings.warn(
 [00:15:00] Model A: checkpoints/deberta-epoch-sweep/run/checkpoint-1000
 [00:15:00] Model B: checkpoints/deberta-epoch-sweep/run/checkpoint-5000
@@ -115,7 +115,7 @@ Comparison (single-target λ=0, same steps/search):
 [02:10:01]   → Joint optimization HELPS attacker (+4 more)
 [02:10:01] Saved: results/ca8_joint_gcg_proper.json
 [02:10:03] CA8 JOINT EXTENDED: 200 steps, 512 search (budget comparison)
-/Users/user/safety-classifier-shift-monitor/.venv/lib/python3.11/site-packages/transformers/convert_slow_tokenizer.py:561: UserWarning: The sentencepiece tokenizer that you are converting to a fast tokenizer uses the byte fallback option which is not implemented in the fast tokenizers. In practice this means that the fast version of the tokenizer can produce unknown tokens whereas the sentencepiece version would have converted these unknown tokens into a sequence of byte tokens matching the original piece of text.
+~/safety-classifier-shift-monitor/.venv/lib/python3.11/site-packages/transformers/convert_slow_tokenizer.py:561: UserWarning: The sentencepiece tokenizer that you are converting to a fast tokenizer uses the byte fallback option which is not implemented in the fast tokenizers. In practice this means that the fast version of the tokenizer can produce unknown tokens whereas the sentencepiece version would have converted these unknown tokens into a sequence of byte tokens matching the original piece of text.
   warnings.warn(
 [02:10:04] Model A: checkpoints/deberta-epoch-sweep/run/checkpoint-1000
 [02:10:04] Model B: checkpoints/deberta-epoch-sweep/run/checkpoint-5000
