@@ -193,7 +193,7 @@ def main():
     print(f"\n{'='*60}")
     print("CLASSIFICATION SUMMARY")
     print(f"{'='*60}")
-    for model in ["gpt-5.4-pro", "gpt-5.5", "vertex_ai.claude-opus-4-1"]:
+    for model in ["gpt-5.4-pro", "gpt-5.5", "claude-opus-4-1"]:
         data = results.get(model, {})
         scores = data.get("scores", [])
         if not scores:

@@ -1477,8 +1477,8 @@
       }
     ]
   },
-  "vertex_ai.claude-opus-4-1": {
-    "model_used": "vertex_ai.claude-opus-4-1",
+  "claude-opus-4-1": {
+    "model_used": "claude-opus-4-1",
     "scores": [
       {
         "type": "gcg",
