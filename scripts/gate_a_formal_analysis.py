@@ -1,6 +1,6 @@
 """Gate A — Formal statistical analysis of cross-architecture divergence.
 
-Tests from FOLLOW_UP_EXPERIMENTS.md §A.2:
+Tests (cross-architecture divergence, Gate A):
   1. Wilson CI on cross-arch divergence detection rate
   2. One-sample t-test + bootstrap CI on Llama Guard delta
   3. Binomial test on direction (toward_unsafe vs toward_safe)

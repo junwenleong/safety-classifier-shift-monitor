@@ -476,8 +476,8 @@ def verify_v2():
     # NOTE: results/gate_b_martingale.json only holds the aggregate scan_w50
     # FAR as a display string ("0/200 = 0.0%") from the initial single-classifier
     # gate run; it does not have a per-classifier breakdown. The actual AV2
-    # cross-classifier FAR uniformity check (which the paper and
-    # FOLLOW_UP_EXPERIMENTS.md §B.2b report as "FAR<=1% across all 4
+    # cross-classifier FAR uniformity check (which the paper reports
+    # as "FAR<=1% across all 4
     # classifiers") lives in results/track_b_full_eval.json under the "av2" key.
     av2_path = Path("results/track_b_full_eval.json")
     if av2_path.exists():

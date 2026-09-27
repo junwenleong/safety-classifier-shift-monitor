@@ -18,7 +18,7 @@ All three provide anytime-valid Type I error control:
 under the assumption that the stream scores are exchangeable with the reference
 (i.e., drawn from the same distribution). The conformal p-values are valid
 under exchangeability; if the stream is non-exchangeable (even benignly),
-the guarantee degrades (see AV5 in FOLLOW_UP_EXPERIMENTS.md).
+the guarantee degrades (see the exchangeability analysis, AV5).
 
 References:
   - Vovk, V. (2021). Testing randomness online. Statistical Science.
