@@ -343,10 +343,54 @@ def main():
     else:
         print("  ⚠ Ramp sweep results not found, skipping")
 
+    # ========================================================================
+    # v5 AUDIT (post-hoc, EXPLORATORY): extended token sweep + no-shift control
+    # ========================================================================
+    print("\n" + "=" * 70)
+    print("[v5 Audit — Extended Token Sweep (o3, EXPLORATORY)]")
+    sweep_ext = Path("results/token_sweep_o3_extended.json")
+    refit_merged = Path("results/token_sigmoid_refit_merged.json")
+    if sweep_ext.exists():
+        se = json.load(open(sweep_ext))
+        # adversarial valid rates at key budgets (n=20/class, 0 errors expected)
+        b = se["budgets"]
+        check("Ext sweep adv valid rate @100", 0.45, b["100"]["adv_summary"]["valid_rate"], tol=0.001)
+        check("Ext sweep adv valid rate @150", 0.85, b["150"]["adv_summary"]["valid_rate"], tol=0.001)
+        check("Ext sweep adv valid rate @200", 1.00, b["200"]["adv_summary"]["valid_rate"], tol=0.001)
+        # zero API errors across all budgets
+        n_err = sum(b[k]["adv_summary"]["n_error"] + b[k]["benign_summary"]["n_error"] for k in b)
+        check("Ext sweep total API errors", 0, n_err, tol=0)
+    else:
+        print("  ⚠ Extended token sweep not found, skipping")
+    if refit_merged.exists():
+        rm = json.load(open(refit_merged))
+        check("Merged benign T50", 46.4, rm["benign"]["t50"], tol=1.0)
+        check("Merged adversarial T50", 117.3, rm["adversarial"]["t50"], tol=3.0)
+        check("Merged adversarial k", 0.047, rm["adversarial"]["k"], tol=0.005)
+        check("Merged adversarial R^2", 0.977, rm["adversarial"]["r2"], tol=0.02)
+        check("Merged adv/benign T50 ratio", 2.53, rm["t50_ratio_adv_over_benign"], tol=0.1)
+    else:
+        print("  ⚠ Merged sigmoid refit not found, skipping")
 
-# =============================================================================
-# v2 ADDITIONS — Canary, Martingale, LLM Canary
-# =============================================================================
+    print("\n[v5 Audit — No-Shift DRE Control (EXPLORATORY)]")
+    noshift = Path("results/noshift_dre_control.json")
+    if noshift.exists():
+        ns = json.load(open(noshift))
+        tm = ns["classifiers"]["text-moderation"]["summary"]
+        # Text-Moderation reproduces collapse under NO shift: high train acc,
+        # chance held-out AUC, ESS < n_cal, weights at floor.
+        check("No-shift TextMod native train acc", 0.941, tm["native"]["train_accuracy"]["mean"], tol=0.03)
+        check("No-shift TextMod native held-out AUC (chance)", 0.528, tm["native"]["heldout_auc"]["mean"], tol=0.05)
+        check("No-shift TextMod native ESS < 300", 146.9, tm["native"]["ess"]["mean"], tol=25.0)
+        # PCA raises ESS towards uniformity even with no shift (recovery is an artefact)
+        check("No-shift TextMod PCA-8 ESS raised", 276.6, tm["pca"]["8"]["ess"]["mean"], tol=25.0)
+        # Base DeBERTa checkpoint does NOT collapse under no shift
+        db = ns["classifiers"]["deberta"]["summary"]
+        check("No-shift DeBERTa(base) native ESS ~ n_cal", 289.1, db["native"]["ess"]["mean"], tol=15.0)
+    else:
+        print("  ⚠ No-shift DRE control not found, skipping")
+
+
 
 def check_bool(label, condition):
     global PASS, FAIL
