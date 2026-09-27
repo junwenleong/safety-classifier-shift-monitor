@@ -347,7 +347,7 @@ The factorial design, including all hyperparameters, was committed before execut
 
 The original pre-registration specifies a 3{,}600-cell factorial (4 classifiers $\times$ 5 shifts $\times$ 3 regimes $\times$ 3 windows $\times$ 20 seeds) with MMD+KS detection. The executed primary evaluation is a reduced grid: 800 cells (Regime A only, 2 windows, KS only). Key reductions from the original plan: (i)~$w{=}500$ dropped (insufficient post-shift observations with 300 shifted examples); (ii)~Regime B reduced to 2 classifiers $\times$ 5 seeds; (iii)~Regime C treated as proof-of-concept (22 examples); (iv)~MMD evaluated post-factorial on a subset rather than crossed factorially. Seeds (20), significance level ($\alpha{=}0.05$), calibration percentile (97), and reference size (500) match the pre-registration exactly. The classifier roster was updated from the original (gpt-oss-safeguard $\to$ Text-Moderation) due to API availability.
 
-\paragraph{v5 experiment deviations.} The v5 pre-registration (commit \texttt{54ce28c}) specifies six experiments. Deviations from the registered protocols:
+\paragraph{v5 experiment deviations.} The v5 pre-registration (commit \texttt{b3165a6}) specifies six experiments. Deviations from the registered protocols:
 \begin{itemize}
 \item \textbf{Experiment 1 (lambda sweep):} Pre-registered at $n{=}100$ per $\lambda$; executed at $n{=}20$ (primary pair only). Replication pair and budget-sensitivity arms deferred due to GCG compute cost (${\sim}$8 hours per $\lambda$ on Apple Silicon).
 \item \textbf{Experiment 2 (sub-threshold):} Pre-registered at 500 null streams $\times$ 100 shifted streams; executed at 50 null $\times$ 20 shifted per mixing rate (DeBERTa only). Llama Guard arm deferred (Mac Studio scheduling).
