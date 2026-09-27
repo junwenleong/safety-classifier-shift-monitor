@@ -23,7 +23,7 @@ reproduce:
 	@echo "1. Sub-threshold detection (Table subthreshold)..."
 	.venv/bin/python scripts/exp_subthreshold_detection.py --quick
 	@echo ""
-	@echo "2. Paper number verification (101 assertions)..."
+	@echo "2. Paper number verification (115 assertions)..."
 	.venv/bin/python scripts/verify_paper_numbers.py
 	@echo ""
 	@echo "=== All reproduced successfully ==="
