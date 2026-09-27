@@ -1,6 +1,6 @@
 # Technical Report: Online Shift Detection and Conformal Adaptation for Deployed Safety Classifiers
 
-> **⚠️ This document describes v1 results only.** The arXiv v2 paper (paper/latex/paper.pdf) supersedes this with: canary detection at n=49, adversarial robustness characterisation, scan martingale, LLM canary evaluation, and monitorability falsification.
+> **⚠️ This document describes v1 results only.** The arXiv v4 paper (paper/latex/paper.tex) supersedes this with: canary detection at n=49, adversarial robustness characterisation, scan martingale, LLM canary evaluation, rotating canaries, and monitorability falsification.
 
 **Author:** Anonymous Author(s)  
 **Date:** June 2026  

@@ -11,7 +11,7 @@
 \section{Certified Robustness via Randomized Smoothing (Exploratory)}
 \label{sec:smsr-connection}
 
-\paragraph{Scope and status.} This appendix presents a preliminary certified-robustness extension using a different model (RoBERTa-base, $n{=}10$ prompts) than the main paper's classifiers. It is included as a theoretical complement to the empirical equilibrium (\S\ref{sec:divergence-min}), not as a validated component of the monitoring system. The $\sigma/2$ union-bound correction is conservative (loose); the certified radius applies to $L_2$-bounded embedding-space perturbations, not to discrete token-level attacks. Integration on the primary DeBERTa classifiers at adequate scale is deferred to future work.
+\paragraph{Scope and status.} This appendix presents a preliminary certified-robustness extension using a different model (RoBERTa-base, $n{=}10$ prompts) than the main paper's classifiers. It is included as a theoretical complement to the empirical equilibrium (\S\ref{sec:divergence-min}), not as a validated component of the monitoring system. The certified radius applies to $L_2$-bounded embedding-space perturbations, not to discrete token-level attacks. Integration on the primary DeBERTa classifiers at adequate scale is deferred to future work.
 
 \medskip
 
@@ -122,35 +122,35 @@ where $\bar{f}_A$ is the analogously smoothed target classifier score.
 
 \begin{corollary}[Certified robustness of canary detection under SMSR]
 \label{cor:smsr-certified}
-Let $\bar{f}_B(x) = p_B$ be the smoothed canary score at input $x$, and let $\bar{f}_A(x) = p_A$ be the smoothed target score. Under the SMSR threat model ($L_2$-bounded perturbations of radius $r$ in embedding space), the detection event $D(x) = 1$ is certifiably maintained for all $\|\eta\|_2 \leq r^*$, where:
+Define the composite detection indicator $c(z) := \mathbb{1}[f_B(z) > \tau + f_A(z)]$, and let
+$\bar{c}(x) := \Pr_{\varepsilon \sim \mathcal{N}(0, \sigma^2 I_d)}[c(\phi(x) + \varepsilon) = 1]$
+denote its smoothed probability. If $\bar{c}(x) = p > 1/2$, the detection event $D(x) = 1$ is
+certifiably maintained for all $\|\eta\|_2 \leq r^*$, where:
 \[
-r^* = \frac{\sigma}{2}\left(\Phi^{-1}(p_B) - \Phi^{-1}(\tau + p_A)\right)
+r^* = \sigma \cdot \Phi^{-1}(p)
 \]
-with $\Phi^{-1}$ the standard normal quantile function and $\sigma$ the smoothing noise level. This bound holds with probability $\geq 1 - \delta$ over the randomness of the smoothing procedure, where $\delta$ is the Monte Carlo estimation error from $N$ noise samples (controlled via Clopper--Pearson confidence intervals on $p_B$ and $p_A$).
+with $\Phi^{-1}$ the standard normal quantile function and $\sigma$ the smoothing noise level. This
+bound holds with probability $\geq 1 - \delta$ when $p$ is replaced by its Clopper--Pearson lower
+bound from $N$ Monte Carlo noise samples.
 \end{corollary}
 
 \begin{proof}
-The proof follows the structure of \citet{cohen2019certified}. Define the binary classifier $c(z) = \mathbb{1}[f_B(z) > \tau + f_A(z)]$. Its smoothed version is $\bar{c}(x) = \Pr_{\varepsilon}[c(\phi(x) + \varepsilon) = 1]$. By the Neyman--Pearson lemma applied to Gaussian noise (the core argument of randomized smoothing), if $\bar{c}(x) = p > 1/2$, then $\bar{c}$ is certifiably robust at $x$ within radius:
-\[
-r = \sigma \cdot \Phi^{-1}(p)
-\]
-For the detection event, $p = \Pr_\varepsilon[f_B(\phi(x)+\varepsilon) - f_A(\phi(x)+\varepsilon) > \tau]$. Under the conservative bound where the adversary can shift $p_B$ down and $p_A$ up independently (worst case), the certified radius is:
-\[
-r^* = \frac{\sigma}{2}\left(\Phi^{-1}(p_B) - \Phi^{-1}(\tau + p_A)\right)
-\]
-The factor of $1/2$ arises from the joint perturbation affecting both $f_B$ and $f_A$ simultaneously (a union-bound-style correction; tighter analysis via the gap distribution is possible but omitted for clarity). The probability guarantee comes from the Monte Carlo estimation of $p_B$ and $p_A$ via $N$ noise samples with Clopper--Pearson confidence bounds.
+Direct application of \citet{cohen2019certified} to the hard classifier $c(z) = \mathbb{1}[f_B(z) > \tau + f_A(z)]$:
+by the Neyman--Pearson lemma applied to Gaussian noise, if the smoothed probability
+$\bar{c}(x) = p > 1/2$, then $\bar{c}$ is certifiably robust at $x$ within radius $r = \sigma \cdot \Phi^{-1}(p)$.
+The probability guarantee comes from the Monte Carlo estimation of $p$ via $N$ noise samples with a
+Clopper--Pearson confidence bound.
 \end{proof}
 
 \paragraph{Connection to Proposition~1.} Proposition~1 guarantees that the gap $g = f_B - f_A$ cannot be driven below $1/(2\lambda)$ when the canary is confident. Corollary~\ref{cor:smsr-certified} strengthens this: not only does the gap stall, but there exists a certifiable $L_2$ radius within which the detection decision \emph{provably cannot flip}, even under perturbations not considered by the original discrete-token GCG analysis. The radius scales with:
 \begin{itemize}
 \item $\sigma$ (smoothing noise): larger noise $\Rightarrow$ larger radius, at cost of detection accuracy;
-\item $p_B$ (canary detection probability under smoothing): higher $\Rightarrow$ larger radius;
-\item $\tau + p_A$ (detection threshold plus residual target score): lower $\Rightarrow$ larger radius.
+\item $p$ (the smoothed composite detection probability, i.e. how reliably $f_B$ exceeds $f_A + \tau$ under noise): higher $\Rightarrow$ larger radius.
 \end{itemize}
 
 \subsection{Certified Robustness Radius Formula}
 
-Combining Proposition~1 with Corollary~\ref{cor:smsr-certified}, we obtain the operational formula. Given:
+Corollary~\ref{cor:smsr-certified}'s radius is estimated in practice via Monte Carlo sampling of the composite indicator $c(z)$, using a Clopper--Pearson lower bound in place of the exact probability $p$. Given:
 \begin{itemize}
 \item Smoothing noise $\sigma > 0$
 \item $N$ Monte Carlo samples from $\mathcal{N}(0, \sigma^2 I_d)$ at the canary's embedding
@@ -201,7 +201,7 @@ In practice, the certified radius is finite because:
 The certified radius from Corollary~\ref{cor:smsr-certified} is a \emph{conservative lower bound} on the actual robustness. In practice:
 \begin{itemize}
 \item Proposition~1's equilibrium (gap stalls at $1/(2\lambda)$) holds for 70\% of prompts in our evaluation ($n=20$). The 30\% where it does not hold are cases where the canary was not confident (see confidence-gating in \S\ref{sec:transfer}).
-\item The $\sigma/2$ factor in the certified radius is a pessimistic union-bound correction; tighter analysis of the joint gap distribution would yield larger radii.
+\item The reported radius uses a Clopper--Pearson lower bound $\underline{p}$ on the composite detection probability rather than its true value; this substitution is itself the source of the bound's conservatism.
 \item Real GCG attacks are constrained to discrete token substitutions, which map to a strict subset of the $L_2$ ball in embedding space. The certified radius therefore over-covers the actual threat.
 \end{itemize}
 

@@ -2,7 +2,7 @@
 
 ## Summary
 
-Reasoning models deployed as safety monitors suffer **reasoning-token budget starvation**: adversarial inputs require 3.3x more reasoning tokens than benign inputs to produce valid safety scores (T50_adv=154 vs T50_benign=46 for o3), so standard low-budget deployments silently starve the monitor on exactly the inputs it must catch. This compounds the central threat we characterize: gradient-based evasion remains the residual threat class against deployed safety classifiers, and score-disagreement monitoring detects it with a formally characterized confidence-gated security boundary (gap=1/(2*lambda)=0.250, validated within 95% CI).
+Reasoning models deployed as safety monitors suffer **reasoning-token budget starvation**: adversarial inputs require 2.5x more reasoning tokens than benign inputs to produce valid safety scores (T50_adv=117 vs T50_benign=46 for o3), so standard low-budget deployments silently starve the monitor on exactly the inputs it must catch. This compounds the central threat we characterize: gradient-based evasion remains the residual threat class against deployed safety classifiers, and score-disagreement monitoring detects it with a formally characterized confidence-gated security boundary (gap=1/(2*lambda)=0.250, validated within 95% CI).
 
 An online monitoring system detects distributional shift in deployed safety classifiers with 86.6% detection rate across 800 pre-registered factorial cells (4 classifiers x 5 shift conditions x 20 seeds x 2 window sizes). A calibration-free scan martingale achieves FAR<=1% uniformly across all classifiers with zero per-model calibration. Weighted conformal prediction recovers coverage for discriminative classifiers (+16 pp for DeBERTa) but fails for generative classifiers due to density-ratio collapse in high-dimensional embedding spaces; a PCA diagnostic (projection to <=32 dimensions) breaks the separability and restores coverage (+33pp), confirming a curse-of-dimensionality mechanism.
 
@@ -175,7 +175,7 @@ ESS reduction at dim=32 generalizes to paraphrase shift: Llama Guard ESS=32, Shi
 
 ## Depth Results
 
-**CoT Suffocation phase transition.** Response probability follows a sigmoid: P(response|T_r) = sigma(k*(T_r - T_50)). For o3: T_50(benign)=46 tokens (k=0.173), T_50(adversarial)=154 tokens (k=0.030). The 3.3x gap means standard service configs (max_tokens=16) cause total failure on adversarial inputs while benign queries occasionally succeed. Deploy with T_r >= T_50(hardest class) + 2.2/k for >90% coverage.
+**CoT Suffocation phase transition.** Response probability follows a sigmoid: P(response|T_r) = sigma(k*(T_r - T_50)). For o3: T_50(benign)=46 tokens (k=0.173), T_50(adversarial)=117 tokens (k=0.047), measured on an extended 10-300 token grid. The 2.5x gap means standard service configs (max_tokens=16) cause total failure on adversarial inputs while benign queries occasionally succeed. Deploy with T_r >= T_50(hardest class) + 2.2/k for >90% coverage.
 
 **Temperature sensitivity.** Detection rate varies by <5pp across T in {0, 0.3, 1.0} (5 models x 20 adv + 20 benign, 3 reps per non-zero T). Within-prompt SD at T=1.0: 0.03-0.11. T=0 recommended for reproducibility; temperature does not materially affect detection.
 
@@ -208,6 +208,16 @@ Manual review of samples from each corpus:
 - **Refusal contamination.** 9.4% of paraphrase corpus are LLM refusals (lower than the 14-20% manual estimate). Filtered ablation confirms negligible effect on detection.
 - **FAR asymmetry.** Empirical KS false alarm rates vary 5x across classifiers (Text-Moderation 2.0% vs DeBERTa 9.5%). The scan martingale achieves FAR<=1% uniformly with no per-classifier calibration.
 - **PCA diagnostic validated on temporal + paraphrase.** ESS reduction generalizes but coverage recovery magnitude depends on calibration split.
+
+## Reproducibility Notes
+
+Two results reported in the paper are not currently reproducible from this repository's own committed artifacts.
+
+**Canary detection when the primary classifier is genuinely fooled.** The paper reports that an LLM canary correctly flags 40 of 49 (81.6%) DeBERTa-evading adversarial inputs, using Qwen2.5-14B (open-weight, local inference) as the canary. This repository's case-study script for that scenario (`scripts/run_primary_fooled_case.py`) uses a different, API-based canary model, and its committed results file currently contains no valid canary scores for any of its 49 records (every canary API call in that run failed; the run predates a fix, applied during an audit pass, to the exception handling that had been recording those failures as valid negative results). No script, checkpoint, or result file for a Qwen2.5-14B canary evaluation exists in this repository. The 81.6% figure is reported in the paper; it is not independently reproducible from what is committed here.
+
+**Newer frontier models as canaries.** The paper's post-hoc validation of models released after the primary evaluation reports 42% detection / 41% FPR for one model and 30% detection / 23% FPR for another. This repository's results file (`results/v5_pareto_update.json`) had a completely empty entry for the first model, traced during an audit pass to a model-routing error (the scoring script called an unprefixed model name that the API key's routing rejects; the resulting authorization error was silently recorded as a non-detection). After fixing the routing and re-running live with the same prompts and methodology, the two models currently measure 46.8% detection / 44.7% FPR and 26.1% detection / 24.4% FPR respectively -- in the same qualitative range as the paper (neither model is a strong canary) but not matching the paper's exact point figures. See `FOLLOW_UP_EXPERIMENTS.md` for the dated entries documenting both fixes.
+
+Neither of these results involves the paper's primary 800-cell factorial evaluation, which independently verifies against `scripts/verify_paper_numbers.py`.
 
 ## Verification
 
