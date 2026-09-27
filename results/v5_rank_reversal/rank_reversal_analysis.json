@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-08-16T07:13:30.713052+00:00",
+  "n_models": 3,
+  "n_adversarial": 50,
+  "n_benign": 50,
+  "budget_starved": 16,
+  "budget_adequate": 500,
+  "starved_ranking": [
+    [
+      "o3",
+      0.0
+    ],
+    [
+      "o4-mini",
+      0.0
+    ],
+    [
+      "gemini-2.5-pro",
+      0.0
+    ]
+  ],
+  "adequate_ranking": [
+    [
+      "o3",
+      1.0
+    ],
+    [
+      "o4-mini",
+      1.0
+    ],
+    [
+      "gemini-2.5-pro",
+      1.0
+    ]
+  ],
+  "rank_reversal": false
+}

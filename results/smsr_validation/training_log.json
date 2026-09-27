@@ -1,0 +1,11 @@
+{
+  "model": "roberta-base",
+  "epochs": 3,
+  "batch_size": 16,
+  "lr": 2e-05,
+  "train_size": 78083,
+  "val_size": 8676,
+  "val_accuracy": 0.9732595666205625,
+  "training_time_sec": 6483.2458691596985,
+  "device": "mps"
+}

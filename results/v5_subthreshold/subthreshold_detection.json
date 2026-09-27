@@ -3,15 +3,15 @@
     "calibration": {
       "ks_threshold": 0.28,
       "cusum_params": {
-        "0.25": 2.914479684829712,
-        "0.5": 2.4414538860321047,
-        "0.75": 2.0202560901641844,
-        "1.0": 1.7820759296417235,
-        "1.5": 1.6671778202056884
+        "0.25": 3.22230372428894,
+        "0.5": 2.266724920272827,
+        "0.75": 2.024924421310425,
+        "1.0": 1.8603895664215089,
+        "1.5": 1.6357380390167235
       },
       "ewma_params": {
-        "0.05": 7.969301700592041,
-        "0.1": 9.349527835845947,
+        "0.05": 7.881333827972412,
+        "0.1": 9.721500873565674,
         "0.2": 9.999995708465576
       },
       "scan_threshold": 20.0,
@@ -19,606 +19,606 @@
       "sigma0": 0.08688582644141582
     },
     "far": {
-      "KS_w100": 0.072,
-      "Scan_eps0.3": 0.032,
+      "KS_w100": 0.08,
+      "Scan_eps0.3": 0.04,
       "GrowingCS": 0.0,
-      "CUSUM_k1.5": 0.06,
-      "CUSUM_k0.5": 0.032,
-      "CUSUM_k1.0": 0.106,
-      "EWMA_lam0.05": 0.056,
-      "EWMA_lam0.1": 0.082
+      "CUSUM_k1.5": 0.08,
+      "CUSUM_k0.5": 0.06,
+      "CUSUM_k1.0": 0.06,
+      "EWMA_lam0.05": 0.04,
+      "EWMA_lam0.1": 0.06
     },
     "mixing_rates": {
       "0.04": {
         "KS_w100": {
-          "detection_rate": 0.06,
-          "n_detected": 6,
-          "n_total": 100,
-          "wilson_ci_low": 0.027786123963188192,
-          "wilson_ci_high": 0.1247681544589592,
-          "median_latency": 3015.5,
-          "p90_latency": 3343.0
+          "detection_rate": 0.0,
+          "n_detected": 0,
+          "n_total": 20,
+          "wilson_ci_low": 0.0,
+          "wilson_ci_high": 0.16112515805281938,
+          "median_latency": null,
+          "p90_latency": null
         },
         "Scan_eps0.3": {
-          "detection_rate": 0.08,
-          "n_detected": 8,
-          "n_total": 100,
-          "wilson_ci_low": 0.041093461484380624,
-          "wilson_ci_high": 0.14998107700948735,
-          "median_latency": 10.5,
-          "p90_latency": 17.5
+          "detection_rate": 0.05,
+          "n_detected": 1,
+          "n_total": 20,
+          "wilson_ci_low": 0.008881448800795402,
+          "wilson_ci_high": 0.23613119344674205,
+          "median_latency": 13.0,
+          "p90_latency": null
         },
         "GrowingCS": {
           "detection_rate": 0.0,
           "n_detected": 0,
-          "n_total": 100,
-          "wilson_ci_low": 3.469446951953614e-18,
-          "wilson_ci_high": 0.03699349820698568,
+          "n_total": 20,
+          "wilson_ci_low": 0.0,
+          "wilson_ci_high": 0.16112515805281938,
           "median_latency": null,
           "p90_latency": null
         },
         "CUSUM_k1.5": {
-          "detection_rate": 0.53,
-          "n_detected": 53,
-          "n_total": 100,
-          "wilson_ci_low": 0.4328885697009936,
-          "wilson_ci_high": 0.6248918204065872,
-          "median_latency": 1978.0,
-          "p90_latency": 4216.400000000001
+          "detection_rate": 0.55,
+          "n_detected": 11,
+          "n_total": 20,
+          "wilson_ci_low": 0.34208534245034233,
+          "wilson_ci_high": 0.7418021417443759,
+          "median_latency": 2606.0,
+          "p90_latency": 3408.0
         },
         "CUSUM_k0.5": {
-          "detection_rate": 0.92,
-          "n_detected": 92,
-          "n_total": 100,
-          "wilson_ci_low": 0.8500189229905127,
-          "wilson_ci_high": 0.9589065385156194,
-          "median_latency": 1058.0,
-          "p90_latency": 3313.800000000001
+          "detection_rate": 0.9,
+          "n_detected": 18,
+          "n_total": 20,
+          "wilson_ci_low": 0.6989663547715128,
+          "wilson_ci_high": 0.9721335187862319,
+          "median_latency": 931.0,
+          "p90_latency": 3231.6000000000004
         },
         "CUSUM_k1.0": {
-          "detection_rate": 0.81,
-          "n_detected": 81,
-          "n_total": 100,
-          "wilson_ci_low": 0.7222115462093562,
-          "wilson_ci_high": 0.8748524849023126,
-          "median_latency": 1602.0,
-          "p90_latency": 3702.0
+          "detection_rate": 0.65,
+          "n_detected": 13,
+          "n_total": 20,
+          "wilson_ci_low": 0.43285427668523624,
+          "wilson_ci_high": 0.818808175898918,
+          "median_latency": 1543.0,
+          "p90_latency": 2919.0
         },
         "EWMA_lam0.05": {
-          "detection_rate": 0.88,
-          "n_detected": 88,
-          "n_total": 100,
-          "wilson_ci_low": 0.8018790057328857,
-          "wilson_ci_high": 0.9300059356298052,
-          "median_latency": 1205.0,
-          "p90_latency": 3123.1
+          "detection_rate": 0.9,
+          "n_detected": 18,
+          "n_total": 20,
+          "wilson_ci_low": 0.6989663547715128,
+          "wilson_ci_high": 0.9721335187862319,
+          "median_latency": 916.5,
+          "p90_latency": 2833.4
         },
         "EWMA_lam0.1": {
-          "detection_rate": 0.8,
-          "n_detected": 80,
-          "n_total": 100,
-          "wilson_ci_low": 0.7111708344068411,
-          "wilson_ci_high": 0.8666330666689676,
-          "median_latency": 1576.5,
-          "p90_latency": 3883.8000000000006
+          "detection_rate": 0.75,
+          "n_detected": 15,
+          "n_total": 20,
+          "wilson_ci_low": 0.531299122381256,
+          "wilson_ci_high": 0.8881382985923343,
+          "median_latency": 2078.0,
+          "p90_latency": 3331.6
         }
       },
       "0.06": {
         "KS_w100": {
           "detection_rate": 0.1,
-          "n_detected": 10,
-          "n_total": 100,
-          "wilson_ci_low": 0.0552291370606751,
-          "wilson_ci_high": 0.17436566150491345,
-          "median_latency": 2582.0,
-          "p90_latency": 3609.2
+          "n_detected": 2,
+          "n_total": 20,
+          "wilson_ci_low": 0.027866481213768224,
+          "wilson_ci_high": 0.3010336452284873,
+          "median_latency": 3749.5,
+          "p90_latency": 4164.3
         },
         "Scan_eps0.3": {
-          "detection_rate": 0.02,
-          "n_detected": 2,
-          "n_total": 100,
-          "wilson_ci_low": 0.00550196755016235,
-          "wilson_ci_high": 0.07001179072854388,
-          "median_latency": 32.5,
-          "p90_latency": 48.9
+          "detection_rate": 0.0,
+          "n_detected": 0,
+          "n_total": 20,
+          "wilson_ci_low": 0.0,
+          "wilson_ci_high": 0.16112515805281938,
+          "median_latency": null,
+          "p90_latency": null
         },
         "GrowingCS": {
           "detection_rate": 0.1,
-          "n_detected": 10,
-          "n_total": 100,
-          "wilson_ci_low": 0.0552291370606751,
-          "wilson_ci_high": 0.17436566150491345,
-          "median_latency": 4241.0,
-          "p90_latency": 4422.7
+          "n_detected": 2,
+          "n_total": 20,
+          "wilson_ci_low": 0.027866481213768224,
+          "wilson_ci_high": 0.3010336452284873,
+          "median_latency": 3707.5,
+          "p90_latency": 3811.1
         },
         "CUSUM_k1.5": {
-          "detection_rate": 0.81,
-          "n_detected": 81,
-          "n_total": 100,
-          "wilson_ci_low": 0.7222115462093562,
-          "wilson_ci_high": 0.8748524849023126,
-          "median_latency": 1480.0,
-          "p90_latency": 3662.0
+          "detection_rate": 0.8,
+          "n_detected": 16,
+          "n_total": 20,
+          "wilson_ci_low": 0.5839825677481064,
+          "wilson_ci_high": 0.919342337420202,
+          "median_latency": 1365.5,
+          "p90_latency": 3419.5
         },
         "CUSUM_k0.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 425.0,
-          "p90_latency": 1432.5
+          "median_latency": 360.0,
+          "p90_latency": 847.8000000000003
         },
         "CUSUM_k1.0": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
           "median_latency": 839.5,
-          "p90_latency": 2175.6000000000004
+          "p90_latency": 2803.5000000000005
         },
         "EWMA_lam0.05": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 482.0,
-          "p90_latency": 1788.0000000000007
+          "median_latency": 446.5,
+          "p90_latency": 1452.9000000000003
         },
         "EWMA_lam0.1": {
-          "detection_rate": 0.97,
-          "n_detected": 97,
-          "n_total": 100,
-          "wilson_ci_low": 0.9154806357094724,
-          "wilson_ci_high": 0.9897454759759611,
-          "median_latency": 898.0,
-          "p90_latency": 2462.600000000001
+          "detection_rate": 0.9,
+          "n_detected": 18,
+          "n_total": 20,
+          "wilson_ci_low": 0.6989663547715128,
+          "wilson_ci_high": 0.9721335187862319,
+          "median_latency": 1579.0,
+          "p90_latency": 3165.1000000000004
         }
       },
       "0.08": {
         "KS_w100": {
-          "detection_rate": 0.15,
-          "n_detected": 15,
-          "n_total": 100,
-          "wilson_ci_low": 0.0930598528365663,
-          "wilson_ci_high": 0.23283559590832364,
+          "detection_rate": 0.05,
+          "n_detected": 1,
+          "n_total": 20,
+          "wilson_ci_low": 0.008881448800795402,
+          "wilson_ci_high": 0.23613119344674205,
           "median_latency": 954.0,
-          "p90_latency": 2587.0
+          "p90_latency": null
         },
         "Scan_eps0.3": {
-          "detection_rate": 0.07,
-          "n_detected": 7,
-          "n_total": 100,
-          "wilson_ci_low": 0.03431926106727268,
-          "wilson_ci_high": 0.137495147390735,
-          "median_latency": 7.0,
-          "p90_latency": 21.800000000000008
+          "detection_rate": 0.1,
+          "n_detected": 2,
+          "n_total": 20,
+          "wilson_ci_low": 0.027866481213768224,
+          "wilson_ci_high": 0.3010336452284873,
+          "median_latency": 8.5,
+          "p90_latency": 12.1
         },
         "GrowingCS": {
-          "detection_rate": 0.99,
-          "n_detected": 99,
-          "n_total": 100,
-          "wilson_ci_low": 0.9455138038212946,
-          "wilson_ci_high": 0.9982325679358593,
-          "median_latency": 2989.0,
-          "p90_latency": 3677.0
+          "detection_rate": 1.0,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
+          "wilson_ci_high": 1.0,
+          "median_latency": 2781.5,
+          "p90_latency": 3184.9
         },
         "CUSUM_k1.5": {
-          "detection_rate": 0.93,
-          "n_detected": 93,
-          "n_total": 100,
-          "wilson_ci_low": 0.8625048526092651,
-          "wilson_ci_high": 0.9656807389327273,
-          "median_latency": 1017.0,
-          "p90_latency": 2308.4
+          "detection_rate": 0.95,
+          "n_detected": 19,
+          "n_total": 20,
+          "wilson_ci_low": 0.763868806553258,
+          "wilson_ci_high": 0.9911185511992047,
+          "median_latency": 810.0,
+          "p90_latency": 1559.1999999999996
         },
         "CUSUM_k0.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 231.5,
-          "p90_latency": 647.0000000000002
+          "median_latency": 153.5,
+          "p90_latency": 290.40000000000003
         },
         "CUSUM_k1.0": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 370.5,
-          "p90_latency": 1424.0
+          "median_latency": 564.0,
+          "p90_latency": 1411.4
         },
         "EWMA_lam0.05": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 220.5,
-          "p90_latency": 753.9000000000001
+          "median_latency": 178.5,
+          "p90_latency": 535.5000000000008
         },
         "EWMA_lam0.1": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 592.5,
-          "p90_latency": 1411.4
+          "median_latency": 719.0,
+          "p90_latency": 1562.800000000002
         }
       },
       "0.1": {
         "KS_w100": {
-          "detection_rate": 0.27,
-          "n_detected": 27,
-          "n_total": 100,
-          "wilson_ci_low": 0.1926958414957634,
-          "wilson_ci_high": 0.36432116767944994,
-          "median_latency": 1461.0,
-          "p90_latency": 3166.2000000000003
+          "detection_rate": 0.3,
+          "n_detected": 6,
+          "n_total": 20,
+          "wilson_ci_low": 0.1454772448676043,
+          "wilson_ci_high": 0.5189728183535235,
+          "median_latency": 1756.5,
+          "p90_latency": 2618.0
         },
         "Scan_eps0.3": {
-          "detection_rate": 0.11,
-          "n_detected": 11,
-          "n_total": 100,
-          "wilson_ci_low": 0.06254196357064568,
-          "wilson_ci_high": 0.18631296503080313,
-          "median_latency": 6.0,
-          "p90_latency": 15.0
+          "detection_rate": 0.1,
+          "n_detected": 2,
+          "n_total": 20,
+          "wilson_ci_low": 0.027866481213768224,
+          "wilson_ci_high": 0.3010336452284873,
+          "median_latency": 12.5,
+          "p90_latency": 14.5
         },
         "GrowingCS": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 1836.5,
-          "p90_latency": 2328.0
+          "median_latency": 1793.0,
+          "p90_latency": 2234.2000000000003
         },
         "CUSUM_k1.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 403.0,
-          "p90_latency": 1787.1000000000006
+          "median_latency": 336.0,
+          "p90_latency": 1080.6000000000013
         },
         "CUSUM_k0.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 107.5,
-          "p90_latency": 298.0000000000001
+          "median_latency": 149.5,
+          "p90_latency": 341.1000000000002
         },
         "CUSUM_k1.0": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 207.5,
-          "p90_latency": 694.6000000000001
+          "median_latency": 282.0,
+          "p90_latency": 723.8000000000002
         },
         "EWMA_lam0.05": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 105.5,
-          "p90_latency": 348.50000000000006
+          "median_latency": 134.0,
+          "p90_latency": 354.60000000000036
         },
         "EWMA_lam0.1": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 232.5,
-          "p90_latency": 605.4000000000004
+          "median_latency": 303.5,
+          "p90_latency": 1049.7
         }
       },
       "0.12": {
         "KS_w100": {
-          "detection_rate": 0.46,
-          "n_detected": 46,
-          "n_total": 100,
-          "wilson_ci_low": 0.36560808309024106,
-          "wilson_ci_high": 0.5573513967663177,
-          "median_latency": 1144.0,
-          "p90_latency": 3543.0
+          "detection_rate": 0.55,
+          "n_detected": 11,
+          "n_total": 20,
+          "wilson_ci_low": 0.34208534245034233,
+          "wilson_ci_high": 0.7418021417443759,
+          "median_latency": 1421.0,
+          "p90_latency": 4103.0
         },
         "Scan_eps0.3": {
-          "detection_rate": 0.09,
-          "n_detected": 9,
-          "n_total": 100,
-          "wilson_ci_low": 0.04807254000256516,
-          "wilson_ci_high": 0.1622621285271631,
-          "median_latency": 14.0,
-          "p90_latency": 19.4
+          "detection_rate": 0.05,
+          "n_detected": 1,
+          "n_total": 20,
+          "wilson_ci_low": 0.008881448800795402,
+          "wilson_ci_high": 0.23613119344674205,
+          "median_latency": 10.0,
+          "p90_latency": null
         },
         "GrowingCS": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 1304.5,
-          "p90_latency": 1587.4
+          "median_latency": 1318.5,
+          "p90_latency": 1615.6000000000001
         },
         "CUSUM_k1.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 290.0,
-          "p90_latency": 1112.7
+          "median_latency": 519.0,
+          "p90_latency": 1142.6000000000001
         },
         "CUSUM_k0.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 74.0,
-          "p90_latency": 192.80000000000024
+          "median_latency": 87.5,
+          "p90_latency": 172.80000000000004
         },
         "CUSUM_k1.0": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 112.0,
-          "p90_latency": 386.9000000000003
+          "median_latency": 201.5,
+          "p90_latency": 626.1
         },
         "EWMA_lam0.05": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 82.0,
-          "p90_latency": 237.80000000000015
+          "median_latency": 96.5,
+          "p90_latency": 239.40000000000006
         },
         "EWMA_lam0.1": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 121.5,
-          "p90_latency": 490.20000000000005
+          "median_latency": 284.0,
+          "p90_latency": 679.9000000000002
         }
       },
       "0.15": {
         "KS_w100": {
-          "detection_rate": 0.64,
-          "n_detected": 64,
-          "n_total": 100,
-          "wilson_ci_low": 0.5423540245160874,
-          "wilson_ci_high": 0.7272877959859567,
-          "median_latency": 856.5,
-          "p90_latency": 2395.0
+          "detection_rate": 0.6,
+          "n_detected": 12,
+          "n_total": 20,
+          "wilson_ci_low": 0.3865815007622531,
+          "wilson_ci_high": 0.781193467627183,
+          "median_latency": 549.5,
+          "p90_latency": 1633.1000000000001
         },
         "Scan_eps0.3": {
-          "detection_rate": 0.05,
-          "n_detected": 5,
-          "n_total": 100,
-          "wilson_ci_low": 0.02154367915436796,
-          "wilson_ci_high": 0.11175046923191913,
-          "median_latency": 9.0,
-          "p90_latency": 16.4
+          "detection_rate": 0.0,
+          "n_detected": 0,
+          "n_total": 20,
+          "wilson_ci_low": 0.0,
+          "wilson_ci_high": 0.16112515805281938,
+          "median_latency": null,
+          "p90_latency": null
         },
         "GrowingCS": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 789.0,
-          "p90_latency": 1047.3000000000002
+          "median_latency": 861.5,
+          "p90_latency": 1090.2
         },
         "CUSUM_k1.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 126.5,
-          "p90_latency": 443.3000000000003
+          "median_latency": 117.5,
+          "p90_latency": 551.8000000000002
         },
         "CUSUM_k0.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 48.0,
-          "p90_latency": 113.10000000000001
+          "median_latency": 43.0,
+          "p90_latency": 82.9
         },
         "CUSUM_k1.0": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 61.5,
-          "p90_latency": 170.3
+          "median_latency": 89.0,
+          "p90_latency": 153.1
         },
         "EWMA_lam0.05": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 48.0,
-          "p90_latency": 127.50000000000004
+          "median_latency": 65.0,
+          "p90_latency": 124.30000000000001
         },
         "EWMA_lam0.1": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 67.0,
-          "p90_latency": 185.90000000000015
+          "median_latency": 109.0,
+          "p90_latency": 237.50000000000006
         }
       },
       "0.2": {
         "KS_w100": {
-          "detection_rate": 0.99,
-          "n_detected": 99,
-          "n_total": 100,
-          "wilson_ci_low": 0.9455138038212946,
-          "wilson_ci_high": 0.9982325679358593,
-          "median_latency": 275.0,
-          "p90_latency": 1199.2000000000005
+          "detection_rate": 1.0,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
+          "wilson_ci_high": 1.0,
+          "median_latency": 364.5,
+          "p90_latency": 1356.800000000003
         },
         "Scan_eps0.3": {
-          "detection_rate": 0.12,
-          "n_detected": 12,
-          "n_total": 100,
-          "wilson_ci_low": 0.06999406437019488,
-          "wilson_ci_high": 0.19812099426711421,
-          "median_latency": 8.0,
-          "p90_latency": 12.0
+          "detection_rate": 0.2,
+          "n_detected": 4,
+          "n_total": 20,
+          "wilson_ci_low": 0.08065766257979806,
+          "wilson_ci_high": 0.41601743225189364,
+          "median_latency": 5.5,
+          "p90_latency": 10.5
         },
         "GrowingCS": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 430.5,
-          "p90_latency": 538.5
+          "median_latency": 445.0,
+          "p90_latency": 546.0
         },
         "CUSUM_k1.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 67.5,
-          "p90_latency": 192.80000000000015
+          "median_latency": 38.0,
+          "p90_latency": 178.00000000000017
         },
         "CUSUM_k0.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
           "median_latency": 31.0,
-          "p90_latency": 70.10000000000001
+          "p90_latency": 51.90000000000001
         },
         "CUSUM_k1.0": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 36.5,
-          "p90_latency": 94.40000000000003
+          "median_latency": 33.0,
+          "p90_latency": 82.40000000000002
         },
         "EWMA_lam0.05": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 28.0,
-          "p90_latency": 77.10000000000001
+          "median_latency": 30.5,
+          "p90_latency": 56.400000000000006
         },
         "EWMA_lam0.1": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 37.5,
-          "p90_latency": 106.30000000000003
+          "median_latency": 35.5,
+          "p90_latency": 111.10000000000008
         }
       },
       "0.3": {
         "KS_w100": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 100.0,
-          "p90_latency": 155.0
+          "median_latency": 104.5,
+          "p90_latency": 154.1
         },
         "Scan_eps0.3": {
-          "detection_rate": 0.08,
-          "n_detected": 8,
-          "n_total": 100,
-          "wilson_ci_low": 0.041093461484380624,
-          "wilson_ci_high": 0.14998107700948735,
-          "median_latency": 7.0,
-          "p90_latency": 16.3
+          "detection_rate": 0.15,
+          "n_detected": 3,
+          "n_total": 20,
+          "wilson_ci_low": 0.052368745896216595,
+          "wilson_ci_high": 0.36041886474075696,
+          "median_latency": 8.0,
+          "p90_latency": 14.4
         },
         "GrowingCS": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 199.5,
-          "p90_latency": 272.20000000000005
+          "median_latency": 190.5,
+          "p90_latency": 267.8
         },
         "CUSUM_k1.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 22.5,
-          "p90_latency": 75.40000000000003
+          "median_latency": 23.0,
+          "p90_latency": 91.5
         },
         "CUSUM_k0.5": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 18.0,
-          "p90_latency": 38.10000000000001
+          "median_latency": 16.0,
+          "p90_latency": 41.300000000000004
         },
         "CUSUM_k1.0": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 17.0,
-          "p90_latency": 42.10000000000001
+          "median_latency": 19.0,
+          "p90_latency": 44.10000000000003
         },
         "EWMA_lam0.05": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
           "median_latency": 11.0,
-          "p90_latency": 35.0
+          "p90_latency": 43.10000000000003
         },
         "EWMA_lam0.1": {
           "detection_rate": 1.0,
-          "n_detected": 100,
-          "n_total": 100,
-          "wilson_ci_low": 0.9630065017930143,
+          "n_detected": 20,
+          "n_total": 20,
+          "wilson_ci_low": 0.8388748419471806,
           "wilson_ci_high": 1.0,
-          "median_latency": 16.0,
-          "p90_latency": 57.10000000000001
+          "median_latency": 19.0,
+          "p90_latency": 63.2
         }
       }
     }

@@ -72,3 +72,6 @@ AGENTS.md
 
 # Internal planning / status notes (not for public repo)
 FOLLOW_UP_EXPERIMENTS.md
+
+# Remote-run logs (contain remote host paths)
+results/smsr_validation/*.log

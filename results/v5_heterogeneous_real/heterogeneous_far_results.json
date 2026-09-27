@@ -1,0 +1,56 @@
+{
+  "detectors": {
+    "ks_w100": {
+      "homogeneous_far": 0.043,
+      "heterogeneous_far": 0.234,
+      "recalibrated_far": 0.026,
+      "inflation": 0.191,
+      "recalibration_recovers": true
+    },
+    "cusum_k0.5": {
+      "homogeneous_far": 1.0,
+      "heterogeneous_far": 1.0,
+      "recalibrated_far": 1.0,
+      "inflation": 0.0,
+      "recalibration_recovers": false
+    },
+    "ewma_l0.05": {
+      "homogeneous_far": 0.888,
+      "heterogeneous_far": 0.112,
+      "recalibrated_far": 0.895,
+      "inflation": -0.776,
+      "recalibration_recovers": false
+    }
+  },
+  "source_conditional": {
+    "wildguardmix": {
+      "n": 1971,
+      "mean_score": 0.0065,
+      "std_score": 0.0297,
+      "far": 0.08
+    },
+    "openassistant": {
+      "n": 950,
+      "mean_score": 0.0075,
+      "std_score": 0.0418,
+      "far": 0.99
+    },
+    "code_technical": {
+      "n": 74,
+      "far": null,
+      "note": "too few"
+    },
+    "creative_general": {
+      "n": 282,
+      "mean_score": 0.0296,
+      "std_score": 0.0845,
+      "far": 1.0
+    },
+    "multi_turn": {
+      "n": 491,
+      "mean_score": 0.0041,
+      "std_score": 0.0302,
+      "far": 1.0
+    }
+  }
+}

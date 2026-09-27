@@ -1,0 +1,42 @@
+{
+  "config": {
+    "primary_model": "gpt-4o-mini",
+    "canary_model": "gpt-4.1",
+    "n_benign": 150,
+    "n_adversarial": 30,
+    "n_adversarial_suffix": 20,
+    "total_queries": 200,
+    "total_wall_clock_s": 619.7074014169999
+  },
+  "latency": {
+    "primary_p50_ms": 666.5717294999922,
+    "primary_p95_ms": 1282.016023550002,
+    "canary_p50_ms": 1152.8462500000103,
+    "canary_p95_ms": 1699.550531900024,
+    "total_p50_ms": 1830.6148340000022,
+    "total_p95_ms": 2674.3878628000616
+  },
+  "cost": {
+    "primary_per_1k_usd": 0.01672725,
+    "canary_per_1k_usd": 0.22303,
+    "total_per_1k_usd": 0.23975724999999995,
+    "total_experiment_usd": 0.047951450000000076
+  },
+  "detection": {
+    "detection_rate_adversarial": 0.03333333333333333,
+    "detection_rate_suffix": 0.0,
+    "detection_rate_all_adversarial": 0.02,
+    "false_positive_rate": 0.0,
+    "n_flagged_benign": 0,
+    "n_flagged_adversarial": 1,
+    "n_flagged_suffix": 0
+  },
+  "scores": {
+    "benign_primary_mean": 0.0006666666666666668,
+    "benign_canary_mean": 0.0,
+    "adversarial_primary_mean": 0.81,
+    "adversarial_canary_mean": 0.7839999999999999,
+    "benign_disagreement_mean": 0.0006666666666666668,
+    "adversarial_disagreement_mean": 0.126
+  }
+}
