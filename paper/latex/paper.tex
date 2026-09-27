@@ -22,7 +22,7 @@
 \newtheorem{definition}{Definition}
 \newtheorem{corollary}{Corollary}
 
-\title{Online Shift Detection and Conformal Adaptation for Deployed Safety Classifiers}
+\title{\raggedright\hyphenpenalty=10000\exhyphenpenalty=10000 Online Shift Detection and Conformal\\Adaptation for Deployed Safety Classifiers}
 
 \author{Jun Wen Leong \\
 \texttt{leongjunwen@gmail.com}}
@@ -724,7 +724,7 @@ We do not claim this defence is absolute. A Tier~3 attacker with white-box acces
 \section{Game-Theoretic Framework: Multi-Monitor Ensemble Security}
 \label{sec:game-theory}
 
-The stall condition (Section~\ref{sec:divergence-min}) characterises attacker behaviour against a \emph{single} canary pair. We now generalise to the $K$-monitor setting and derive conditions under which ensemble diversity provides formal security guarantees.
+The stall condition (Section~\ref{sec:divergence-min}) characterises attacker behaviour against a \emph{single} canary pair. We now generalise to the $K$-monitor setting and state the local first-order conditions under which the threshold rule blocks further progress.
 
 \subsection{The Canary Ensemble Game}
 \label{sec:ensemble-game}
@@ -751,20 +751,24 @@ Under the gradient-based formulation (extending Section~\ref{sec:divergence-min}
 \mathcal{L}(\delta, \boldsymbol{\lambda}) = f_\text{target}(x + \delta) + \sum_{i=1}^K \lambda_i \cdot (f_i(x + \delta) - f_\text{target}(x + \delta))^2
 \end{equation}
 
-\begin{proposition}[Multi-Monitor Stall Condition]
+\begin{proposition}[Multi-Monitor Penalised Stationarity]
 \label{prop:multi-stall}
-At a critical point of $\mathcal{L}$, the gradient vanishes when:
+The gradient of $\mathcal{L}$ vanishes if and only if:
 \begin{equation}
 \nabla f_\text{target} = -\sum_{i=1}^K 2\lambda_i (f_i - f_\text{target}) \cdot (\nabla f_i - \nabla f_\text{target})
 \end{equation}
-For the attacker to make progress (reduce $f_\text{target}$), the gradient $\nabla f_\text{target}$ must not be fully expressible as a linear combination of the stealth constraints' gradients $\{\nabla f_i - \nabla f_\text{target}\}_{i=1}^K$. When the canary gradients span the attack direction, the optimisation stalls.
+This identity characterises stationarity of the penalised objective $\mathcal{L}$ for fixed $\boldsymbol{\lambda}$; it requires the specific coefficients shown, not merely that $\nabla f_\text{target}$ lie in the span of the difference gradients $\{\nabla f_i - \nabla f_\text{target}\}_{i=1}^K$. Because $\mathcal{L}$ does not reference the thresholds $\tau_i$, a stationary point of $\mathcal{L}$ is not in general a stall of the constrained problem~(\ref{eq:attacker-opt}): if every gap lies strictly inside its threshold and $\nabla f_\text{target} \neq 0$, a sufficiently small step along $-\nabla f_\text{target}$ reduces the target score without firing the alarm.
 \end{proposition}
 
-\begin{corollary}[Diversity Requirement (Local First-Order Condition)]
-If the $K$ canary gradients $\{\nabla f_i\}_{i=1}^K$ are linearly independent and span the target gradient $\nabla f_\text{target}$, then for sufficiently large $\boldsymbol{\lambda}$, the first-order feasible descent direction has zero projection onto $\nabla f_\text{target}$ at the stationary point. This is a local necessary condition for stall under continuous gradient flow; it does not guarantee global convergence or preclude discrete multi-token escape paths. In our within-family empirical evaluation, joint optimisation still succeeds 55\% of the time (\S\ref{sec:joint-gcg}), indicating that the stated conditions (linear independence, sufficient $\lambda$) are not satisfied by same-family checkpoints.
+\begin{corollary}[Threshold-Constrained First-Order Condition]
+At a feasible point of the continuous relaxation of~(\ref{eq:attacker-opt}), write $g_i = f_i - f_\text{target}$ and let $A = \{(i,s) : i \in [K],\ s \in \{-1,1\},\ s\,g_i = \tau_i\}$ index the active signed threshold constraints. If there exist $\mu_{i,s} \geq 0$ such that
+\begin{equation}
+\nabla f_\text{target} = -\sum_{(i,s) \in A} \mu_{i,s}\, s\, \nabla g_i ,
+\end{equation}
+then every direction $v$ satisfying the linearised constraints $s\,\nabla g_i \cdot v \leq 0$ for all $(i,s) \in A$ obeys $\nabla f_\text{target} \cdot v \geq 0$, so no first-order feasible descent direction exists at that point. The condition is stated in terms of the difference gradients $\nabla g_i$ and requires at least one active constraint; raw-gradient independence of the canaries $\{\nabla f_i\}$ neither implies nor is implied by it. This is a local first-order statement; it does not guarantee global convergence or preclude discrete multi-token escape paths. In our within-family empirical evaluation, joint optimisation still succeeds 55\% of the time (\S\ref{sec:joint-gcg}); that result does not establish whether this condition holds at the points the optimiser visits.
 \end{corollary}
 
-\paragraph{Practical implication.} The corollary states that gradient diversity among canaries, not just disagreement in scores, is the mechanism that creates security. Canaries from the same architecture family share gradient directions (empirically confirmed in Section~\ref{sec:transfer}: within-family passive transfer achieves 76.5\% success conditional on low canary confidence $f_B < 0.99$, and 55\% under joint optimisation). Cross-architecture canaries are more likely to provide the linear independence needed for the stall condition to bind.
+\paragraph{Practical implication.} Score disagreement alone does not produce a stall. The corollary gives a sufficient local condition: the attacker is blocked to first order where some gaps sit at their thresholds and the target gradient lies in the cone spanned by the corresponding signed difference gradients. Within-family canaries offer limited protection in practice: passive transfer achieves 76.5\% success conditional on low canary confidence $f_B < 0.99$ (Section~\ref{sec:transfer}), and joint optimisation achieves 55\% (\S\ref{sec:joint-gcg}). Cross-architecture canaries may present different gradient geometry, but these results do not establish a formal security advantage for them.
 
 \subsection{Scaling Law for Ensemble Detection}
 \label{sec:scaling-law}
