@@ -12,3 +12,8 @@ repos:
         entry: ai-doctor
         language: system
         pass_filenames: false
+      - id: public-guard
+        name: public-guard (block internal identifiers in this public repo)
+        entry: public-guard
+        language: system
+        pass_filenames: false
