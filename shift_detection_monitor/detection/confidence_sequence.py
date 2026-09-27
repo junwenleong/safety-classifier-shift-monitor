@@ -167,11 +167,29 @@ class ConfidenceSequenceEngine:
         elif self._tail_bound == "sub_exponential":
             self._update_sub_exponential(statistic)
 
-        # Determine alarm status
-        ref_excluded = (
-            self._reference_value < self._lower
-            or self._reference_value > self._upper
-        )
+        # Determine alarm status.
+        #
+        # For growing-mode bounded CS, the alarm is based DIRECTLY on the
+        # wealth threshold (log_wealth >= log(1/alpha)), which is the
+        # quantity Ville's inequality actually gives a time-uniform
+        # guarantee for. This was previously determined via
+        # `reference_value not in [self._lower, self._upper]`, but
+        # `_compute_bounds_from_wealth()` does not actually invert the
+        # wealth process into those bounds (see its docstring/history) --
+        # it returns the same per-step Hoeffding-type half-width regardless
+        # of wealth, in both growing and sliding mode. Checking the wealth
+        # threshold directly (as PointMartingale/CUSUMMartingale/
+        # ScanMartingale in conformal_martingale.py already do) is the
+        # correct, minimal fix: it uses the one quantity that is actually
+        # proven time-uniform, instead of a bounds-inversion step that was
+        # never implemented.
+        if self._window_mode == "growing" and self._tail_bound == "bounded":
+            ref_excluded = self._log_wealth >= math.log(1.0 / self._alpha)
+        else:
+            ref_excluded = (
+                self._reference_value < self._lower
+                or self._reference_value > self._upper
+            )
 
         # Warmup suppression: no alarm before min_warmup_steps
         if self._time_step < self._min_warmup_steps:
@@ -239,8 +257,14 @@ class ConfidenceSequenceEngine:
         max_negative_bet = -1.0 / (b - mu0 + self._ons_epsilon)
         lam = max(max_negative_bet, min(max_positive_bet, lam))
 
-        # Scale down bet to avoid extreme wealth swings
-        # Use a conservative fraction of the maximum bet
+        # Scale down bet to avoid extreme wealth swings.
+        # This is a fixed "half-Kelly"-style damping: betting at a constant
+        # fraction of the theoretically-optimal (undamped) bet trades a
+        # constant multiplicative factor of statistical power for reduced
+        # variance in the wealth process, so a single extreme observation
+        # cannot swing W_t as violently. The 0.5 factor is a conservative
+        # engineering default, not derived from a target FAR/power
+        # trade-off, and has not been swept or ablated.
         lam *= 0.5
 
         # Update log-wealth
@@ -317,6 +341,8 @@ class ConfidenceSequenceEngine:
         max_positive_bet = 1.0 / (mu0 - a + self._ons_epsilon)
         max_negative_bet = -1.0 / (b - mu0 + self._ons_epsilon)
         lam = max(max_negative_bet, min(max_positive_bet, lam))
+        # Same conservative half-Kelly-style damping as growing-window mode
+        # (see the comment in _update_bounded_growing for the rationale).
         lam *= 0.5
 
         # Update log-wealth
@@ -331,15 +357,27 @@ class ConfidenceSequenceEngine:
 
     def _compute_bounds_from_wealth(self, n: int, mean_t: float) -> None:
         """
-        Compute confidence bounds from the wealth process.
+        Compute Hoeffding-type confidence bounds for DIAGNOSTIC/display purposes.
 
-        The confidence set is C_t = {μ : W_t(μ) < 1/α}. For the ONS strategy,
-        we approximate this by inverting the wealth threshold around the
-        running mean. The half-width is derived from the log-wealth:
+        ** KNOWN LIMITATION (confirmed during audit): ** despite the name and
+        the comments below, this method does NOT invert the betting wealth
+        process into these bounds -- `half_width` is set to the plain
+        per-step Hoeffding half-width regardless of `self._log_wealth`. The
+        growing-mode ALARM decision no longer depends on this method's
+        output (see `update()`, which checks the wealth threshold directly,
+        the quantity that is actually proven time-uniform by Ville's
+        inequality). `self._lower`/`self._upper` as computed here remain
+        informative for sliding mode (where they ARE the alarm criterion,
+        honestly documented as non-time-uniform) and as a display-only
+        interval in growing mode, but should not be read as a wealth-tightened
+        confidence set in growing mode. A genuine wealth-to-interval
+        inversion (solving for the boundary of {mu : W_t(mu) < 1/alpha})
+        would be a separate, non-trivial numerical procedure and has not
+        been implemented.
 
-            half_width = sqrt(2 * log(1/α) / n) * (b - a) / 2
+        The half-width formula used:
 
-        scaled by the wealth ratio to tighten as evidence accumulates.
+            half_width = sqrt(2 * log(1/alpha) / n) * (b - a) / 2
         """
         a = self._lower_bound
         b = self._upper_bound
@@ -350,17 +388,11 @@ class ConfidenceSequenceEngine:
             self._upper = b
             return
 
-        # Base half-width from Hoeffding-type bound
-        # This gives a valid (conservative) CS for bounded random variables
+        # Hoeffding-type bound (valid per-window / per-step, not time-uniform
+        # on its own -- see the growing-mode alarm logic in update(), which
+        # does not rely on this for the actual guarantee).
         log_inv_alpha = math.log(1.0 / self._alpha)
-        base_half_width = range_size * math.sqrt(log_inv_alpha / (2.0 * n))
-
-        # Tighten using wealth information: if wealth is high (evidence against
-        # the null), the bounds should be tighter around the empirical mean.
-        # If wealth is low, bounds stay wide.
-        # We use: half_width = max(base_half_width, range/(2*sqrt(n)))
-        # but also ensure bounds stay within [a, b].
-        half_width = base_half_width
+        half_width = range_size * math.sqrt(log_inv_alpha / (2.0 * n))
 
         self._lower = max(a, mean_t - half_width)
         self._upper = min(b, mean_t + half_width)

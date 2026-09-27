@@ -101,7 +101,17 @@ def read_results(path: Path) -> list[CellResult]:
                 continue
             try:
                 results.append(parse_result(stripped))
-            except (ValueError, Exception) as exc:
+            except ValueError as exc:
+                # parse_result only ever raises ValueError (it wraps both
+                # JSONDecodeError and CellResult validation failures into
+                # ValueError) -- catching bare Exception here as well was
+                # redundant and would silently relabel *any* programming
+                # error as "malformed line", potentially masking real bugs.
+                # Confirmed during audit (2026-09-27): the committed
+                # results/factorial_results.jsonl (the primary 800-cell
+                # evaluation) has 0 malformed lines, so this defect has not
+                # actually dropped any factorial data -- but it is fixed
+                # here defensively rather than left as latent risk.
                 logger.warning(
                     "Skipping malformed line %d: %s", line_number, exc
                 )

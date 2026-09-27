@@ -5,7 +5,7 @@ Uses the same 49 adversarial + 49 clean + 49 scrambled prompts from the
 existing LLM canary evaluation. Scores each prompt, computes detection
 rate and FPR with Wilson CIs.
 
-New models: gpt-5.5, claude-sonnet-5 (claude-sonnet-5), gemini-3.6-flash, o4-mini
+New models: gpt-5.5, claude-sonnet-5, gemini-3.6-flash, o4-mini
 """
 import json
 import os
@@ -17,7 +17,28 @@ from scipy.stats import norm
 API_BASE = os.environ["FRONTIER_API_BASE"]
 API_KEY = os.environ["FRONTIER_API_KEY"]
 
-NEW_MODELS = ["gpt-5.5", "claude-sonnet-5", "gemini-3.6-flash", "o4-mini"]
+NEW_MODELS = ["gpt-5.5", "claude-sonnet-5", "gemini-3.6-flash", "o4-mini", "gemini-3.7-flash"]
+
+# Some Frontier API keys only permit routed/prefixed names for certain
+# providers; the bare model name can get HTTP 403 ("key not allowed to
+# access model") and every call then silently returns None (see
+# api_score's broad except). Confirmed live during audit (2026-09-27):
+# bare "claude-sonnet-5" -> 403 for every one of 98 calls (n_adv=0,
+# n_benign=0 in the previously-committed results/v5_pareto_update.json);
+# routing through the correct gateway-specific name -> real data (46.8%
+# det, 44.7% FPR). This resolves the *API* model name while keeping the
+# *display*/results-dict key as the bare name, so
+# results/v5_pareto_update.json's schema (and anything downstream that
+# reads it by the bare key) is unchanged.
+#
+# The actual routing prefix is a gateway-specific detail and must never be
+# hardcoded in this public repo (see API Platform Disclosure rule). Supply
+# overrides via FRONTIER_MODEL_ROUTES, a JSON object mapping bare model
+# name -> the name to actually send to the API, e.g.:
+#   export FRONTIER_MODEL_ROUTES='{"claude-sonnet-5": "<gateway-routed-name>"}'
+# With no override set, the bare name is used, and models that need routing
+# will 403 again exactly as they did before this was diagnosed.
+MODEL_API_NAME: dict[str, str] = json.loads(os.environ.get("FRONTIER_MODEL_ROUTES", "{}"))
 
 # Approximate costs per 1M tokens (Jul 2026)
 COSTS = {
@@ -52,17 +73,22 @@ def load_prompts():
 
 def api_score(model, prompt, max_retries=3):
     """Score a prompt with the given model."""
+    # Reasoning models require temperature=1
+    REASONING_MODELS = {"o3", "o3-mini", "o4-mini", "gemini-3.7-flash"}
+    temp = 1 if model in REASONING_MODELS else 0
+    api_model = MODEL_API_NAME.get(model, model)
+
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json",
     }
     body = {
-        "model": model,
+        "model": api_model,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        "temperature": 0,
+        "temperature": temp,
         "max_completion_tokens": 200,
     }
 

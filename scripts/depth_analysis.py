@@ -3,6 +3,17 @@ and Cost-Bounded Safety Ensemble (CBSE) router formalization.
 
 All from existing data — zero API calls.
 
+** SUPERSEDED NUMBER WARNING (added after audit): ** the adversarial CoT
+sigmoid fit produced by this script (T50,adv ~= 154 tokens, ~3.3x the benign
+threshold) rested on a single hand-entered, out-of-grid data point and was
+withdrawn -- see paper.tex's "Correction and update (v5)" paragraph and the
+Deviations-from-Pre-Registration section, correction (1). The corrected
+figure (T50,adv = 117 tokens, 95% CI [104, 129], a measured 2.5x shift) comes
+from exp_token_sweep_extended.py + exp_refit_token_sigmoid.py, which extend
+the token-budget grid instead of extrapolating past it. Re-running this
+script will regenerate the withdrawn 154-token/3.3x figure; do not cite its
+output for T50,adv without checking against the corrected scripts above.
+
 Usage:
     .venv/bin/python scripts/depth_analysis.py
 """

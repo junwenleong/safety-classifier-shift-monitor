@@ -5,6 +5,32 @@ variance compared to homogeneous WildGuardMix controls. If yes, recalibrates.
 
 Pre-registration: docs/pre_registration_v5.md, Experiment 3.
 
+** DATA-CONSISTENCY WARNING (added after audit, verified by deterministic
+re-run with seed=42 against the committed data): ** three result files
+exist for this experiment (results/v5_heterogeneous/heterogeneous_far_*.json
+and results/v5_heterogeneous_real/heterogeneous_far_results.json) and they
+do not agree. paper.tex cites "KS FAR inflates from 4.3% to 23.4%... CUSUM
+is unaffected (FAR 6.1% -> 6.6%)" as if from one experiment. Re-running the
+exact detector code in this file against
+results/v5_heterogeneous_real/heterogeneous_scores.json (the file whose KS
+numbers match the paper exactly: homo=4.3%, hetero=23.4%, recal=2.6%) gives
+CUSUM homo=100%, hetero=100%, recal=100% -- completely saturated, the
+opposite of "unaffected". EWMA on the same data gives homo=88.8%,
+hetero=11.2% -- also badly miscalibrated (and inverted: lower on
+heterogeneous than homogeneous). The cited "CUSUM 6.1%->6.6%" figure
+instead matches results/v5_heterogeneous/heterogeneous_far_results.json (no
+"_real"), a DIFFERENT run against a different homogeneous reference array,
+not the one that produced the cited KS numbers. Running this exact script
+today (RESULTS_DIR is hardcoded to "results/v5_heterogeneous") would not
+reproduce the paper's cited KS figures either. Root cause not fully
+resolved: results/null_scores.json's current "deberta" array contains a
+few extreme outliers (~0.99) that appear to be inflating CUSUM's mu0/sigma
+calibration when bootstrap-resampled into a 500-item reference; whether
+that array was different at the time the "6.1%->6.6%" run happened is
+unknown. Do not cite the CUSUM/EWMA heterogeneous-robustness numbers from
+this paragraph without re-deriving them from a single, internally
+consistent run.
+
 Usage:
     # Full experiment (requires Mac Studio for DeBERTa scoring)
     .venv/bin/python scripts/exp_heterogeneous_controls.py

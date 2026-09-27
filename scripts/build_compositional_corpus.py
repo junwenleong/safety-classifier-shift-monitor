@@ -1,4 +1,4 @@
-"""Build compositional long-context shift corpus via Bedrock.
+"""Build compositional long-context shift corpus via LLM API.
 
 Embeds harmful prompts within long innocuous context at varying positions.
 Uses Claude to generate benign padding text.
@@ -35,7 +35,7 @@ POSITIONS = ["beginning", "middle", "end"]
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Build compositional long-context shift corpus via Bedrock.",
+        description="Build compositional long-context shift corpus via LLM API.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--source", type=Path, default=Path("data/reference/source.jsonl"))

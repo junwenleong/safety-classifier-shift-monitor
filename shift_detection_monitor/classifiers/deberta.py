@@ -68,7 +68,15 @@ class DeBERTaAdapter:
                 torch.device(self._device_str) if self._device_str else _get_device()
             )
             logger.info("Loading DeBERTa from %s on %s", self._model_path, self._device)
-            self._tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base")
+            # Load the tokenizer from the same path as the model weights
+            # (previously hardcoded to "microsoft/deberta-v3-base" regardless
+            # of self._model_path; DeBERTa-v3 base/large/xlarge share the
+            # same SentencePiece vocabulary so this had no observed effect
+            # on scores, but loading from the actual model path is correct
+            # by construction and matches a fine-tuned checkpoint's own
+            # saved tokenizer files if one is present, e.g. via
+            # DEBERTA_CHECKPOINT_PATH).
+            self._tokenizer = AutoTokenizer.from_pretrained(self._model_path)
             self._model = AutoModelForSequenceClassification.from_pretrained(
                 self._model_path,
                 output_hidden_states=True,

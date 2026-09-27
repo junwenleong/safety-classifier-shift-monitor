@@ -7,6 +7,25 @@ Orchestrates:
 3. Factorial cell execution
 4. JSONL result output
 5. Variance decomposition
+
+** PROVENANCE NOTE (confirmed during audit): ** this class is NOT the code
+path that produced the paper's published 800-cell factorial results.
+scripts/run_factorial.py (which produced results/factorial_results.jsonl)
+imports its detection/calibration logic from scripts/run_full_canary.py
+directly, not from this harness. Concretely, this class's default behavior
+differs from what the paper describes for the factorial: it uses
+config.reference_window.min_size (100 in configs/default.yaml and
+configs/factorial_full.yaml) as the reference window size rather than the
+paper's stated 500 pre-shift observations; it auto-activates the MMD
+detector whenever a classifier exposes embeddings, whereas the paper states
+"the factorial evaluation uses the KS detector only"; and it does not
+implement the paper's described 50-negative-stream, 97th-percentile
+empirical FAR calibration step (scripts/run_full_canary.py does this
+separately). None of this calls into question the factorial numbers
+themselves (verified via scripts/verify_paper_numbers.py against the actual
+generating scripts) -- it means a user who instantiates EvaluationHarness
+directly, expecting it to reproduce the paper's factorial, will not get the
+same configuration by default.
 """
 
 from __future__ import annotations

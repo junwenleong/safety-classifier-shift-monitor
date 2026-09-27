@@ -238,6 +238,20 @@ class ConformalAbstentionLayer:
 
         target_arr = np.array(target_embeddings, dtype=np.float64)
 
+        # frozen_stats.reference_embeddings is stored AFTER PCA dimensionality
+        # reduction when ReferenceWindow.freeze() applied it (see
+        # reference_window.py: "reference_embeddings: (n_ref, d) after dim
+        # reduction"). record.representation is always the classifier's raw,
+        # un-projected embedding (MMDDetector projects it itself on use; see
+        # mmd_detector.py). Fitting a density-ratio estimator on
+        # (reduced-dim source, raw-dim target) directly would either raise a
+        # shape-mismatch error or -- if the estimator doesn't validate shapes
+        # up front -- fail confusingly downstream. Apply the same PCA
+        # projection to the target embeddings before fitting, exactly as
+        # MMDDetector already does.
+        if frozen_stats.pca_components is not None and frozen_stats.pca_mean is not None:
+            target_arr = (target_arr - frozen_stats.pca_mean) @ frozen_stats.pca_components.T
+
         # Import here to avoid circular dependency
         from shift_detection_monitor.adaptation.density_ratio import (
             DensityRatioEstimator,

@@ -7,6 +7,17 @@ Hypothesis: Discriminative classifiers have tighter score boundaries (lower
 null score spread), making them more sensitive to distributional perturbation.
 Generative classifiers smooth the boundary, delaying detection.
 
+** FALSIFIED (added after audit): ** this script's original n=4 result
+(r~=0.97 between null-score std and detection latency) is explicitly
+falsified in paper.tex's "Honest negative result" paragraph and Appendix
+"Falsified: The Monitorability Hypothesis Is Not an Intrinsic Classifier
+Property". A within-family replication (6 encoder variants at different
+training epochs) gives r=0.21, p=0.70: the original correlation was an
+encoder/decoder architectural-gap artifact, not an intrinsic monitorability
+law. This script still computes and prints the original (superseded) n=4
+correlation; treat any r/p it reports as the disproven starting hypothesis,
+not the paper's conclusion.
+
 Usage:
     .venv/bin/python scripts/mechanistic_analysis.py
 """

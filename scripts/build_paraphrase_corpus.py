@@ -1,4 +1,4 @@
-"""Build paraphrase/code-switch shift corpus incrementally via Bedrock.
+"""Build paraphrase/code-switch shift corpus incrementally via LLM API.
 
 Writes one line at a time, flushes after each. Supports --resume to pick up
 where it left off after a timeout.

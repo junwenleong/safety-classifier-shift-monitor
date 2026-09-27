@@ -3,6 +3,15 @@
 Tests whether embedding-space displacement mirrors the score-std vs latency
 correlation (r=0.968). If yes: confirmed mechanistic finding. If not: hypothesis.
 
+** CONTEXT (added after audit): ** the r=0.968 score-std correlation this
+script compares against was later falsified at n=8 within-family (r=0.21,
+p=0.70; see mechanistic_analysis.py and paper.tex's monitorability
+appendix). This script's own negative result (embedding displacement does
+NOT predict latency, overall r=-0.09, p=0.78) is independently reported in
+the paper and stands regardless of the score-std falsification -- it was a
+negative control against the *original* n=4 hypothesis and remains a valid
+negative control. No correction needed here, noted for context only.
+
 Requires: results/cached_streams/ from cache_embeddings.py
 
 Usage:

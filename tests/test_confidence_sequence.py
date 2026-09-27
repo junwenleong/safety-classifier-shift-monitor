@@ -215,7 +215,18 @@ class TestP8AlarmIffReferenceExcluded:
         warmup: int,
         sequence: list[float],
     ) -> None:
-        """After warmup, alarm iff reference_value ∉ [L_t, U_t]."""
+        """After warmup, alarm iff the wealth threshold is crossed (growing mode).
+
+        Growing-mode's alarm decision is based directly on the wealth
+        process (log_wealth >= log(1/alpha)), the quantity Ville's
+        inequality actually gives a time-uniform guarantee for -- not on
+        reference_value vs. the Hoeffding-type [L_t, U_t] bounds, since
+        `_compute_bounds_from_wealth()` does not tighten those bounds using
+        wealth (see that method's docstring). This replaces a prior version
+        of this test that asserted the bounds-based invariant, which held
+        only because both alarm and bounds independently used the same
+        (wealth-independent) Hoeffding formula before this was fixed.
+        """
         engine = ConfidenceSequenceEngine(
             alpha=alpha,
             reference_value=ref,
@@ -228,17 +239,13 @@ class TestP8AlarmIffReferenceExcluded:
         for val in sequence:
             result = engine.update(val)
             if result.time_step >= warmup:
-                ref_in_bounds = result.lower <= ref <= result.upper
-                if ref_in_bounds:
-                    assert not result.alarm, (
-                        f"Alarm raised at step {result.time_step} but ref {ref} "
-                        f"is in [{result.lower}, {result.upper}]"
-                    )
-                else:
-                    assert result.alarm, (
-                        f"No alarm at step {result.time_step} but ref {ref} "
-                        f"is outside [{result.lower}, {result.upper}]"
-                    )
+                assert result.wealth is not None
+                wealth_exceeds = result.wealth >= 1.0 / alpha
+                assert result.alarm == wealth_exceeds, (
+                    f"Alarm mismatch at step {result.time_step}: "
+                    f"alarm={result.alarm}, wealth={result.wealth}, "
+                    f"threshold={1.0 / alpha}"
+                )
 
     @given(
         alpha=_ALPHA,
