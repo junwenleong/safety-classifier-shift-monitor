@@ -138,7 +138,7 @@ All three factors contribute substantially. A monitoring system that ignores the
 
 **Verification:** `scripts/verify_paper_numbers.py` checks 90 statistics against raw data. All pass.
 
-**Code:** available in an anonymized repository (link withheld for double-blind review; will be de-anonymized upon acceptance)
+**Code:** available in the public repository at https://github.com/junwenleong/safety-classifier-shift-monitor
 
 ---
 
