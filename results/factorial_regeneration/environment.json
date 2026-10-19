@@ -1,0 +1,17 @@
+{
+ "python": "3.11.16",
+ "platform": "macOS-26.5.1-arm64-arm-64bit",
+ "machine": "arm64",
+ "numpy": "2.4.4",
+ "torch": "2.11.0",
+ "transformers": "4.47.1",
+ "datasets": "4.8.5",
+ "mps_available": true,
+ "hardware": "Apple M3 Ultra",
+ "memory_bytes": 103079215104,
+ "PYTHONHASHSEED_during_run": "0 (irrelevant: hash() was overridden; stream seeds taken from recovered offsets)",
+ "llama_guard_snapshot": "7327bd9f6efbbe6101dc6cc4736302b3cbb6e425",
+ "shieldgemma_snapshot": "b8b636016df4540721a098c7aab91c97ec6ee508",
+ "deberta_tokenizer": "microsoft/deberta-v3-base (hub), as in the May-2026 adapter",
+ "classifier_dtype_device": "float16 on MPS for the two decoders (adapter default); float32 for the encoders"
+}

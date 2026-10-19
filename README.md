@@ -14,7 +14,7 @@ Reasoning models deployed as safety monitors suffer **reasoning-token budget sta
 
 2. **Score-disagreement monitoring detects gradient-based evasion.** Any un-targeted classifier detects when the primary is under GCG attack (p<10^-12, n=49). The divergence is attack-specific (not generic OOD) and confidence-gated: when the canary is confident, a divergence-minimising attacker stalls at the predicted equilibrium (gap=1/(2*lambda); empirical mean 0.218, median 0.250, n=20 at lambda=2.0). Architecture diversity is not required for detection (eta-squared=0.011) but provides transfer robustness (0% cross-family transfer vs 30% within-family). The defence is not absolute: 18.4% of adversarial inputs (9/49) evade both primary and canary simultaneously.
 
-3. **Density-ratio collapse in high-dimensional embeddings.** Weighted conformal correction fails for 3 of 4 tested classifiers because logistic regression achieves perfect separability in 768-4096-d embedding space, driving all density ratios to zero. Only DeBERTa-v3-large (1024-d) avoids collapse. This is a dimensionality artifact: projecting to 32 dimensions via PCA breaks separability and restores coverage (+33pp Llama Guard, +20.5pp ShieldGemma).
+3. **Density-ratio collapse in high-dimensional embeddings.** Weighted conformal correction fails for 3 of 4 tested classifiers because logistic regression achieves perfect separability in 768-4096-d embedding space, driving all density ratios to zero. Only the DeBERTa-v3-base primary classifier (768-d) avoids collapse. This is a dimensionality artifact: projecting to 32 dimensions via PCA breaks separability and restores coverage (+33pp Llama Guard, +20.5pp ShieldGemma).
 
 4. **Calibration-free monitoring via scan martingale.** A conformal test martingale replaces empirical threshold tuning, achieving FAR<=1% uniformly across all 4 classifiers with no per-model calibration (vs 2-9.5% spread under empirical KS calibration). The value is operational simplicity: deploy once, guaranteed FAR. For ramped-onset adversaries, scan substantially outperforms KS (37% vs 3% detection at 15% mixing). With proper per-condition calibrated KS, KS matches or exceeds scan for instantaneous step-onset shift.
 
@@ -34,7 +34,7 @@ Two additional results reported in the paper are not included in the headline fi
 
 ## Verification
 
-All numbers in this repository are programmatically verified against raw experimental data using `scripts/verify_paper_numbers.py` (115 assertions, all passing -- confirmed by running it; this count has grown from the previously-stated 101 as more v5 checks were added). Experiment configurations committed before execution (commit `be630f3`).
+All numbers in this repository are programmatically verified against raw experimental data using `scripts/verify_paper_numbers.py` (225 assertions, all passing -- confirmed by running it on 2026-10-20; the count has grown as v5 checks were added). Experiment configurations committed before execution (commit `0380167`; see `HISTORY_REWRITE.md` for the mapping from earlier identifiers).
 
 ## Installation
 
@@ -57,10 +57,10 @@ pip install -e ".[dev,inference]"
 
 ### Reproducing Encoder Checkpoints
 
-The two encoder classifiers (DeBERTa-v3-large and Text-Moderation) are fine-tuned on WildGuardMix. Checkpoints are not committed (too large); reproduce them with:
+The two encoder classifiers (DeBERTa-v3-base and Text-Moderation) are fine-tuned on WildGuardMix. Checkpoints are not committed (too large); reproduce them with:
 
 ```bash
-# DeBERTa-v3-large
+# DeBERTa-v3-base
 python scripts/finetune_deberta.py
 
 # Text-Moderation (KoalaAI)

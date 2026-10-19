@@ -1,0 +1,453 @@
+{
+ "original": {
+  "n_cells": 800,
+  "n_valid": 693,
+  "anova_cell_level": {
+   "n": 693,
+   "eta_sq": {
+    "classifier": 0.24295747445011565,
+    "shift": 0.23671262196632528,
+    "interaction": 0.18514902160696556,
+    "residual": 0.3351808819765935
+   },
+   "F_full_model_denominator": {
+    "classifier": 162.60909566270766,
+    "shift": 118.82210706938662,
+    "interaction": 30.979613854733845
+   },
+   "df": {
+    "classifier": 3,
+    "shift": 4,
+    "interaction": 12,
+    "resid": 673
+   },
+   "repo_joint_permutation_p_1000": {
+    "classifier": 0.000999000999000999,
+    "shift": 0.000999000999000999,
+    "interaction": 0.000999000999000999
+   },
+   "freedman_lane_p": {
+    "classifier": 9.999000099990002e-05,
+    "shift": 9.999000099990002e-05,
+    "interaction": 9.999000099990002e-05
+   },
+   "freedman_lane_B": 10000
+  },
+  "anova_stream_level": {
+   "n": 379,
+   "eta_sq": {
+    "classifier": 0.2641068216651621,
+    "shift": 0.2532347078936199,
+    "interaction": 0.21527339010367896,
+    "residual": 0.26738508033753905
+   },
+   "F_full_model_denominator": {
+    "classifier": 118.19950070774624,
+    "shift": 85.0003111795223,
+    "interaction": 24.086094279475372
+   },
+   "df": {
+    "classifier": 3,
+    "shift": 4,
+    "interaction": 12,
+    "resid": 359
+   },
+   "repo_joint_permutation_p_1000": {
+    "classifier": 0.000999000999000999,
+    "shift": 0.000999000999000999,
+    "interaction": 0.000999000999000999
+   },
+   "freedman_lane_p": {
+    "classifier": 9.999000099990002e-05,
+    "shift": 9.999000099990002e-05,
+    "interaction": 9.999000099990002e-05
+   },
+   "freedman_lane_B": 10000
+  },
+  "holm_cell_level": [
+   {
+    "comparison": "1 decoder vs encoder, paraphrase",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "2 encoder vs decoder, adversarial suffix",
+    "raw_p": 0.04608476957615212,
+    "holm_adjusted_p": 0.04608476957615212
+   },
+   {
+    "comparison": "3 DeBERTa adversarial vs paraphrase",
+    "raw_p": 0.0009299953500232498,
+    "holm_adjusted_p": 0.0027899860500697495
+   },
+   {
+    "comparison": "4 Llama Guard paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "5 window 100 vs 200 (paired)",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "6 Llama Guard x code-switch vs grand mean",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "7 ShieldGemma paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "8 FAR DeBERTa vs Text-Moderation",
+    "raw_p": 0.002119989400053,
+    "holm_adjusted_p": 0.004239978800106
+   }
+  ],
+  "holm_stream_level": [
+   {
+    "comparison": "1 decoder vs encoder, paraphrase",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "2 encoder vs decoder, adversarial suffix",
+    "raw_p": 0.046559767201164,
+    "holm_adjusted_p": 0.046559767201164
+   },
+   {
+    "comparison": "3 DeBERTa adversarial vs paraphrase",
+    "raw_p": 0.0027149864250678745,
+    "holm_adjusted_p": 0.008144959275203624
+   },
+   {
+    "comparison": "4 Llama Guard paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "5 window 100 vs 200 (paired)",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "6 Llama Guard x code-switch vs grand mean",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "7 ShieldGemma paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "8 FAR DeBERTa vs Text-Moderation",
+    "raw_p": 0.0032999835000824995,
+    "holm_adjusted_p": 0.008144959275203624
+   }
+  ]
+ },
+ "committed_ks_regeneration": {
+  "n_cells": 800,
+  "n_valid": 693,
+  "anova_cell_level": {
+   "n": 693,
+   "eta_sq": {
+    "classifier": 0.2449426622327671,
+    "shift": 0.23651138720793116,
+    "interaction": 0.1843310748492681,
+    "residual": 0.3342148757100336
+   },
+   "F_full_model_denominator": {
+    "classifier": 164.41160429343444,
+    "shift": 119.0642421681405,
+    "interaction": 30.931900001459933
+   },
+   "df": {
+    "classifier": 3,
+    "shift": 4,
+    "interaction": 12,
+    "resid": 673
+   },
+   "repo_joint_permutation_p_1000": {
+    "classifier": 0.000999000999000999,
+    "shift": 0.000999000999000999,
+    "interaction": 0.000999000999000999
+   },
+   "freedman_lane_p": {
+    "classifier": 9.999000099990002e-05,
+    "shift": 9.999000099990002e-05,
+    "interaction": 9.999000099990002e-05
+   },
+   "freedman_lane_B": 10000
+  },
+  "anova_stream_level": {
+   "n": 379,
+   "eta_sq": {
+    "classifier": 0.2669595530892963,
+    "shift": 0.25430519228829507,
+    "interaction": 0.21285248865003195,
+    "residual": 0.2658827659723767
+   },
+   "F_full_model_denominator": {
+    "classifier": 120.15129952551379,
+    "shift": 85.84193460002487,
+    "interaction": 23.94979204020703
+   },
+   "df": {
+    "classifier": 3,
+    "shift": 4,
+    "interaction": 12,
+    "resid": 359
+   },
+   "repo_joint_permutation_p_1000": {
+    "classifier": 0.000999000999000999,
+    "shift": 0.000999000999000999,
+    "interaction": 0.000999000999000999
+   },
+   "freedman_lane_p": {
+    "classifier": 9.999000099990002e-05,
+    "shift": 9.999000099990002e-05,
+    "interaction": 9.999000099990002e-05
+   },
+   "freedman_lane_B": 10000
+  },
+  "holm_cell_level": [
+   {
+    "comparison": "1 decoder vs encoder, paraphrase",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "2 encoder vs decoder, adversarial suffix",
+    "raw_p": 0.06428467857660712,
+    "holm_adjusted_p": 0.06428467857660712
+   },
+   {
+    "comparison": "3 DeBERTa adversarial vs paraphrase",
+    "raw_p": 0.00035999820000899997,
+    "holm_adjusted_p": 0.0010799946000269998
+   },
+   {
+    "comparison": "4 Llama Guard paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "5 window 100 vs 200 (paired)",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "6 Llama Guard x code-switch vs grand mean",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "7 ShieldGemma paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "8 FAR DeBERTa vs Text-Moderation",
+    "raw_p": 0.0018299908500457498,
+    "holm_adjusted_p": 0.0036599817000914996
+   }
+  ],
+  "holm_stream_level": [
+   {
+    "comparison": "1 decoder vs encoder, paraphrase",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "2 encoder vs decoder, adversarial suffix",
+    "raw_p": 0.06620966895165524,
+    "holm_adjusted_p": 0.06620966895165524
+   },
+   {
+    "comparison": "3 DeBERTa adversarial vs paraphrase",
+    "raw_p": 0.0017899910500447497,
+    "holm_adjusted_p": 0.005369973150134249
+   },
+   {
+    "comparison": "4 Llama Guard paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "5 window 100 vs 200 (paired)",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "6 Llama Guard x code-switch vs grand mean",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "7 ShieldGemma paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "8 FAR DeBERTa vs Text-Moderation",
+    "raw_p": 0.0033549832250838745,
+    "holm_adjusted_p": 0.006709966450167749
+   }
+  ]
+ },
+ "corrected_ks_regeneration": {
+  "n_cells": 800,
+  "n_valid": 694,
+  "anova_cell_level": {
+   "n": 694,
+   "eta_sq": {
+    "classifier": 0.24768722775795823,
+    "shift": 0.23935400818491037,
+    "interaction": 0.18561958272955484,
+    "residual": 0.32733918132757656
+   },
+   "F_full_model_denominator": {
+    "classifier": 169.99817623604469,
+    "shift": 123.20905250507424,
+    "interaction": 31.849634338589823
+   },
+   "df": {
+    "classifier": 3,
+    "shift": 4,
+    "interaction": 12,
+    "resid": 674
+   },
+   "repo_joint_permutation_p_1000": {
+    "classifier": 0.000999000999000999,
+    "shift": 0.000999000999000999,
+    "interaction": 0.000999000999000999
+   },
+   "freedman_lane_p": {
+    "classifier": 9.999000099990002e-05,
+    "shift": 9.999000099990002e-05,
+    "interaction": 9.999000099990002e-05
+   },
+   "freedman_lane_B": 10000
+  },
+  "anova_stream_level": {
+   "n": 379,
+   "eta_sq": {
+    "classifier": 0.27085311082629365,
+    "shift": 0.25645432934516293,
+    "interaction": 0.21394980034027739,
+    "residual": 0.25874275948826586
+   },
+   "F_full_model_denominator": {
+    "classifier": 125.267617122827,
+    "shift": 88.95621312940429,
+    "interaction": 24.73756124746841
+   },
+   "df": {
+    "classifier": 3,
+    "shift": 4,
+    "interaction": 12,
+    "resid": 359
+   },
+   "repo_joint_permutation_p_1000": {
+    "classifier": 0.000999000999000999,
+    "shift": 0.000999000999000999,
+    "interaction": 0.000999000999000999
+   },
+   "freedman_lane_p": {
+    "classifier": 9.999000099990002e-05,
+    "shift": 9.999000099990002e-05,
+    "interaction": 9.999000099990002e-05
+   },
+   "freedman_lane_B": 10000
+  },
+  "holm_cell_level": [
+   {
+    "comparison": "1 decoder vs encoder, paraphrase",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "2 encoder vs decoder, adversarial suffix",
+    "raw_p": 0.08076959615201924,
+    "holm_adjusted_p": 0.08076959615201924
+   },
+   {
+    "comparison": "3 DeBERTa adversarial vs paraphrase",
+    "raw_p": 0.00035999820000899997,
+    "holm_adjusted_p": 0.0010799946000269998
+   },
+   {
+    "comparison": "4 Llama Guard paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "5 window 100 vs 200 (paired)",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "6 Llama Guard x code-switch vs grand mean",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "7 ShieldGemma paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "8 FAR DeBERTa vs Text-Moderation",
+    "raw_p": 0.0018399908000459998,
+    "holm_adjusted_p": 0.0036799816000919997
+   }
+  ],
+  "holm_stream_level": [
+   {
+    "comparison": "1 decoder vs encoder, paraphrase",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "2 encoder vs decoder, adversarial suffix",
+    "raw_p": 0.07833960830195849,
+    "holm_adjusted_p": 0.07833960830195849
+   },
+   {
+    "comparison": "3 DeBERTa adversarial vs paraphrase",
+    "raw_p": 0.0017949910250448747,
+    "holm_adjusted_p": 0.005384973075134624
+   },
+   {
+    "comparison": "4 Llama Guard paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "5 window 100 vs 200 (paired)",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "6 Llama Guard x code-switch vs grand mean",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "7 ShieldGemma paraphrase vs adversarial",
+    "raw_p": 4.9999750001249995e-06,
+    "holm_adjusted_p": 3.9999800000999996e-05
+   },
+   {
+    "comparison": "8 FAR DeBERTa vs Text-Moderation",
+    "raw_p": 0.0033549832250838745,
+    "holm_adjusted_p": 0.006709966450167749
+   }
+  ]
+ },
+ "non_finite_rss_events": 0
+}

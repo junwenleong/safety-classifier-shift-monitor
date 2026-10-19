@@ -1,0 +1,5 @@
+post-onset segment                    final log M  fires (thr 20)
+null (resample reference)                  -519.0           False
+UP shift (+0.3 on every score)            -1155.7           False
+UP shift, 30% mixing                       -801.3           False
+DOWN shift (-0.15 on every score)             8.7            True

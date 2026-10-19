@@ -14,7 +14,10 @@ Three tail-bound variants are supported:
 Two window modes are supported:
   - **growing**: Accumulates all observations. Provides exact time-uniform coverage
     by Ville's inequality — the wealth process is a non-negative supermartingale
-    under H₀.
+    under H₀, *provided the bet λ_t is predictable* (chosen from observations
+    1..t-1 only). The bounded growing-mode update enforces this; a prior version
+    peeked at the current observation and was not a supermartingale (see the
+    reproducibility note in ``_update_bounded_growing``).
   - **sliding**: Maintains a deque of the last `window_size` observations.
     Confidence bounds use a Hoeffding inequality on the current window,
     providing valid per-window coverage but NOT time-uniform coverage.
@@ -235,44 +238,59 @@ class ConfidenceSequenceEngine:
         b = self._upper_bound
         mu0 = self._reference_value
 
-        # Update sufficient statistics
-        self._sum_values += statistic
-        self._sum_sq_values += statistic * statistic
+        # Predictable bet: choose lambda from statistics available BEFORE the
+        # current observation (steps 1..t-1 only). This is required for the
+        # wealth process to be a supermartingale under H0 (E[W_t | F_{t-1}] <=
+        # W_{t-1}); a bet that peeks at the current statistic inflates E[W_t]
+        # above W_{t-1} and voids Ville's inequality.
+        #
+        # Reproducibility note: a prior implementation added the current
+        # statistic to the running mean/variance BEFORE choosing lambda, then
+        # bet on that same statistic. Under a fair Bernoulli(1/2) null that gave
+        # E[W_1] ~ 1.5 > 1 (not a supermartingale), so the time-uniform FAR <=
+        # alpha guarantee did not hold. Results produced before this fix should
+        # be treated as empirical (not guarantee-backed). See git history.
+        prev_t = self._time_step - 1
+        if prev_t >= 1:
+            mean_prev = self._sum_values / prev_t
+            var_prev = self._sum_sq_values / prev_t - mean_prev * mean_prev
+        else:
+            # No prior observations: start neutral (no bet on the first step).
+            mean_prev = mu0
+            var_prev = 0.0
 
-        t = self._time_step
-        mean_t = self._sum_values / t
-        var_t = self._sum_sq_values / t - mean_t * mean_t
-
-        # ONS bet: direction proportional to deviation from reference
-        numerator = mean_t - mu0
-        denominator = var_t + self._ons_epsilon
+        # ONS bet: direction proportional to deviation from reference, using
+        # only pre-observation statistics.
+        numerator = mean_prev - mu0
+        denominator = var_prev + self._ons_epsilon
         lam = numerator / denominator
 
         # Clip bet to valid range to keep wealth non-negative
         # W_t = W_{t-1} * (1 + λ * (T_t - μ₀)) must be ≥ 0
         # => λ * (T_t - μ₀) ≥ -1 for all T_t ∈ [a, b]
-        # If T_t = b: 1 + λ*(b - μ₀) ≥ 0 => λ ≥ -1/(b - μ₀) if b > μ₀
-        # If T_t = a: 1 + λ*(a - μ₀) ≥ 0 => λ ≤ 1/(μ₀ - a) if μ₀ > a
         max_positive_bet = 1.0 / (mu0 - a + self._ons_epsilon)
         max_negative_bet = -1.0 / (b - mu0 + self._ons_epsilon)
         lam = max(max_negative_bet, min(max_positive_bet, lam))
 
-        # Scale down bet to avoid extreme wealth swings.
-        # This is a fixed "half-Kelly"-style damping: betting at a constant
-        # fraction of the theoretically-optimal (undamped) bet trades a
-        # constant multiplicative factor of statistical power for reduced
-        # variance in the wealth process, so a single extreme observation
-        # cannot swing W_t as violently. The 0.5 factor is a conservative
-        # engineering default, not derived from a target FAR/power
-        # trade-off, and has not been swept or ablated.
+        # Scale down bet to avoid extreme wealth swings (half-Kelly damping).
+        # A constant fraction of the undamped bet trades a constant
+        # multiplicative factor of power for reduced wealth variance. The 0.5
+        # factor is a conservative engineering default, not swept/ablated.
         lam *= 0.5
 
-        # Update log-wealth
+        # Update log-wealth with the predictable bet applied to the current obs.
         wealth_factor = 1.0 + lam * (statistic - mu0)
-        # Clamp to avoid log(0) or log(negative)
         wealth_factor = max(wealth_factor, 1e-300)
         log_increment = math.log(wealth_factor)
         self._log_wealth += log_increment
+
+        # NOW update sufficient statistics to include the current observation,
+        # so the next step's bet is predictable with respect to this one.
+        self._sum_values += statistic
+        self._sum_sq_values += statistic * statistic
+
+        t = self._time_step
+        mean_t = self._sum_values / t
 
         # Compute confidence bounds from wealth
         self._compute_bounds_from_wealth(t, mean_t)

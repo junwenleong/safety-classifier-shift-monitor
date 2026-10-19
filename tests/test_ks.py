@@ -58,11 +58,16 @@ def st_ks_scenario(
 
 @given(scenario=st_ks_scenario())
 @settings(max_examples=100)
-def test_p13_ks_matches_scipy(
+def test_p13_ks_matches_two_sample(
     scenario: tuple[np.ndarray, list[float], int],
 ) -> None:
-    """P13: For any sliding window of scores and reference CDF, computed KS
-    statistic matches scipy.stats.ks_1samp within floating-point tolerance.
+    """P13: For any sliding window of scores and reference CDF, the computed KS
+    statistic matches scipy.stats.ks_2samp (the two-empirical-CDF estimand the
+    paper defines) within floating-point tolerance.
+
+    Regression: a prior implementation compared against ks_1samp fed an
+    empirical CDF, which does not test the two-empirical-CDF estimand and hid a
+    tie-handling bug (D- counted coincident jumps on the wrong side).
 
     **Validates: Requirements 5.1**
     """
@@ -100,17 +105,62 @@ def test_p13_ks_matches_scipy(
         )
         last_ks = detector.update(record)
 
-    # Compute expected KS using scipy
-    # The window contains all stream_scores (since window_size >= n_stream)
+    # Expected KS is the two-sample statistic between window and reference ECDFs.
     window_scores = np.array(stream_scores, dtype=np.float64)
-
-    # scipy.stats.ks_1samp compares a sample against a CDF function.
-    # We need to define the reference CDF as a function.
-    def ref_cdf_func(x: float | np.ndarray) -> float | np.ndarray:
-        """Empirical CDF of the reference scores."""
-        return np.searchsorted(ref_cdf, x, side="right") / len(ref_cdf)
-
-    scipy_result = scipy_stats.ks_1samp(window_scores, ref_cdf_func)
-    expected_ks = scipy_result.statistic
+    expected_ks = scipy_stats.ks_2samp(window_scores, ref_cdf).statistic
 
     np.testing.assert_allclose(last_ks, expected_ks, rtol=1e-10, atol=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# Regression: tie / identity handling (two-empirical-CDF estimand)
+# ---------------------------------------------------------------------------
+
+
+def _ks_from_arrays(ref: list[float], window: list[float]) -> float:
+    rng = np.random.default_rng(0)
+    stats = FrozenReferenceStats(
+        kernel_bandwidth=1.0,
+        reference_cdf=np.sort(np.array(ref, dtype=np.float64)),
+        reference_embeddings=rng.standard_normal((5, 2)),
+        mmd_null_distribution=np.zeros(10),
+        mmd_reference_value=0.0,
+        pca_components=None,
+        pca_mean=None,
+        n_reference=len(ref),
+    )
+    detector = KSDetector(frozen_stats=stats, window_size=len(window))
+    last = 0.0
+    for i, s in enumerate(window):
+        last = detector.update(
+            StreamRecord(
+                time_step=i,
+                text=f"t{i}",
+                score=float(s),
+                representation=None,
+                ground_truth_label=None,
+                is_shifted=False,
+                source_dataset="wildguardmix",
+                shift_condition=None,
+            )
+        )
+    return last
+
+
+def test_ks_identical_samples_is_zero() -> None:
+    """Identical window and reference must give KS exactly 0 (the prior
+    tie-handling bug returned 0.5 for ref=window=[0, 1])."""
+    assert _ks_from_arrays([0.0, 1.0], [0.0, 1.0]) == 0.0
+
+
+def test_ks_disjoint_samples_is_one() -> None:
+    """Fully separated samples must give KS exactly 1."""
+    assert _ks_from_arrays([0.0, 0.0], [1.0, 1.0]) == 1.0
+
+
+def test_ks_tied_partial_shift() -> None:
+    """Tied discrete scores: ref 3/4 at 0.0, window 1/4 at 0.0.
+    F_ref(0)=0.75, F_window(0)=0.25 -> sup gap 0.5."""
+    np.testing.assert_allclose(
+        _ks_from_arrays([0.0, 0.0, 0.0, 1.0], [0.0, 1.0, 1.0, 1.0]), 0.5
+    )

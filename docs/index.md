@@ -45,7 +45,7 @@ For the other three classifiers, it does nothing:
 
 | Classifier | Embedding dim | ESS | Recovery | What's happening |
 |---|---|---|---|---|
-| DeBERTa | 1024 | 88 | +16 pp | ✓ Working: 24 calibration points retain meaningful weights |
+| DeBERTa | 768 | 88 | +16 pp | ✓ Working: 24 calibration points retain meaningful weights |
 | Text-Mod. | 768 | 300 | +2 pp | ✗ Collapsed: all weights at floor |
 | Llama Guard | 4096 | 300 | +2 pp | ✗ Collapsed: all weights at floor |
 | ShieldGemma | 3584 | 300 | +7.5 pp | ✗ Collapsed: all weights at floor |
@@ -69,7 +69,7 @@ PCA before density ratio estimation breaks the collapse:
 
 At 32 dimensions, 82–91% of embedding variance is retained but the logistic classifier can no longer achieve perfect separability. At 64 dimensions, ShieldGemma re-collapses; at 128, both re-collapse. The critical threshold is ≤32 dimensions for these embedding spaces.
 
-DeBERTa (1024-d, no baseline collapse) shows no degradation under PCA. The reduction removes noise dimensions rather than safety-relevant signal.
+DeBERTa (768-d, no baseline collapse) shows no degradation under PCA. The reduction removes noise dimensions rather than safety-relevant signal.
 
 **Practical recommendation:** If you're using weighted conformal with a generative safety classifier, project embeddings to ≤32 dimensions before estimating density ratios. Check ESS: if it's near n_cal, your reweighting is doing nothing.
 
@@ -97,7 +97,7 @@ The canary effect (a second, un-targeted classifier detecting when the primary i
 - **Attack-specific:** GCG divergence >> random noise (p<10⁻¹², n=49). Canary alarms far less often under length-matched random suffixes (12.2%) than under GCG (75.5%).
 - **Confident canary:** detection is robust (7% transfer when canary confident)
 - **Uncertain canary:** attacker can stealth-evade (100% transfer when uncertain)
-- **Phase transition:** a divergence-minimising attacker stalls at gap=1/(2λ)=0.250 when canary is confident; 14/20 prompts blocked, mean gap 0.218, median 0.250, with 9 near-equilibrium cases at 0.2499
+- **Phase transition:** a divergence-minimising attacker stalls at a predicted gap of 1/(2λ)=0.250; 14/20 prompts blocked, mean gap 0.218, median 0.250. The blocked rate is 70% on the primary checkpoint pair and 30% on a replication pair, and the paper withdraws the earlier claim that the stall is confidence-gated.
 - **Architecture diversity is NOT required** for detection (η²=0.011), but IS required for transfer robustness (0% cross-family vs 30% within-family)
 
 Deploy k=2 classifiers (one same-family for sensitivity, one cross-family for transfer robustness). A scan martingale provides FAR≤1% without per-classifier threshold tuning.

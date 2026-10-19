@@ -641,3 +641,57 @@ class TestCSEngineBasics:
             upper_bound=1.0,
         )
         assert engine._min_warmup_steps == 1
+
+
+# ---------------------------------------------------------------------------
+# Regression: growing-mode wealth is a supermartingale under H0
+# ---------------------------------------------------------------------------
+
+
+def _growing_engine() -> ConfidenceSequenceEngine:
+    return ConfidenceSequenceEngine(
+        alpha=0.05,
+        reference_value=0.5,
+        window_mode="growing",
+        tail_bound="bounded",
+        lower_bound=0.0,
+        upper_bound=1.0,
+    )
+
+
+def test_growing_cs_first_step_is_not_a_peek() -> None:
+    """Regression: the growing-mode bet must be predictable (chosen from
+    pre-observation statistics). A prior implementation peeked at the current
+    observation, giving W_1 ~ 1.5 for every first observation. With a
+    predictable bet, the first step places no bet (no prior data), so W_1 = 1
+    regardless of the first observation.
+    """
+    for x in (0.0, 1.0):
+        eng = _growing_engine()
+        eng.update(x)
+        assert math.isclose(math.exp(eng._log_wealth), 1.0, rel_tol=1e-9)
+
+
+def test_growing_cs_supermartingale_under_fair_null() -> None:
+    """Under a fair Bernoulli(1/2) null with reference_value=0.5, the wealth
+    process must satisfy E[W_t] <= 1 (non-negative supermartingale). We check
+    E[W_1] exactly and E[W_5] by Monte Carlo.
+    """
+    # E[W_1] over both outcomes (equal probability under Bernoulli(1/2))
+    w1 = []
+    for x in (0.0, 1.0):
+        eng = _growing_engine()
+        eng.update(x)
+        w1.append(math.exp(eng._log_wealth))
+    assert sum(w1) / 2 <= 1.0 + 1e-9
+
+    # E[W_5] by Monte Carlo
+    rng = np.random.default_rng(0)
+    finals = []
+    for _ in range(20000):
+        eng = _growing_engine()
+        for _ in range(5):
+            eng.update(float(rng.integers(0, 2)))
+        finals.append(math.exp(eng._log_wealth))
+    # Supermartingale: mean wealth <= 1 (allow a small Monte-Carlo margin)
+    assert sum(finals) / len(finals) <= 1.02

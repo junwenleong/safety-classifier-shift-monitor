@@ -3,6 +3,18 @@
 Compares detection latency between abrupt shift (mixing=1.0 at step 500) and
 gradual ramp (mixing linearly increases from 0% to 50% over steps 500-700).
 
+KNOWN ISSUE (do not cite results/gradual_drift_results.json's gradual arm as a
+detection failure): N_REFERENCE == SHIFT_ONSET == 500 and ref_pool has 500
+items, so all 500 pre-onset steps consume the entire reference pool. In gradual
+mode the first post-onset mixing probability is ~0, so the stream immediately
+tries to draw another reference example, finds ref_pool exhausted, and hits the
+`else: break`. The gradual stream therefore terminates at onset and the 0/20
+gradual detections are a stream-construction artefact, not evidence that gradual
+drift is undetectable. The paper's gradual/ramp results come from the separate,
+correctly-constructed results/ramp_rate_sweep.json; this script is superseded
+and retained only for provenance. To fix properly, size ref_pool to
+total_steps (reference + shifted) or draw references with replacement.
+
 Usage:
     .venv/bin/python scripts/run_gradual_drift.py
 """

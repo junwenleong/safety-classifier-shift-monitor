@@ -1,0 +1,272 @@
+{
+ "config": {
+  "window_size": 100,
+  "n_calibration_permutations": 1000,
+  "alpha": 0.05,
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "shifts": [
+   "paraphrase",
+   "temporal",
+   "adversarial-suffix"
+  ]
+ },
+ "classifiers": {
+  "deberta": {
+   "n_pooled_reference": 15000,
+   "bandwidth": 4.001577404831371,
+   "threshold": 0.00857861939390601,
+   "null_false_alarms": 1,
+   "null_windows": 30,
+   "null_far": 0.03333333333333333,
+   "per_seed": [
+    {
+     "seed": 0,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 1,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 2,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 3,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 4,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 5,
+     "false": 1,
+     "windows": 3
+    },
+    {
+     "seed": 6,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 7,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 8,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 9,
+     "false": 0,
+     "windows": 3
+    }
+   ]
+  },
+  "text-moderation": {
+   "n_pooled_reference": 15000,
+   "bandwidth": 15.119623981069799,
+   "threshold": 0.004156089592663768,
+   "null_false_alarms": 1,
+   "null_windows": 30,
+   "null_far": 0.03333333333333333,
+   "per_seed": [
+    {
+     "seed": 0,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 1,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 2,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 3,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 4,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 5,
+     "false": 1,
+     "windows": 3
+    },
+    {
+     "seed": 6,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 7,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 8,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 9,
+     "false": 0,
+     "windows": 3
+    }
+   ]
+  },
+  "llama-guard": {
+   "n_pooled_reference": 15000,
+   "bandwidth": 26.312047807193654,
+   "threshold": 0.0051104735641767755,
+   "null_false_alarms": 3,
+   "null_windows": 30,
+   "null_far": 0.1,
+   "per_seed": [
+    {
+     "seed": 0,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 1,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 2,
+     "false": 1,
+     "windows": 3
+    },
+    {
+     "seed": 3,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 4,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 5,
+     "false": 1,
+     "windows": 3
+    },
+    {
+     "seed": 6,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 7,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 8,
+     "false": 1,
+     "windows": 3
+    },
+    {
+     "seed": 9,
+     "false": 0,
+     "windows": 3
+    }
+   ]
+  },
+  "shieldgemma": {
+   "n_pooled_reference": 15000,
+   "bandwidth": 209.0135854952701,
+   "threshold": 0.0068153129579317405,
+   "null_false_alarms": 0,
+   "null_windows": 30,
+   "null_far": 0.0,
+   "per_seed": [
+    {
+     "seed": 0,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 1,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 2,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 3,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 4,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 5,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 6,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 7,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 8,
+     "false": 0,
+     "windows": 3
+    },
+    {
+     "seed": 9,
+     "false": 0,
+     "windows": 3
+    }
+   ]
+  }
+ },
+ "detection_reproduction": {
+  "saved_rows": 120,
+  "recomputed_rows": 120,
+  "mismatching_rows": 0,
+  "all_latency_equal_window_size": true
+ }
+}

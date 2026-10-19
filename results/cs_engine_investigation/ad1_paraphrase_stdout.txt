@@ -1,0 +1,12 @@
+shifted pool: paraphrase n = 3000 mean = 0.526 | reference mean = 0.015
+classifier deberta; KS thresholds: {'committed (30 null x 500 steps)': 0.1921, 'long-null (30 null x 800 steps)': 0.207, 'pooled (200 null x 800 steps)': 0.212}
+ mixing   scan  committed  long-null     pooled
+   0.15    60%        57%        37%        33%
+   0.20    93%        87%        73%        67%
+   0.25   100%       100%        97%        93%
+   0.30   100%       100%       100%       100%
+wrote results/cs_engine_investigation/ad1_paraphrase.json
+KS null false-alarm rate (committed (30 null x 500 steps)): 4%
+KS null false-alarm rate (long-null (30 null x 800 steps)): 2%
+KS null false-alarm rate (pooled (200 null x 800 steps)): 2%
+Scan null false-alarm rate: 0%

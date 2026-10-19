@@ -1,0 +1,12 @@
+shifted pool: beta55 n = 500 mean = 0.505 | reference mean = 0.015
+classifier deberta; KS thresholds: {'committed (30 null x 500 steps)': 0.1921, 'long-null (30 null x 800 steps)': 0.207, 'pooled (200 null x 800 steps)': 0.212}
+ mixing   scan  committed  long-null     pooled
+   0.15    40%        83%        57%        57%
+   0.20    80%       100%       100%        97%
+   0.25   100%       100%       100%       100%
+   0.30   100%       100%       100%       100%
+wrote results/cs_engine_investigation/ad1_beta55.json
+KS null false-alarm rate (committed (30 null x 500 steps)): 4%
+KS null false-alarm rate (long-null (30 null x 800 steps)): 2%
+KS null false-alarm rate (pooled (200 null x 800 steps)): 2%
+Scan null false-alarm rate: 0%

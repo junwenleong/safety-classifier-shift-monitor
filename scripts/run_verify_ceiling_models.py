@@ -52,7 +52,7 @@ def get_client():
     return OpenAI(
         base_url=API_BASE,
         api_key=API_KEY,
-        http_client=httpx.Client(verify=False, timeout=httpx.Timeout(90.0, connect=10.0)),
+        http_client=httpx.Client(verify=True, timeout=httpx.Timeout(90.0, connect=10.0)),
     )
 
 

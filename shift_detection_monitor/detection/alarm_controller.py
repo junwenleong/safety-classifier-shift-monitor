@@ -145,8 +145,7 @@ class AlarmController:
 
         The per-detector alpha is computed based on the total number of
         registered detectors (including this one). When a new detector is
-        registered, all existing engines are recreated with the updated
-        corrected alpha.
+        registered, all existing engines are updated with the corrected alpha.
 
         Parameters
         ----------
@@ -170,11 +169,9 @@ class AlarmController:
         k = len(self._engines) + 1
         corrected_alpha = self._compute_corrected_alpha(k)
 
-        # Recreate all existing engines with updated corrected alpha
+        # Update existing engines with new corrected alpha (in-place, no recreation)
         for existing_name in list(self._engines.keys()):
-            self._engines[existing_name] = self._create_engine(
-                corrected_alpha, self._reference_values[existing_name]
-            )
+            self._engines[existing_name]._alpha = corrected_alpha
 
         # Create engine for the new detector
         engine = self._create_engine(corrected_alpha, reference_value)

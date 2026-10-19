@@ -171,6 +171,11 @@ class ReferenceWindow:
                 n_components = min(
                     self._dim_reduction_threshold, embeddings.shape[0] - 1
                 )
+                if n_components < 1:
+                    raise CalibrationError(
+                        f"Cannot apply PCA: {embeddings.shape[0]} reference samples "
+                        f"yields n_components={n_components} < 1"
+                    )
                 pca = PCA(n_components=n_components)
                 embeddings = pca.fit_transform(embeddings)
                 pca_components = pca.components_

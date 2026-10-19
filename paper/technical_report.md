@@ -51,8 +51,8 @@ Upon alarm, a split-conformal prediction layer adapts the decision threshold:
 
 ### Factorial Design
 
-Pre-registered before execution (commit `be630f3`):
-- 4 classifiers spanning discriminative (DeBERTa 304M, Text-Moderation 86M) and generative (Llama Guard 8B, ShieldGemma 9B)
+Pre-registered before execution (commit `0380167`):
+- 4 classifiers spanning discriminative (DeBERTa-v3-base 86M, Text-Moderation 86M) and generative (Llama Guard 8B, ShieldGemma 9B)
 - 5 shift conditions: paraphrase, code-switch (Singlish), compositional (long-context), temporal (real jailbreaks), adversarial suffix (GCG)
 - 20 seeds per cell (increased from initial 5 after pilot showed inflated interaction estimates)
 - 2 window sizes (100, 200)
@@ -79,7 +79,7 @@ Weighted correction effectiveness degrades monotonically from discriminative to 
 
 | Classifier | Dim | Coverage gap | Recovery | Mechanism |
 |---|---|---|---|---|
-| DeBERTa | 1024 | 6.5 pp | +14.0 pp | ESS = 88/300, max weight 3.02 |
+| DeBERTa | 768 | 6.5 pp | +14.0 pp | ESS = 88/300, max weight 3.02 |
 | ShieldGemma | 3584 | 22.5 pp | +6.0 pp | ESS = 300/300, all at floor (no reweighting) |
 | Llama Guard | 4096 | 33.5 pp | +1.5 pp | ESS = 300/300, all at floor (no reweighting) |
 

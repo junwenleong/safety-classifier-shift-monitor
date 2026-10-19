@@ -9,16 +9,37 @@ reference CDF. Three variants with different memory/accumulation properties:
 - **CUSUMMartingale**: Resets wealth to 1 when it drops below 1 (Page's rule).
   Adaptive to unknown changepoints; bounded memory in practice.
 - **ScanMartingale**: Maintains W concurrent sub-martingales, one started per
-  step. Alarms if any reaches threshold log(W/α) (union bound). Best for
-  unknown changepoints with formal guarantee.
+  step. Alarms if any reaches threshold log(W/α). Best for unknown
+  changepoints. The threshold is a union bound over the W *concurrently
+  active* windows; see the guarantee note below for its exact scope.
 
-All three provide anytime-valid Type I error control:
-  P(∃t: alarm under H₀) ≤ α
+Guarantee scope (IMPORTANT — read before citing a FAR bound):
 
-under the assumption that the stream scores are exchangeable with the reference
-(i.e., drawn from the same distribution). The conformal p-values are valid
-under exchangeability; if the stream is non-exchangeable (even benignly),
-the guarantee degrades (see the exchangeability analysis, AV5).
+Each individual betting process is a non-negative test martingale under the
+null (conformal p-values are super-uniform under exchangeability), so by
+Ville's inequality a *single* process started at a fixed step controls its own
+crossing probability at α. The variants differ in how they aggregate starts,
+and only one has a clean horizon-wide statement:
+
+- PointMartingale (one process from t=0): P(∃t: alarm | H₀) ≤ α exactly.
+- ScanMartingale: the log(W/α) threshold union-bounds the W processes that are
+  *simultaneously active*. Over a horizon longer than W steps there are more
+  than W distinct starts, so this is NOT a bound on P(ever alarm) over the full
+  horizon unless the deployment horizon is ≤ W. For longer horizons, treat the
+  reported false-alarm rate as *empirically calibrated on the tested null
+  streams*, not as a proven anytime bound, or use a start-indexed error budget
+  (Σ_j α_j ≤ α) / an empirically calibrated max-scan threshold over the
+  intended horizon.
+- CUSUMMartingale: Page's reset gives O(T) restarts; log(1/α) does NOT control
+  FAR. We use log(horizon/α) as an approximate union-bound correction over the
+  expected horizon (see the class docstring).
+
+All variants additionally require the stream scores to be exchangeable with the
+reference under the null. Benign (non-adversarial) distribution drift violates
+exchangeability and inflates the false-alarm rate (see the exchangeability
+analysis, AV5). The empirical FAR numbers reported in the paper are measured on
+resampled reference null streams; they are evidence for those streams, not a
+substitute for the horizon-wide guarantee.
 
 References:
   - Vovk, V. (2021). Testing randomness online. Statistical Science.
@@ -317,8 +338,16 @@ class ScanMartingale:
     evidence fastest, avoiding the dilution problem. The bounded memory (O(W))
     makes it practical for continuous monitoring.
 
-    The union bound is tight: for W independent tests each at level α/W,
-    P(∃ at least one alarm under H₀) ≤ W · (α/W) = α.
+    Guarantee scope: the log(W/α) threshold union-bounds the W sub-martingales
+    that are active *at a given step*. For W independent tests each at level
+    α/W, P(at least one of the W active processes alarms) ≤ W·(α/W) = α. This
+    bounds the false-alarm probability over any window of ≤ W steps (equiv. a
+    deployment horizon ≤ W). It does NOT bound P(ever alarm) over a horizon
+    with more than W distinct starts: evicted processes already had their own
+    crossing opportunities. For longer horizons use an empirically calibrated
+    max-scan threshold over the intended horizon or a start-indexed error
+    budget; the paper reports the former. Validity also requires exchangeability
+    of the null stream with the reference.
 
     Parameters
     ----------

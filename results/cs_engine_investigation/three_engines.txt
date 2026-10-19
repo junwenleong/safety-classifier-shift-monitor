@@ -1,0 +1,5 @@
+may   : reproduces committed June JSON in 120/120 cells | alarms before onset   0 | mean latency over post-onset alarms   62.5
+sep27 : reproduces committed June JSON in   0/120 cells | alarms before onset   9 | mean latency over post-onset alarms   20.0
+new   : reproduces committed June JSON in   0/120 cells | alarms before onset   0 | mean latency over post-onset alarms   35.7
+committed June JSON: alarms before onset 0; mean latency 62.5
+sample (cell, June alarm step, sep27 alarm step): [(('deberta', 'paraphrase', 0), 554, 517), (('deberta', 'paraphrase', 1), 562, 525), (('deberta', 'paraphrase', 2), 551, 511), (('deberta', 'paraphrase', 3), 564, 343), (('deberta', 'paraphrase', 4), 552, 517), (('deberta', 'paraphrase', 5), 553, 521)]

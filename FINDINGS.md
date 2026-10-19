@@ -18,7 +18,7 @@ The monitor observes a stream of classifier outputs: unsafe-class probability an
 
 | Classifier | Architecture | Parameters | Embedding dim |
 |---|---|---|---|
-| DeBERTa-v3-large | Transformer encoder | 304M | 1024 |
+| DeBERTa-v3-base (fine-tuned) | Transformer encoder | 86M | 768 |
 | Text-Moderation (KoalaAI) | DeBERTa-v3-base | 86M | 768 |
 | Llama Guard 3 | Decoder-only LLM | 8B | 4096 |
 | ShieldGemma | Decoder-only LLM | 9B | 3584 |
@@ -113,11 +113,11 @@ Pareto frontier (Wilson CI): gpt-4o-mini >=71% at $0.033/1k calls, gpt-5.1 >=83.
 
 ## Adversarial Robustness
 
-A 4-tier threat model with confidence-gated routing characterizes the security boundary.
+A 4-tier threat model characterizes the security boundary.
 
-### Confidence-Gated Security Boundary
+### Stall Condition
 
-When the canary is confident, a divergence-minimising attacker stalls at a predicted equilibrium: gap=1/(2lambda)=0.250 (empirical: all 14 blocked cases mean 0.218, median 0.250; 9 near-equilibrium blocked cases mean 0.2499, matching predicted value to 3 decimal places).
+A divergence-minimising attacker stalls at a predicted gap of 1/(2lambda)=0.250 (empirical: 14 of 20 prompts blocked, mean gap 0.218, median 0.250). The blocked rate is 70% on the primary checkpoint pair and 30% on a replication pair, and the data do not identify what determines it. The paper withdraws the earlier claim that the stall is confidence-gated.
 
 ### Transfer Properties
 
@@ -221,6 +221,6 @@ Neither of these results involves the paper's primary 800-cell factorial evaluat
 
 ## Verification
 
-All numbers in this document were programmatically verified against raw experimental data using `scripts/verify_paper_numbers.py` (101 assertions, all passing). Experiment configurations in `configs/` were committed before execution (commit `be630f3`). Post-factorial additions pre-registered in `docs/pre_registration_amendment_2.md` (committed June 8, executed June 9-10).
+All numbers in this document were programmatically verified against raw experimental data using `scripts/verify_paper_numbers.py` (225 assertions, all passing as of 2026-10-20). Experiment configurations in `configs/` were committed before execution (commit `0380167`; see `HISTORY_REWRITE.md` for the mapping from earlier identifiers). Post-factorial additions pre-registered in `docs/pre_registration_amendment_2.md` (committed June 8, executed June 9-10).
 
 Paper: [arXiv](https://arxiv.org/abs/2606.11949) · Code and results: [github.com/junwenleong/safety-classifier-shift-monitor](https://github.com/junwenleong/safety-classifier-shift-monitor)

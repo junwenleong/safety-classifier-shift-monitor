@@ -80,7 +80,7 @@ def get_api_client():
     import httpx
     api_key = os.environ["FRONTIER_API_KEY"]
     return OpenAI(base_url=API_BASE, api_key=api_key,
-                  http_client=httpx.Client(verify=False, timeout=httpx.Timeout(60.0, connect=10.0)))
+                  http_client=httpx.Client(verify=True, timeout=httpx.Timeout(60.0, connect=10.0)))
 
 
 def get_api_score(client, model_name, text):

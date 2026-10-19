@@ -1,4 +1,3 @@
-import os
 """A1: Temperature sensitivity sweep for LLM canaries.
 
 Tests T∈{0, 0.3, 1.0} × 5 models × 20 adv + 20 benign.
@@ -8,6 +7,7 @@ Usage:
     .venv/bin/python scripts/run_temperature_sweep.py
 """
 from __future__ import annotations
+
 import json, time, sys
 from pathlib import Path
 from statistics import mean, stdev
@@ -45,7 +45,7 @@ def get_client():
     import httpx
     return OpenAI(
         base_url=API_BASE, api_key=API_KEY,
-        http_client=httpx.Client(verify=False, timeout=httpx.Timeout(60.0, connect=10.0)),
+        http_client=httpx.Client(verify=True, timeout=httpx.Timeout(60.0, connect=10.0)),
     )
 
 

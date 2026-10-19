@@ -1,0 +1,8 @@
+Population = the 500 null scores of each classifier (true mean known exactly = pool mean).
+Monitored streams: 500 fresh draws from the population. mu0 setting varies.
+
+classifier        known mu0  n_ref=250  n_ref=500  n_ref=2000
+deberta               0.002      0.045      0.017       0.002
+text-moderation       0.000      0.028      0.010       0.005
+llama-guard           0.008      0.090      0.038       0.022
+shieldgemma           0.008      0.093      0.045       0.010

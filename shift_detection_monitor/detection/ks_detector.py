@@ -16,8 +16,9 @@ from shift_detection_monitor.types import StreamRecord
 
 
 class KSDetector:
-    """Computes one-sample KS statistic comparing sliding window scores
-    against the frozen reference CDF.
+    """Computes the two-sample KS statistic D = sup_x |F_window(x) - F_ref(x)|
+    comparing the sliding window's empirical CDF against the frozen reference
+    empirical CDF.
 
     Parameters
     ----------
@@ -50,32 +51,40 @@ class KSDetector:
         return self._compute_ks_statistic()
 
     def _compute_ks_statistic(self) -> float:
-        """Compute the one-sample KS statistic.
+        """Compute the two-sample KS statistic between the window and reference
+        empirical CDFs.
 
-        D_n = sup_x |F_n(x) - F_ref(x)|
+            D = sup_x |F_window(x) - F_ref(x)|
 
-        Uses the standard algorithm matching scipy.stats.ks_1samp:
-        For sorted sample values x_1 <= ... <= x_n:
-            D+ = max_i (i/n - F_ref(x_i))
-            D- = max_i (F_ref(x_i) - (i-1)/n)
-            D  = max(D+, D-)
+        Both F_window and F_ref are *empirical* CDFs. The supremum of their
+        absolute difference is attained at one of the distinct observed values
+        across the pooled samples, so we evaluate both right-continuous
+        empirical CDFs at every pooled value and take the max absolute gap.
+        This handles ties and discrete/coincident jumps correctly (e.g. for
+        identical window and reference the statistic is exactly 0).
 
-        where F_ref is the empirical CDF of the reference scores.
+        Reproducibility note: a prior implementation evaluated D- against the
+        right-continuous reference CDF while using (i-1)/n left-limit window
+        counts. That mishandles coincident jumps and inflates the statistic
+        under ties (it returned 0.5 for an identical window and reference of
+        [0, 1]). Safety-classifier scores are highly tied near 0, so that bug
+        inflated the measured KS statistic; results produced before this fix
+        (committed factorial artefacts) must be regenerated with model
+        inference before being compared against the two-empirical-CDF estimand
+        defined in the paper. See git history for the superseded version.
         """
-        window_sorted = np.sort(np.array(list(self._window), dtype=np.float64))
-        n = len(window_sorted)
-
+        n = len(self._window)
         if n == 0:
             return 0.0
 
-        # Compute F_ref(x_i) for each window value using the reference CDF
-        # F_ref(x) = (number of reference scores <= x) / n_ref
-        cdf_vals = np.searchsorted(self._reference_cdf, window_sorted, side="right") / self._n_ref
+        window_sorted = np.sort(np.array(list(self._window), dtype=np.float64))
 
-        # D+ = max(i/n - F_ref(x_i)) for i = 1..n
-        d_plus = np.max(np.arange(1, n + 1) / n - cdf_vals)
+        # Evaluate both empirical CDFs at every distinct pooled value and take
+        # the sup of their absolute difference (standard two-sample KS).
+        pooled = np.unique(
+            np.concatenate([window_sorted, self._reference_cdf])
+        )
+        f_window = np.searchsorted(window_sorted, pooled, side="right") / n
+        f_ref = np.searchsorted(self._reference_cdf, pooled, side="right") / self._n_ref
 
-        # D- = max(F_ref(x_i) - (i-1)/n) for i = 1..n
-        d_minus = np.max(cdf_vals - np.arange(0, n) / n)
-
-        return float(max(d_plus, d_minus))
+        return float(np.max(np.abs(f_window - f_ref)))

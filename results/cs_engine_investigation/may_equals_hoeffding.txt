@@ -1,0 +1,4 @@
+May engine alarm == plain Hoeffding-on-running-mean rule in 120/120 cells
+reference-only FAR May (Hoeffding): 0/40
+reference-only FAR New (wealth, predictable): 0/40
+deberta/paraphrase seed0: mu0=0.015, pre-onset mean=0.015, post-onset mean=0.517

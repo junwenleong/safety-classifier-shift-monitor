@@ -23,6 +23,7 @@ from shift_detection_monitor.serialization.result_io import (
 from tests.strategies import st_cell_result
 
 # Strategy for malformed lines — things that are definitely not valid CellResult JSON
+# Filter out strings containing \r or \n to avoid line-splitting issues
 _MALFORMED_LINES = st.one_of(
     st.just("not json at all"),
     st.just("{"),
@@ -30,7 +31,7 @@ _MALFORMED_LINES = st.one_of(
     st.just("null"),
     st.just("42"),
     st.just('{"classifier": "x", "shift_condition": "y"}'),
-    st.text(min_size=1, max_size=50).filter(lambda s: "\n" not in s),
+    st.text(min_size=1, max_size=50).filter(lambda s: "\n" not in s and "\r" not in s),
 )
 
 
@@ -97,8 +98,13 @@ def test_malformed_lines_produce_warnings(data, caplog):
     lines, valid_indices = data
     n_malformed = len(lines) - len(valid_indices)
 
+    # Skip empty inputs (no lines to process)
+    if not lines:
+        return
+
     with tempfile.TemporaryDirectory() as tmpdir:
         jsonl_path = Path(tmpdir) / "mixed.jsonl"
+        # Use write_text which normalizes line endings
         jsonl_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
         caplog.clear()
@@ -111,6 +117,7 @@ def test_malformed_lines_produce_warnings(data, caplog):
         if record.levelno == logging.WARNING
         and "Skipping malformed line" in record.message
     )
+    # Each malformed line produces one warning
     assert warning_count == n_malformed
 
 
