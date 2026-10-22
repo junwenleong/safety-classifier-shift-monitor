@@ -83,7 +83,8 @@ def fig1_heatmap(rows):
                         fontsize=6.5, color=color, alpha=0.8)
 
     ax.set_xticks(range(5))
-    ax.set_xticklabels(SHIFTS, fontsize=9)
+    # Rotated: horizontal labels overlap at this figure width.
+    ax.set_xticklabels(SHIFTS, fontsize=8, rotation=25, ha="right", rotation_mode="anchor")
     ax.set_yticks(range(4))
     ax.set_yticklabels(CLASSIFIERS, fontsize=9)
     ax.tick_params(length=0)
