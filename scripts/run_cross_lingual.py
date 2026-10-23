@@ -1,4 +1,3 @@
-import os
 """Cross-Lingual Semantic Transfer: Is safety detection language-universal?
 
 Translates 20 harmful prompts into Spanish, Mandarin, and Arabic, then scores
@@ -9,6 +8,7 @@ Usage:
     .venv/bin/python scripts/run_cross_lingual.py
 """
 from __future__ import annotations
+import os
 import json, sys, time
 from pathlib import Path
 

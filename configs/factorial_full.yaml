@@ -42,7 +42,7 @@ factorial:
   classifiers:
     - llama-guard-3-8b
     - shieldgemma-9b
-    - gpt-oss-safeguard
+    - text-moderation
     - deberta-v3-large
   shift_conditions:
     - paraphrase

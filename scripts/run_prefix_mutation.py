@@ -1,4 +1,3 @@
-import os
 """Prefix Mutation Sweep: Do canaries still detect when the harmful prefix is rephrased?
 
 GCG suffixes are optimized against the exact token sequence of the original prompt.
@@ -12,6 +11,7 @@ Usage:
     .venv/bin/python scripts/run_prefix_mutation.py
 """
 from __future__ import annotations
+import os
 import json, sys, time
 from pathlib import Path
 

@@ -1,4 +1,3 @@
-import os
 """Reasoning Effort Probe: Does test-time compute CAUSE ceiling-clipping?
 
 Tests o3 and o4-mini at reasoning_effort = low/medium/high on benign and
@@ -9,6 +8,7 @@ Usage:
     .venv/bin/python scripts/run_reasoning_effort.py
 """
 from __future__ import annotations
+import os
 import json, sys, time
 from pathlib import Path
 

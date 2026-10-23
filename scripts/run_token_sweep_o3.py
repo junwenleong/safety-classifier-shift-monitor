@@ -1,4 +1,3 @@
-import os
 """Token Limit Sweep: Find the CoT suffocation threshold for o3.
 
 Varies max_completion_tokens from 10 to 80 in steps of 10.
@@ -9,6 +8,7 @@ Usage:
     .venv/bin/python scripts/run_token_sweep_o3.py
 """
 from __future__ import annotations
+import os
 import json, sys, time
 from pathlib import Path
 

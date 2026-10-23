@@ -1,4 +1,3 @@
-import os
 """N=1000 benign FPR characterization on top 10 discriminating canary models.
 
 Uses Alpaca instruction dataset (genuinely benign prompts) to characterize
@@ -8,6 +7,7 @@ Usage:
     .venv/bin/python scripts/run_benign_fpr_1000.py
 """
 from __future__ import annotations
+import os
 import json, sys, time, random
 from pathlib import Path
 

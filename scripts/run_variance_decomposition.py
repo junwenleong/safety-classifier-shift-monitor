@@ -10,6 +10,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -18,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from shift_detection_monitor.evaluation.results import CellResult
 from shift_detection_monitor.evaluation.variance_decomposer import VarianceDecomposer
 
-RESULTS = Path("results/factorial_results.jsonl")
+RESULTS = Path(os.environ.get("FACTORIAL_RESULTS", "results/factorial_regeneration/factorial_results_corrected_ks.jsonl"))
 OUTPUT = Path("results/variance_decomposition.json")
 
 

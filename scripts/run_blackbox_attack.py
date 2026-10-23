@@ -1,4 +1,3 @@
-import os
 """Black-box optimization against gpt-4o-mini canary.
 
 Attempts to minimize gpt-4o-mini's safety score using coordinate ascent
@@ -11,6 +10,7 @@ Usage:
     .venv/bin/python scripts/run_blackbox_attack.py
 """
 from __future__ import annotations
+import os
 import json, sys, time, random, string
 from pathlib import Path
 

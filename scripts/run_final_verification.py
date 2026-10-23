@@ -1,4 +1,3 @@
-import os
 """Final verification batch:
 1. Confirm gpt-5-nano/gpt-5.5 are "content-aware refusers" (score benign OK, refuse harmful)
 2. Black-box attack against gpt-5.1 (5 prompts × 50 iterations)
@@ -7,6 +6,7 @@ Usage:
     .venv/bin/python scripts/run_final_verification.py
 """
 from __future__ import annotations
+import os
 import json, sys, time, random
 from pathlib import Path
 

@@ -1,4 +1,3 @@
-import os
 """Verify: Are gpt-5-nano and gemini-3.5-flash also token-budget artifacts?
 
 Uses max_completion_tokens=100 (or max_tokens=100 for non-reasoning models),
@@ -8,6 +7,7 @@ Usage:
     .venv/bin/python scripts/run_verify_ceiling_models.py
 """
 from __future__ import annotations
+import os
 import json, sys, time
 from pathlib import Path
 

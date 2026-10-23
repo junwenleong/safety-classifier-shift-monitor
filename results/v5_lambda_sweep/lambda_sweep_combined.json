@@ -136,4 +136,14 @@
   ],
   "analysis": {
     "slope": 0.0867978494623656,
-    "includes_one": 
+    "intercept": 0.12414583333333336,
+    "intercept_ci": [
+      0.025067917350562754,
+      0.22322374931610395
+    ],
+    "includes_one": false,
+    "includes_zero": false,
+    "monotone": true,
+    "max_block_rate_high_lambda": 0.6
+  }
+}

@@ -1,4 +1,3 @@
-import os
 """System prompt sensitivity sweep on ceiling-clipped models.
 
 Tests whether the 1.0 ceiling-clipping is caused by:
@@ -12,6 +11,7 @@ Usage:
     .venv/bin/python scripts/run_system_prompt_sweep.py
 """
 from __future__ import annotations
+import os
 import json, sys, time
 from pathlib import Path
 

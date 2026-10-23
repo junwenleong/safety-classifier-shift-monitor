@@ -1,5 +1,5 @@
 """
-Conformal test martingale detectors for anytime-valid shift monitoring.
+Conformal betting-martingale detectors for sequential shift monitoring.
 
 Implements betting martingales on conformal p-values derived from the frozen
 reference CDF. Three variants with different memory/accumulation properties:
@@ -15,21 +15,23 @@ reference CDF. Three variants with different memory/accumulation properties:
 
 Guarantee scope (IMPORTANT — read before citing a FAR bound):
 
-Each individual betting process is a non-negative test martingale under the
-null (conformal p-values are super-uniform under exchangeability), so by
-Ville's inequality a *single* process started at a fixed step controls its own
-crossing probability at α. The variants differ in how they aggregate starts,
-and only one has a clean horizon-wide statement:
+Each conformal p-value is marginally super-uniform under exchangeability.
+Ville's inequality would apply to the betting product only if that product were
+a test martingale, which needs validity conditional on the past. That has NOT
+been established when one frozen reference set is reused at every step, so no
+Ville bound is claimed for any variant here. The false-alarm rates quoted for
+these detectors are *empirically calibrated on the tested null streams*, not
+proven anytime bounds. The variants differ in how they aggregate starts:
 
-- PointMartingale (one process from t=0): P(∃t: alarm | H₀) ≤ α exactly.
+- PointMartingale (one process from t=0): the nominal threshold log(1/α) is
+  what a Ville bound would give if the conditional-validity step held; it is
+  checked empirically only.
 - ScanMartingale: the log(W/α) threshold union-bounds the W processes that are
-  *simultaneously active*. Over a horizon longer than W steps there are more
-  than W distinct starts, so this is NOT a bound on P(ever alarm) over the full
-  horizon unless the deployment horizon is ≤ W. For longer horizons, treat the
-  reported false-alarm rate as *empirically calibrated on the tested null
-  streams*, not as a proven anytime bound, or use a start-indexed error budget
-  (Σ_j α_j ≤ α) / an empirically calibrated max-scan threshold over the
-  intended horizon.
+  *simultaneously active*, granting the same step. Over a horizon longer than W
+  steps there are more than W distinct starts, so this is NOT a bound on
+  P(ever alarm) over the full horizon unless the deployment horizon is ≤ W.
+  For longer horizons use an empirically calibrated max-scan threshold over the
+  intended horizon, or a start-indexed error budget (Σ_j α_j ≤ α).
 - CUSUMMartingale: Page's reset gives O(T) restarts; log(1/α) does NOT control
   FAR. We use log(horizon/α) as an approximate union-bound correction over the
   expected horizon (see the class docstring).
@@ -231,8 +233,8 @@ class CUSUMMartingale:
     independent "starts," so the simple threshold log(1/α) does NOT
     control FAR at α. The actual FAR depends on stream length. We use
     threshold log(horizon/α) as an approximate correction, where horizon
-    is the expected monitoring duration. For infinite-horizon guarantee,
-    use ScanMartingale instead.
+    is the expected monitoring duration. No infinite-horizon guarantee is
+    claimed for any variant in this module (see the module docstring).
 
     Parameters
     ----------

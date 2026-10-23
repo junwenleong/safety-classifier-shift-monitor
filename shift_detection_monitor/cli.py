@@ -113,7 +113,7 @@ def _build_classifiers(
 
     for name in classifier_names:
         try:
-            if name == "deberta-v3-large":
+            if name in ("deberta-v3-large", "deberta-v3-base"):
                 from shift_detection_monitor.classifiers.deberta import DeBERTaAdapter
 
                 classifiers[name] = DeBERTaAdapter()
@@ -129,12 +129,12 @@ def _build_classifiers(
                 )
 
                 classifiers[name] = ShieldGemmaAdapter()
-            elif name == "gpt-oss-safeguard":
+            elif name == "text-moderation":
                 from shift_detection_monitor.classifiers.gpt_oss_safeguard import (
-                    GptOssSafeguardAdapter,
+                    TextModerationAdapter,
                 )
 
-                classifiers[name] = GptOssSafeguardAdapter()
+                classifiers[name] = TextModerationAdapter()
             else:
                 logger.warning("Unknown classifier: %s", name)
         except Exception:

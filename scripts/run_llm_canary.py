@@ -1,4 +1,3 @@
-import os
 """LLM-as-judge canary: Do frontier API models detect GCG attacks that fool DeBERTa?
 
 Sends 49 GCG-suffixed prompts + 50 clean prompts to multiple frontier models,
@@ -11,6 +10,7 @@ Usage:
     .venv/bin/python scripts/run_llm_canary.py
 """
 from __future__ import annotations
+import os
 import json, sys, time
 from pathlib import Path
 

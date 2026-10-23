@@ -35,5 +35,5 @@ markers = [
     "gpu: marks tests requiring GPU",
 ]
 
-[tool.setuptools]
-packages = ["shift_detection_monitor"]
+[tool.setuptools.packages.find]
+include = ["shift_detection_monitor*"]

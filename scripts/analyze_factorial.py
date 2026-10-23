@@ -7,13 +7,14 @@ Usage:
 """
 
 import json
+import os
 import math
 from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 
-RESULTS = Path("results/factorial_results.jsonl")
+RESULTS = Path(os.environ.get("FACTORIAL_RESULTS", "results/factorial_regeneration/factorial_results_corrected_ks.jsonl"))
 CLASSIFIERS = ["deberta", "text-moderation", "llama-guard", "shieldgemma"]
 SHIFTS = ["paraphrase", "code-switch", "compositional-long-context", "temporal", "adversarial-suffix"]
 N_BOOT = 1000

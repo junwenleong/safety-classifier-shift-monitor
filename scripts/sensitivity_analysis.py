@@ -4,10 +4,11 @@
 2. Raw TPR and control FAR separated from the combined valid-detection metric
 """
 import json
+import os
 from pathlib import Path
 import numpy as np
 
-RESULTS = Path("results/factorial_results.jsonl")
+RESULTS = Path(os.environ.get("FACTORIAL_RESULTS", "results/factorial_regeneration/factorial_results_corrected_ks.jsonl"))
 CLASSIFIERS = ["deberta", "text-moderation", "llama-guard", "shieldgemma"]
 SHIFTS = ["paraphrase", "code-switch", "compositional-long-context", "temporal", "adversarial-suffix"]
 

@@ -10,13 +10,14 @@ Usage:
 """
 
 import json
+import os
 import math
 import sys
 from pathlib import Path
 
 import numpy as np
 
-RESULTS = Path("results/factorial_results.jsonl")
+RESULTS = Path(os.environ.get("FACTORIAL_RESULTS", "results/factorial_regeneration/factorial_results_corrected_ks.jsonl"))
 REGIME_B = Path("results/regime_b_results.jsonl")
 REGIME_C = Path("results/regime_c_results.jsonl")
 CONFORMAL = Path("results/conformal_full.json")
@@ -61,17 +62,17 @@ def main():
 
     print("\n[Regime A — Abstract & Overall]")
     check("Total cells", 800, len(rows), tol=0)
-    check("Valid detections", 693, len(valid), tol=0)
-    check("Detection rate %", 86.6, len(valid) / len(rows) * 100, tol=0.1)
+    check("Valid detections", 694, len(valid), tol=0)
+    check("Detection rate %", 86.8, len(valid) / len(rows) * 100, tol=0.1)
 
     w100 = [r["detection_latency"] for r in valid if r["window_size"] == 100]
     w200 = [r["detection_latency"] for r in valid if r["window_size"] == 200]
-    check("w=100 mean latency", 39.5, sum(w100) / len(w100), tol=0.5)
-    check("w=200 mean latency", 45.4, sum(w200) / len(w200), tol=0.5)
+    check("w=100 mean latency", 39.7, sum(w100) / len(w100), tol=0.1)
+    check("w=200 mean latency", 45.6, sum(w200) / len(w200), tol=0.1)
 
     # FAR per classifier
     print("\n[Regime A — False Alarm Rates]")
-    far_expected = {"deberta": 0.095, "text-moderation": 0.02, "llama-guard": 0.03, "shieldgemma": 0.085}
+    far_expected = {"deberta": 0.095, "text-moderation": 0.02, "llama-guard": 0.03, "shieldgemma": 0.08}
     for clf in CLASSIFIERS:
         cells = [r for r in rows if r["classifier"] == clf]
         far = sum(1 for r in cells if not r.get("neg_clean", True)) / len(cells)
@@ -105,22 +106,22 @@ def main():
                 effect = np.mean(latencies[mask]) - np.mean(latencies[clf_mask]) - np.mean(latencies[shift_mask]) + grand_mean
                 ss_int += mask.sum() * effect ** 2
 
-    check("η² classifier", 0.243, ss_clf / ss_total, tol=0.002)
-    check("η² shift_type", 0.237, ss_shift / ss_total, tol=0.002)
-    check("η² interaction", 0.185, ss_int / ss_total, tol=0.002)
-    check("η² residual", 0.335, (ss_total - ss_clf - ss_shift - ss_int) / ss_total, tol=0.002)
+    check("η² classifier", 0.248, ss_clf / ss_total, tol=0.002)
+    check("η² shift_type", 0.239, ss_shift / ss_total, tol=0.002)
+    check("η² interaction", 0.186, ss_int / ss_total, tol=0.002)
+    check("η² residual", 0.328, (ss_total - ss_clf - ss_shift - ss_int) / ss_total, tol=0.002)
 
     # Key cell latencies
     print("\n[Regime A — Key Cell Latencies]")
     key_cells = [
         ("deberta", "paraphrase", 28.4),
-        ("deberta", "adversarial-suffix", 36.6),
+        ("deberta", "adversarial-suffix", 36.5),
         ("text-moderation", "adversarial-suffix", 25.3),
-        ("llama-guard", "code-switch", 93.4),
-        ("llama-guard", "adversarial-suffix", 27.8),
-        ("shieldgemma", "paraphrase", 85.0),
-        ("shieldgemma", "adversarial-suffix", 26.8),
-        ("shieldgemma", "temporal", 27.1),
+        ("llama-guard", "code-switch", 93.9),
+        ("llama-guard", "adversarial-suffix", 27.9),
+        ("shieldgemma", "paraphrase", 85.6),
+        ("shieldgemma", "adversarial-suffix", 27.7),
+        ("shieldgemma", "temporal", 27.6),
     ]
     for clf, shift, expected in key_cells:
         lats = [r["detection_latency"] for r in valid
@@ -131,7 +132,7 @@ def main():
     # Failure analysis
     print("\n[Regime A — Failure Analysis]")
     invalid = [r for r in rows if not r["is_valid_detection"]]
-    check("Invalid cells total", 107, len(invalid), tol=0)
+    check("Invalid cells total", 106, len(invalid), tol=0)
 
     deb_adv_invalid = sum(1 for r in rows
                           if r["classifier"] == "deberta"
@@ -157,8 +158,8 @@ def main():
             w200_map[key] = r["detection_latency"]
     paired_keys = sorted(set(w100_map.keys()) & set(w200_map.keys()))
     paired_diff = np.mean([w100_map[k] - w200_map[k] for k in paired_keys])
-    check("Window paired diff (100-200)", -7.0, paired_diff, tol=0.5)
-    check("N paired", 314, len(paired_keys), tol=0)
+    check("Window paired diff (100-200)", -7.1, paired_diff, tol=0.1)
+    check("N paired", 315, len(paired_keys), tol=0)
 
     # ========================================================================
     # REGIME B: Temporal jailbreaks
@@ -362,13 +363,13 @@ def main():
         check("CA8: prompts with no baseline", 10, sum(1 for r in cr if r.get("orig_a") is None), tol=0)
 
     print("\n[Invalid-cell split and lambda-sweep regression]")
-    fr = Path("results/factorial_results.jsonl")
+    fr = RESULTS
     if fr.exists():
         fx = [json.loads(l) for l in open(fr) if l.strip()]
         inv = [r for r in fx if not (r["detection_latency"] is not None and r["detection_latency"] >= 0 and r["neg_clean"])]
-        check("Invalid cells", 107, len(inv), tol=0)
+        check("Invalid cells", 106, len(inv), tol=0)
         check("Invalid cells: alarm before onset (negative latency)", 68, sum(1 for r in inv if r["detection_latency"] is not None and r["detection_latency"] < 0), tol=0)
-        check("Invalid cells: dirty negative control", 46, sum(1 for r in inv if not r["neg_clean"]), tol=0)
+        check("Invalid cells: dirty negative control", 45, sum(1 for r in inv if not r["neg_clean"]), tol=0)
         check("Invalid cells: both", 7, sum(1 for r in inv if (not r["neg_clean"]) and r["detection_latency"] is not None and r["detection_latency"] < 0), tol=0)
     ls = Path("results/v5_lambda_sweep/analysis.json")
     if ls.exists():
@@ -680,24 +681,25 @@ def verify_corrections():
         check_bool("Lambda 2.0 blocked 10/20", per["2.0"]["blocked"] == 10)
         check_bool("Lambda 8.0 blocked 12/20", per["8.0"]["blocked"] == 12)
 
-    # --- Frontier stability (corrected v5_pareto_update.json) ---
+    # --- Frontier stability: stored values of the withdrawn update experiment. The paper cites 46.8%/44.7%
+    # only as the artefact (both arms carried the same truncated original prompt), not as detection or FPR. ---
     pu = Path("results/v5_pareto_update.json")
     if pu.exists():
         d = json.loads(pu.read_text())
         cs5 = d.get("claude-sonnet-5", {})
         if cs5.get("n_adv"):
             check_bool(
-                f"claude-sonnet-5 detection 46.8% (got {cs5['det_point']:.3f})",
+                f"[artefact, not a detection rate] claude-sonnet-5 arm A 46.8% (got {cs5['det_point']:.3f})",
                 abs(cs5["det_point"] - 0.468) < 0.01,
             )
             check_bool(
-                f"claude-sonnet-5 FPR 44.7% (got {cs5['fpr_point']:.3f})",
+                f"[artefact, not an FPR] claude-sonnet-5 arm B 44.7% (got {cs5['fpr_point']:.3f})",
                 abs(cs5["fpr_point"] - 0.447) < 0.01,
             )
         g36 = d.get("gemini-3.6-flash", {})
         if g36.get("n_adv"):
             check_bool(
-                f"gemini-3.6-flash detection 26.1% (got {g36['det_point']:.3f})",
+                f"[artefact, not a detection rate] gemini-3.6-flash arm A 26.1% (got {g36['det_point']:.3f})",
                 abs(g36["det_point"] - 0.261) < 0.01,
             )
 

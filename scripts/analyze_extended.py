@@ -5,6 +5,7 @@ variance decomposition (ANOVA), failure analysis, and N=5 vs N=20 comparison.
 """
 
 import json
+import os
 import math
 from collections import defaultdict
 from pathlib import Path
@@ -12,7 +13,7 @@ from pathlib import Path
 import numpy as np
 from scipy import stats as sp_stats
 
-RESULTS = Path("results/factorial_results.jsonl")
+RESULTS = Path(os.environ.get("FACTORIAL_RESULTS", "results/factorial_regeneration/factorial_results_corrected_ks.jsonl"))
 CLASSIFIERS = ["deberta", "text-moderation", "llama-guard", "shieldgemma"]
 SHIFTS = ["paraphrase", "code-switch", "compositional-long-context", "temporal", "adversarial-suffix"]
 SEEDS = list(range(20))

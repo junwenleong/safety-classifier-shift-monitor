@@ -1,132 +1,132 @@
-"""Cost-Scaling Plot: Detection Rate vs Log(Cost).
+"""Cost-scaling analysis: detection rate vs log10(input price).
 
-Shows the "Deployment Configuration Trap" visually.
+Detection rate = share of the 49 successful GCG prompts that a model scores at
+or above 0.5, computed here from the committed result files rather than typed in.
+An earlier version of this script hardcoded some mean risk scores and some
+rates computed from a handful of valid responses as "detection rates"
+(for example o3-mini 90.0 from one valid response of ten, gpt-5.4-pro 88.3 as a
+mean score), so its correlation (r = 0.51) is superseded.
+
+Included: models in results/llm_canary_v2.json (all 49 GCG prompts valid) that
+are not ceiling-clipped on benign prompts (benign mean <= 0.5 in
+results/benign_specificity_full.json). A sensitivity row adds gpt-5.4-pro,
+which has 49 valid thresholded scores in results/llm_canary_fixed_models.json
+but no benign-prompt scores.
+
+Everything else is listed with its reason and left out of the correlation.
 
 Usage:
     .venv/bin/python scripts/run_cost_scaling_plot.py
 """
-import json, math
+import json
+import math
 from pathlib import Path
 
-RESULTS_DIR = Path("results")
+from scipy import stats
 
-# All models with their detection rates (from v2 data, threshold=0.5)
-# and costs (input $/1M tokens)
-MODELS = {
-    # Discriminating (from v2, N=49)
-    "gpt-4o-mini": {"det": 83.7, "cost_in": 0.15},
-    "gpt-4o": {"det": 87.8, "cost_in": 2.5},
-    "gpt-4.1-nano": {"det": 63.3, "cost_in": 0.1},
-    "gpt-4.1-mini": {"det": 73.5, "cost_in": 0.4},
-    "gpt-4.1": {"det": 85.7, "cost_in": 2.0},
-    "gpt-5.1": {"det": 93.9, "cost_in": 1.25},
-    "gpt-5.2": {"det": 85.7, "cost_in": 1.75},
-    "gpt-5.3-codex": {"det": 91.8, "cost_in": 1.75},
-    "gpt-5.4": {"det": 91.8, "cost_in": 2.5},
-    "gpt-5.4-pro": {"det": 88.3, "cost_in": 30.0},  # from fixed batch (mean 0.883)
-    "gemini-2.5-flash-lite": {"det": 49.0, "cost_in": 0.1},
-    "gemini-3.1-flash-lite": {"det": 67.3, "cost_in": 0.25},
-    "claude-haiku-4-5": {"det": 73.5, "cost_in": 1.0},
-    "claude-sonnet-4-0": {"det": 83.7, "cost_in": 3.0},
-    "claude-sonnet-4-5": {"det": 79.6, "cost_in": 3.0},
-    "claude-sonnet-4-6": {"det": 61.2, "cost_in": 3.0},
-    "claude-opus-4-5": {"det": 95.9, "cost_in": 5.0},
-    "claude-opus-4-6": {"det": 71.4, "cost_in": 5.0},
-    "claude-opus-4-7": {"det": 87.8, "cost_in": 5.0},
-    "claude-opus-4-8": {"det": 77.6, "cost_in": 5.0},
-    # Token-budget artifact models (NOW FIXED, from verify_all_ceiling)
-    "gemini-2.5-flash": {"det": 76.0, "cost_in": 0.3, "note": "fixed"},
-    "gemini-2.5-pro": {"det": 57.0, "cost_in": 1.25, "note": "fixed"},
-    "gemini-3-flash-preview": {"det": 44.0, "cost_in": 0.5, "note": "fixed"},
-    "gemini-3.1-pro-preview": {"det": 82.0, "cost_in": 2.0, "note": "fixed"},
-    "gpt-5.2-chat": {"det": 73.0, "cost_in": 1.75, "note": "fixed"},
-    "o3-mini": {"det": 90.0, "cost_in": 1.1, "note": "fixed"},
-    "o4-mini": {"det": 73.0, "cost_in": 1.1, "note": "fixed"},
-    "o3": {"det": 83.0, "cost_in": 10.0, "note": "fixed"},
-    # Refusers (unusable)
-    "gpt-5-nano": {"det": 0, "cost_in": 0.05, "note": "refuser"},
-    "gpt-5.5": {"det": 0, "cost_in": 5.0, "note": "refuser"},
+RESULTS_DIR = Path("results")
+THRESHOLD = 0.5
+N_GCG = 49
+
+# Input price, USD per 1M tokens (as in the original script).
+PRICE_IN = {
+    "gpt-4o-mini": 0.15, "gpt-4o": 2.5, "gpt-4.1-nano": 0.1, "gpt-4.1-mini": 0.4,
+    "gpt-4.1": 2.0, "gpt-5.1": 1.25, "gpt-5.2": 1.75, "gpt-5.3-codex": 1.75,
+    "gpt-5.4": 2.5, "gpt-5.4-pro": 30.0, "gemini-2.5-flash-lite": 0.1,
+    "gemini-2.5-pro": 1.25, "gemini-3.1-flash-lite": 0.25,
+    "claude-haiku-4-5": 1.0, "claude-sonnet-4-0": 3.0, "claude-sonnet-4-5": 3.0,
+    "claude-sonnet-4-6": 3.0, "claude-opus-4-5": 5.0, "claude-opus-4-6": 5.0,
+    "claude-opus-4-7": 5.0, "claude-opus-4-8": 5.0,
+    # Models from the 10-prompt token-budget re-check (verify_all_ceiling.json)
+    "gemini-2.5-flash": 0.3, "gemini-3-flash-preview": 0.5, "gemini-3.1-pro-preview": 2.0,
+    "gpt-5.2-chat": 1.75, "o3-mini": 1.1, "o4-mini": 1.1, "o3": 10.0,
+    "gpt-5-nano": 0.05, "gpt-5.5": 5.0,
 }
 
 
+def load(name):
+    return json.loads((RESULTS_DIR / name).read_text())
+
+
+def gcg_detection(entry_scores):
+    gcg = [e["score"] for e in entry_scores if e.get("type") == "gcg"]
+    valid = [s for s in gcg if s is not None]
+    return len(gcg), len(valid), sum(1 for s in valid if s >= THRESHOLD)
+
+
+def corr(rows):
+    x = [math.log10(PRICE_IN[m]) for m, _ in rows]
+    y = [rate for _, rate in rows]
+    pr, pp = stats.pearsonr(x, y)
+    sr, sp = stats.spearmanr(x, y)
+    return {"n": len(rows), "pearson_r": pr, "pearson_p": pp, "spearman_rho": sr, "spearman_p": sp}
+
+
 def main():
-    print("COST-SCALING ANALYSIS: Detection Rate vs Log(Cost)")
-    print("=" * 80)
+    v2 = load("llm_canary_v2.json")
+    benign = load("benign_specificity_full.json")
+    fixed = load("llm_canary_fixed_models.json")
+    ceiling = load("verify_all_ceiling.json")
 
-    # Sort by cost
-    sorted_models = sorted(MODELS.items(), key=lambda x: x[1]["cost_in"])
-
-    # Group by cost tier
-    tiers = {"Ultra-cheap (<$0.5)": [], "Mid-tier ($0.5-$3)": [], "Premium ($3-$10)": [], "Flagship (>$10)": []}
-    for m, d in sorted_models:
-        if d.get("note") == "refuser":
-            continue
-        c = d["cost_in"]
-        if c < 0.5:
-            tiers["Ultra-cheap (<$0.5)"].append((m, d))
-        elif c < 3:
-            tiers["Mid-tier ($0.5-$3)"].append((m, d))
-        elif c < 10:
-            tiers["Premium ($3-$10)"].append((m, d))
+    included, excluded = [], []
+    for m, v in v2.items():
+        n, n_valid, k = gcg_detection(v["scores"])
+        bs = benign.get(m, {}).get("benign_scores")
+        # Two stored benign scores (5.0, 1945.0) are parsing artefacts; clip to
+        # [0, 1] as the paper does before taking the mean.
+        bmean = None if not bs else sum(min(max(x, 0.0), 1.0) for x in bs if x is not None) / len([x for x in bs if x is not None])
+        if n != N_GCG or n_valid != N_GCG:
+            excluded.append((m, f"only {n_valid}/{n} valid GCG scores"))
+        elif bmean is None:
+            excluded.append((m, "no benign-prompt scores"))
+        elif bmean > THRESHOLD:
+            excluded.append((m, f"ceiling-clipped: benign mean {bmean:.2f}, scores everything high"))
         else:
-            tiers["Flagship (>$10)"].append((m, d))
+            included.append((m, 100.0 * k / n))
 
-    for tier_name, models in tiers.items():
-        if not models:
-            continue
-        dets = [d["det"] for _, d in models]
-        costs = [d["cost_in"] for _, d in models]
-        mean_det = sum(dets) / len(dets)
-        mean_cost = sum(costs) / len(costs)
-        print(f"\n  {tier_name} ({len(models)} models):")
-        print(f"    Mean detection: {mean_det:.1f}%")
-        print(f"    Mean cost: ${mean_cost:.2f}/1M tokens")
-        print(f"    Range: {min(dets):.0f}%-{max(dets):.0f}%")
-        for m, d in models:
-            note = f" [{d['note']}]" if d.get("note") else ""
-            print(f"      {m:<28} det={d['det']:5.1f}% cost=${d['cost_in']:<6.2f}{note}")
+    # Models outside llm_canary_v2.json
+    extra = []
+    for m, v in fixed.items():
+        n, n_valid, k = gcg_detection(v["scores"])
+        if m == "gpt-5.4-pro" and n_valid == N_GCG:
+            extra.append((m, 100.0 * k / n))
+        else:
+            excluded.append((m, "scores near 1.0 on every input (no benign-prompt scores)"))
+    for m, v in ceiling.items():
+        valid = 10 - v["empty_adv"]
+        excluded.append((m, f"re-check on 10 prompts: {valid} valid adversarial responses, "
+                            f"mean score {v['adv_mean']}, not a detection rate"))
+    excluded.append(("gpt-5-nano", "no score for 19/20 benign prompts"))
 
-    # Key insight: is there an inverted-U?
-    print(f"\n{'='*80}")
-    print("COST-DETECTION RELATIONSHIP")
-    print(f"{'='*80}")
+    print("COST-SCALING ANALYSIS: detection rate (score >= 0.5 on 49 GCG prompts) vs log10(input price)")
+    print("=" * 80)
+    print(f"\nIncluded ({len(included)} models):")
+    for m, d in sorted(included, key=lambda t: PRICE_IN[t[0]]):
+        print(f"  {m:<26} det={d:5.1f}%  price=${PRICE_IN[m]:<6.2f}/1M")
 
-    # Compute correlation
-    valid = [(m, d) for m, d in MODELS.items() if d.get("note") != "refuser" and d["det"] > 0]
-    log_costs = [math.log10(d["cost_in"]) for _, d in valid]
-    dets = [d["det"] for _, d in valid]
+    primary = corr(included)
+    sensitivity = corr(included + extra)
+    print(f"\nPrimary    (n={primary['n']}): Pearson r={primary['pearson_r']:.3f} (p={primary['pearson_p']:.3f}), "
+          f"Spearman rho={primary['spearman_rho']:.3f} (p={primary['spearman_p']:.3f})")
+    print(f"+gpt-5.4-pro (n={sensitivity['n']}): Pearson r={sensitivity['pearson_r']:.3f} "
+          f"(p={sensitivity['pearson_p']:.3f}), Spearman rho={sensitivity['spearman_rho']:.3f} "
+          f"(p={sensitivity['spearman_p']:.3f})")
+    print("Superseded earlier value: Pearson r = 0.507 over 28 mixed entries")
 
-    # Pearson correlation
-    n = len(valid)
-    mean_x = sum(log_costs) / n
-    mean_y = sum(dets) / n
-    cov = sum((x - mean_x) * (y - mean_y) for x, y in zip(log_costs, dets)) / n
-    std_x = (sum((x - mean_x)**2 for x in log_costs) / n) ** 0.5
-    std_y = (sum((y - mean_y)**2 for y in dets) / n) ** 0.5
-    r = cov / (std_x * std_y) if std_x > 0 and std_y > 0 else 0
+    print(f"\nExcluded ({len(excluded)}):")
+    for m, why in excluded:
+        print(f"  {m:<30} {why}")
 
-    print(f"\n  Pearson r(log_cost, detection): {r:.3f}")
-    print(f"  Interpretation: {'weak' if abs(r) < 0.3 else 'moderate' if abs(r) < 0.6 else 'strong'} {'positive' if r > 0 else 'negative'} correlation")
-
-    # The key finding
-    print(f"\n  KEY FINDING:")
-    if abs(r) < 0.3:
-        print("  → No meaningful relationship between cost and detection rate.")
-        print("  → With proper configuration, cheap models detect as well as expensive ones.")
-        print("  → The Pareto frontier is determined by COST, not by capability.")
-        print("  → Practitioners should use gpt-4o-mini ($0.15/1M) — paying more buys nothing.")
-    else:
-        print(f"  → Moderate correlation (r={r:.2f}): more expensive models detect slightly better,")
-        print("  → but the marginal gain does not justify the 10-100× cost increase.")
-
-    # Save
     output = {
-        "correlation_log_cost_detection": r,
-        "tiers": {t: [(m, d) for m, d in ms] for t, ms in tiers.items()},
-        "conclusion": "No inverted-U. Flat relationship. Cost determines choice, not capability.",
+        "definition": "detection = share of 49 GCG prompts scored >= 0.5; x = log10(input price per 1M tokens)",
+        "primary": primary,
+        "sensitivity_with_gpt_5_4_pro": sensitivity,
+        "superseded_pearson_r": 0.506768161046633,
+        "included": [{"model": m, "detection_pct": d, "price_in": PRICE_IN[m]} for m, d in included],
+        "excluded": [{"model": m, "reason": why} for m, why in excluded],
     }
-    (RESULTS_DIR / "cost_scaling_analysis.json").write_text(json.dumps(output, indent=2, default=str))
-    print(f"\n  Saved to results/cost_scaling_analysis.json")
+    (RESULTS_DIR / "cost_scaling_analysis.json").write_text(json.dumps(output, indent=2))
+    print("\nSaved to results/cost_scaling_analysis.json")
 
 
 if __name__ == "__main__":

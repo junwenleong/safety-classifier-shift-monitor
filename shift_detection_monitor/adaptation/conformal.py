@@ -272,6 +272,10 @@ class ConformalAbstentionLayer:
             return
 
         cal_arr = np.array(cal_embeddings, dtype=np.float64)
+        # Calibration representations are raw like the target ones, but the
+        # estimator was fitted in the reduced space, so project them the same way.
+        if frozen_stats.pca_components is not None and frozen_stats.pca_mean is not None:
+            cal_arr = (cal_arr - frozen_stats.pca_mean) @ frozen_stats.pca_components.T
         weights = estimator.weights(cal_arr)
 
         # Recompute threshold with weights

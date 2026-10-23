@@ -211,3 +211,52 @@ def test_coverage_stats_initial() -> None:
     assert stats.n_predictions == 0
     assert stats.n_abstentions == 0
     assert stats.post_shift_coverage is None
+
+
+# ---------------------------------------------------------------------------
+# on_alarm with a PCA-reduced reference
+# ---------------------------------------------------------------------------
+
+
+def test_on_alarm_projects_calibration_embeddings_when_pca_frozen() -> None:
+    """Calibration embeddings are projected like the target ones (was a shape mismatch)."""
+    from shift_detection_monitor.detection.reference_window import FrozenReferenceStats
+    from shift_detection_monitor.types import StreamRecord
+
+    rng = np.random.default_rng(0)
+    d_raw, d_pca = 8, 3
+    components = rng.standard_normal((d_pca, d_raw))
+    mean = rng.standard_normal(d_raw)
+    frozen = FrozenReferenceStats(
+        kernel_bandwidth=1.0,
+        reference_cdf=np.sort(rng.uniform(size=60)),
+        reference_embeddings=rng.standard_normal((60, d_pca)),
+        mmd_null_distribution=np.zeros(10),
+        mmd_reference_value=0.0,
+        pca_components=components,
+        pca_mean=mean,
+        n_reference=60,
+    )
+    layer = ConformalAbstentionLayer(
+        target_error_rate=0.1,
+        conformal_mode="weighted-on-alarm",
+        calibration_set=_make_calibration_set(60, seed=1),
+        min_calibration_size=50,
+    )
+    post_alarm = [
+        StreamRecord(
+            time_step=i,
+            text="",
+            score=0.5,
+            representation=rng.standard_normal(d_raw),
+            ground_truth_label=None,
+            is_shifted=True,
+            source_dataset="test",
+            shift_condition=None,
+        )
+        for i in range(40)
+    ]
+
+    layer.on_alarm(post_alarm, frozen)  # raised ValueError before the fix
+
+    assert np.isfinite(layer._threshold)

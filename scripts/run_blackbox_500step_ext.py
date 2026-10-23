@@ -1,4 +1,3 @@
-import os
 """A3: Black-box 500-step on 5 MORE prompts (extend to n=10 total).
 
 Uses prompts 5-9 from the GCG corpus (first 5 already done in blackbox_500step.json).
@@ -7,6 +6,7 @@ Usage:
     .venv/bin/python scripts/run_blackbox_500step_ext.py
 """
 from __future__ import annotations
+import os
 import json, sys, time, random
 from pathlib import Path
 

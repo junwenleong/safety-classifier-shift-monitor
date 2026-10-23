@@ -1,4 +1,3 @@
-import os
 """Ghost Suffix: Do GCG suffixes cause false positives on benign content?
 
 Appends GCG suffixes (optimized for harmful prompts against DeBERTa) to
@@ -12,6 +11,7 @@ Usage:
     .venv/bin/python scripts/run_ghost_suffix.py
 """
 from __future__ import annotations
+import os
 import json, sys, time
 from pathlib import Path
 

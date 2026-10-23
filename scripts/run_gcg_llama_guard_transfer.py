@@ -1,4 +1,3 @@
-import os
 """GCG against Llama Guard 3 (generative surrogate) + transfer test to API canaries.
 
 Optimizes suffixes to minimize Llama Guard's unsafe probability (white-box,
@@ -13,6 +12,7 @@ Usage:
     .venv/bin/python scripts/run_gcg_llama_guard_transfer.py
 """
 from __future__ import annotations
+import os
 import json, sys, time
 from pathlib import Path
 

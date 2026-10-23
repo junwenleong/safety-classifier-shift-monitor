@@ -1,23 +1,52 @@
 {
   "factor_variances": {
-    "classifier": 0.243,
-    "shift_type": 0.237
+    "classifier": 0.24768722775795804,
+    "shift_type": 0.2386158543511794
   },
   "interaction_variances": {
-    "classifier:shift_type": 0.185
+    "classifier:shift_type": 0.18576766135092376
   },
   "effect_sizes": {
     "classifier": {
-      "estimate": 0.243,
-      "ci_lower": 0.205,
-      "ci_upper": 0.291
+      "estimate": 0.24768722775795804,
+      "ci_lower": 0.207125184502175,
+      "ci_upper": 0.2928810830767914
     },
     "shift_type": {
-      "estimate": 0.237,
-      "ci_lower": 0.193,
-      "ci_upper": 0.293
+      "estimate": 0.2386158543511794,
+      "ci_lower": 0.1946354485664275,
+      "ci_upper": 0.29872623230625195
     }
   },
-  "residual_variance": 0.335,
-  "n_valid_cells": 693
+  "flagged_cells": [],
+  "residual_variance": 0.3279292565399389,
+  "top3_interactions": [
+    {
+      "cell": "deberta:adversarial-suffix",
+      "effect": 21.43066700318452
+    },
+    {
+      "cell": "shieldgemma:paraphrase",
+      "effect": 19.99059407070299
+    },
+    {
+      "cell": "llama-guard:code-switch",
+      "effect": 17.838888606245206
+    }
+  ],
+  "n_valid_cells": 694,
+  "permutation_test": {
+    "classifier": {
+      "eta_sq": 0.24768722775795804,
+      "p_value": 0.000999000999000999
+    },
+    "shift_type": {
+      "eta_sq": 0.2386158543511794,
+      "p_value": 0.000999000999000999
+    },
+    "interaction": {
+      "eta_sq": 0.18576766135092376,
+      "p_value": 0.000999000999000999
+    }
+  }
 }

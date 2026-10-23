@@ -8,12 +8,13 @@ Usage:
 """
 
 import json
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-RESULTS = Path("results/factorial_results.jsonl")
+RESULTS = Path(os.environ.get("FACTORIAL_RESULTS", "results/factorial_regeneration/factorial_results_corrected_ks.jsonl"))
 VARIANCE = Path("results/variance_decomposition.json")
 OUTDIR = Path("paper/figures")
 

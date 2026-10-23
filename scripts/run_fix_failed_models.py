@@ -1,4 +1,3 @@
-import os
 """Fix failed models (gpt-5.4-pro, gpt-5.5) and add claude-opus-4-1.
 
 gpt-5.4-pro and gpt-5.5 failed in v1 due to using max_tokens instead of
@@ -13,6 +12,7 @@ Usage:
     .venv/bin/python scripts/run_fix_failed_models.py
 """
 from __future__ import annotations
+import os
 import json, sys, time, random
 from pathlib import Path
 

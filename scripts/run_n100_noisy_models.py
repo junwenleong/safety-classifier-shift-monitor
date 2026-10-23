@@ -1,4 +1,3 @@
-import os
 """N=100 expansion for gemini-2.5-flash-lite and gpt-4.1-nano.
 
 These two models had inconclusive Bayes Factors (within-pair SD of 0.39, 0.32)
@@ -16,6 +15,7 @@ Usage:
     .venv/bin/python scripts/run_n100_noisy_models.py
 """
 from __future__ import annotations
+import os
 import json, sys, time, random
 from pathlib import Path
 

@@ -1,4 +1,3 @@
-import os
 """500-step black-box coordinate ascent against gpt-4o-mini.
 
 Extended budget to find the fracture point of the canary's robustness.
@@ -8,6 +7,7 @@ Usage:
     .venv/bin/python scripts/run_blackbox_500step.py
 """
 from __future__ import annotations
+import os
 import json, sys, time, random
 from pathlib import Path
 

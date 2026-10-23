@@ -1,4 +1,3 @@
-import os
 """Fix: gpt-5.4-pro (no max_tokens) and gpt-5.5 (no temperature, reasoning model).
 
 Findings from diagnostics:
@@ -9,6 +8,7 @@ Usage:
     .venv/bin/python scripts/run_fix_failed_v2.py
 """
 from __future__ import annotations
+import os
 import json, sys, time, random
 from pathlib import Path
 

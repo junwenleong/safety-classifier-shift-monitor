@@ -31,7 +31,11 @@ _MALFORMED_LINES = st.one_of(
     st.just("null"),
     st.just("42"),
     st.just('{"classifier": "x", "shift_condition": "y"}'),
-    st.text(min_size=1, max_size=50).filter(lambda s: "\n" not in s and "\r" not in s),
+    # Whitespace-only lines are blank, which the reader skips without a warning,
+    # so they are not malformed lines.
+    st.text(min_size=1, max_size=50).filter(
+        lambda s: "\n" not in s and "\r" not in s and s.strip() != ""
+    ),
 )
 
 

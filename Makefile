@@ -19,11 +19,11 @@ build-paraphrase:
 
 # v5 reproducibility targets
 reproduce:
-	@echo "=== Reproducing v5 headline numbers from cached data ==="
+	@echo "=== Re-running one v5 experiment and checking 225 stored values (does not regenerate all tables or figures) ==="
 	@echo "1. Sub-threshold detection (Table subthreshold)..."
 	.venv/bin/python scripts/exp_subthreshold_detection.py --quick
 	@echo ""
-	@echo "2. Paper number verification (115 assertions)..."
+	@echo "2. Paper number verification (225 assertions against stored results)..."
 	.venv/bin/python scripts/verify_paper_numbers.py
 	@echo ""
 	@echo "=== All reproduced successfully ==="

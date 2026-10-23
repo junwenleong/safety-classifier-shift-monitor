@@ -8,7 +8,7 @@ Usage:
 """
 from __future__ import annotations
 
-import json, time, sys
+import json, os, time, sys
 from pathlib import Path
 from statistics import mean, stdev
 

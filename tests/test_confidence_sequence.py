@@ -695,3 +695,16 @@ def test_growing_cs_supermartingale_under_fair_null() -> None:
         finals.append(math.exp(eng._log_wealth))
     # Supermartingale: mean wealth <= 1 (allow a small Monte-Carlo margin)
     assert sum(finals) / len(finals) <= 1.02
+
+
+def test_growing_cs_wealth_does_not_overflow() -> None:
+    """Very large log-wealth must not raise OverflowError when exposing wealth."""
+    engine = ConfidenceSequenceEngine(
+        alpha=0.05,
+        reference_value=0.5,
+        window_mode="growing",
+        tail_bound="bounded",
+    )
+    engine._log_wealth = 5000.0  # far beyond the ~709 limit of math.exp
+    out = engine.update(1.0)
+    assert out.wealth is not None and math.isfinite(out.wealth)

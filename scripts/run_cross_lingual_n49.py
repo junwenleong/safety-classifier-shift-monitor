@@ -1,4 +1,3 @@
-import os
 """A4: Cross-lingual N=49 on gpt-4o-mini Spanish only.
 
 Tightens the "60% detection in Spanish" estimate from ±20pp (N=20) to ±7pp (N=49).
@@ -8,6 +7,7 @@ Usage:
     .venv/bin/python scripts/run_cross_lingual_n49.py
 """
 from __future__ import annotations
+import os
 import json, sys, time, math
 from pathlib import Path
 

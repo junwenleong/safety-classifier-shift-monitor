@@ -1,10 +1,15 @@
 """
 Betting-based confidence sequences (Waudby-Smith & Ramdas 2024, JRSS-B).
 
-This module implements the ConfidenceSequenceEngine, which maintains time-uniform
-confidence sequences for sequential shift detection. The engine provides the
-guarantee: P(∀t: T_t ∈ [L_t, U_t]) ≥ 1 − α for bounded statistics, using
-Ville's inequality on the wealth supermartingale.
+This module implements the ConfidenceSequenceEngine for sequential shift
+detection. Only the bounded growing-window mode carries a wealth-based alarm
+(a betting test with a predictable bet, alarming at wealth ≥ 1/α). The lower and
+upper values it returns are display-only Hoeffding intervals, not a
+confidence-set inversion of the wealth process. The sliding-window Hoeffding
+interval is an empirically calibrated display/alarm interval with no
+time-uniform guarantee. The betting test's Ville bound needs the null mean to be
+known; when the reference value is estimated from cached scores (as in the
+paper's evaluation) it is an estimate and the bound is not claimed.
 
 Three tail-bound variants are supported:
   - **bounded**: ONS (Online Newton Step) betting for statistics in [a, b].
@@ -12,12 +17,15 @@ Three tail-bound variants are supported:
   - **sub_exponential**: Sub-exponential CS for heavier-tailed statistics.
 
 Two window modes are supported:
-  - **growing**: Accumulates all observations. Provides exact time-uniform coverage
-    by Ville's inequality — the wealth process is a non-negative supermartingale
-    under H₀, *provided the bet λ_t is predictable* (chosen from observations
-    1..t-1 only). The bounded growing-mode update enforces this; a prior version
-    peeked at the current observation and was not a supermartingale (see the
-    reproducibility note in ``_update_bounded_growing``).
+  - **growing**: Accumulates all observations. The alarm is a betting test on
+    the wealth process. Under H₀ with a known mean, bounded observations and a
+    predictable bet λ_t (chosen from observations 1..t-1 only) the wealth is a
+    non-negative supermartingale and Ville's inequality bounds the probability
+    of ever alarming by α. The bounded growing-mode update enforces
+    predictability; a prior version peeked at the current observation and was
+    not a supermartingale (see the reproducibility note in
+    ``_update_bounded_growing``). The known-mean condition is not met when μ₀
+    is estimated from cached scores.
   - **sliding**: Maintains a deque of the last `window_size` observations.
     Confidence bounds use a Hoeffding inequality on the current window,
     providing valid per-window coverage but NOT time-uniform coverage.
@@ -56,7 +64,7 @@ class CSUpdate:
 class ConfidenceSequenceEngine:
     """
     Maintains a betting-based confidence sequence (Waudby-Smith & Ramdas 2024).
-    Provides time-uniform coverage: P(∀t: T_t ∈ [L_t, U_t]) ≥ 1 − α.
+    The growing-window bounded alarm is a betting test; the returned intervals are display-only.
 
     Parameters
     ----------
@@ -208,7 +216,9 @@ class ConfidenceSequenceEngine:
         # alarm decision (Hoeffding bounds do), so exposing it would mislead.
         # In sub-Gaussian/sub-exponential modes, wealth is not used at all.
         if self._window_mode == "growing" and self._tail_bound == "bounded":
-            wealth: float | None = math.exp(self._log_wealth)
+            # Clamp the exponent: sustained evidence can push log-wealth past
+            # ~709, where math.exp raises OverflowError.
+            wealth: float | None = math.exp(min(self._log_wealth, 700.0))
         else:
             wealth = None
 
@@ -227,8 +237,9 @@ class ConfidenceSequenceEngine:
         ONS betting strategy for bounded statistics in growing-window mode.
 
         The wealth process W_t = Π_{s=1}^{t} (1 + λ_s · (T_s − μ₀)) is a
-        non-negative supermartingale under H₀: E[T_t] = μ₀. By Ville's
-        inequality, P(∃t: W_t ≥ 1/α) ≤ α, giving time-uniform coverage.
+        non-negative supermartingale under H₀ when E[T_t | F_{t-1}] = μ₀ is known
+        and the bet is predictable; Ville's inequality then gives
+        P(∃t: W_t ≥ 1/α) ≤ α. If μ₀ is estimated, that bound is not claimed.
 
         The ONS bet is:
             λ_t = (μ̂_{t-1} − μ₀) / (V̂_{t-1} + ε)
@@ -301,9 +312,9 @@ class ConfidenceSequenceEngine:
 
         **Guarantee status (IMPORTANT)**:
 
-        Growing mode provides **exact** time-uniform coverage by Ville's
-        inequality: the wealth process is a non-negative supermartingale
-        under H₀, so P(∃t: W_t ≥ 1/α) ≤ α.
+        Growing mode alarms on the wealth process, which is a non-negative
+        supermartingale under H₀ when the null mean is known and the bet is
+        predictable, so P(∃t: W_t ≥ 1/α) ≤ α in that case.
 
         Sliding mode provides **per-window** coverage, NOT time-uniform
         coverage. The confidence bounds are computed from a Hoeffding-type
@@ -327,8 +338,8 @@ class ConfidenceSequenceEngine:
         Hoeffding confidence interval on the current window. This provides
         valid per-window coverage but not time-uniform coverage. Empirical
         FAR calibration via null simulation is recommended before deployment.
-        Growing-window mode provides exact time-uniform coverage via Ville's
-        inequality."
+        Growing-window mode is a betting test whose Ville bound needs a known
+        null mean."
         """
         a = self._lower_bound
         b = self._upper_bound
@@ -420,11 +431,11 @@ class ConfidenceSequenceEngine:
         Sub-Gaussian confidence sequence.
 
         For a sub-Gaussian random variable with variance proxy σ², the
-        time-uniform CS is:
+        textbook time-uniform form is:
             L_t, U_t = μ̂_t ± sqrt(2σ² · log(1/α) / t)
 
-        This follows from the sub-Gaussian maximal inequality and provides
-        exact time-uniform coverage.
+        The implementation below uses a stitched boundary; this mode is not
+        used in the paper's evaluation and its coverage is not validated here.
         """
         assert self._variance_proxy is not None
         sigma_sq = self._variance_proxy

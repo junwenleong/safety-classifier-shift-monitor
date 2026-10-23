@@ -1,4 +1,3 @@
-import os
 """Token budget verification for ALL remaining ceiling-clipped models.
 
 Tests whether each model discriminates when given max_tokens=200 and
@@ -8,6 +7,7 @@ Usage:
     .venv/bin/python scripts/run_verify_all_ceiling.py
 """
 from __future__ import annotations
+import os
 import json, sys, time
 from pathlib import Path
 

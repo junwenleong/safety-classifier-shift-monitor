@@ -1,4 +1,3 @@
-import os
 """Multilingual Suffix Transfer: Does English GCG suffix affect non-English prompts?
 
 Appends the SAME English GCG suffix (optimized for DeBERTa on the English prompt)
@@ -9,6 +8,7 @@ Usage:
     .venv/bin/python scripts/run_multilingual_suffix.py
 """
 from __future__ import annotations
+import os
 import json, sys, time
 from pathlib import Path
 

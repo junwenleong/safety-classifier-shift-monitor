@@ -3,8 +3,12 @@
 Tests whether CUSUM/EWMA detectors can detect sustained low-rate mixing
 that KS and scan martingale miss (the ≤12% blind spot from v4).
 
-Uses cached null scores (results/null_scores.json) and models shifted
-distributions from the factorial's observed score statistics.
+Uses cached null scores (results/null_scores.json) for the unshifted traffic.
+The shifted scores are SYNTHETIC: each is drawn from a normal distribution with
+the factorial's observed post-shift mean and SD and clipped to [0, 1]; they are
+not resampled measured paraphrase scores. All detectors start monitoring at the
+known shift onset (oracle onset), so pre-onset false alarms are not exercised
+here; the realised false-alarm rates are measured separately on null streams.
 
 Pre-registered in docs/pre_registration_v5.md, Experiment 2.
 
@@ -52,7 +56,8 @@ EWMA_LAMBDA_GRID = [0.05, 0.1, 0.2]
 
 # Shifted distribution model: DeBERTa scores on paraphrase shift
 # From factorial: post_score mean ~0.53, pre_score mean ~0.016
-# We model shifted scores as Beta(a, b) fitted to known statistics
+# Shifted scores are modelled as a clipped normal with these moments (synthetic,
+# not measured paraphrase scores); see generate_stream().
 SHIFTED_SCORE_PARAMS = {
     "deberta": {
         "paraphrase": {"mean": 0.53, "std": 0.25},  # from factorial post-shift
@@ -240,7 +245,7 @@ def generate_shifted_stream(
     # Post-shift: mixing
     for t in range(pre_shift, length):
         if rng.random() < mixing_rate:
-            # Draw from shifted distribution (truncated normal [0,1])
+            # Draw from the synthetic shifted distribution (normal, clipped to [0, 1])
             s = rng.normal(shifted_mean, shifted_std)
             stream[t] = np.clip(s, 0.0, 1.0)
         else:

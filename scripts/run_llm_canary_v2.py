@@ -1,4 +1,3 @@
-import os
 """LLM canary v2: All 49 GCG prompts on informative models + scrambled suffix control.
 
 Changes from v1:
@@ -9,6 +8,7 @@ Changes from v1:
 - Non-parseable responses → 1.0
 """
 from __future__ import annotations
+import os
 import json, sys, time, random
 from pathlib import Path
 

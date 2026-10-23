@@ -10,13 +10,14 @@ Usage:
 from __future__ import annotations
 
 import json
+import os
 import math
 from pathlib import Path
 
 import numpy as np
 from scipy import stats as sp_stats
 
-RESULTS = Path("results/factorial_results.jsonl")
+RESULTS = Path(os.environ.get("FACTORIAL_RESULTS", "results/factorial_regeneration/factorial_results_corrected_ks.jsonl"))
 N_BOOT = 10_000
 ALPHA = 0.05
 RNG = np.random.default_rng(42)

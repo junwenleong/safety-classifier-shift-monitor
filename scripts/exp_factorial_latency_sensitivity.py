@@ -5,11 +5,12 @@ Zero API calls; reads factorial_results.jsonl.
 """
 from __future__ import annotations
 import json
+import os
 import numpy as np
 from pathlib import Path
 from collections import defaultdict
 
-JL = Path(__file__).resolve().parents[1] / "results" / "factorial_results.jsonl"
+JL = Path(os.environ.get("FACTORIAL_RESULTS", Path(__file__).resolve().parents[1] / "results" / "factorial_regeneration" / "factorial_results_corrected_ks.jsonl"))
 
 
 def load():
