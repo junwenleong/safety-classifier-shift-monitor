@@ -159,8 +159,8 @@ def plot_trajectories(all_results: dict) -> None:
     ax.axhline(1.0, color="gray", ls=":", lw=0.8, alpha=0.7, label="Alarm threshold")
 
     ax.set_xlabel("Stream Step")
-    ax.set_ylabel("KS / Threshold (normalized)")
-    ax.set_title("Regime C: Normalized KS Trajectories (Adversarial Success)")
+    ax.set_ylabel("KS / Threshold (normalised)")
+    ax.set_title("Regime C: Normalised KS Trajectories (Adversarial Success)")
     ax.legend(loc="upper left", fontsize=9)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
